@@ -10,7 +10,7 @@
 typedef DWORD _host_tick_t;
 #else
 #endif
-//#undef main
+
 static _host_tick_t init_tick;
 void rt_system_tick_init(void)
 {
