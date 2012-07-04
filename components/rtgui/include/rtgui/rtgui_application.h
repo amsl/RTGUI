@@ -30,47 +30,47 @@ DECLARE_CLASS_TYPE(application);
 
 enum rtgui_application_flag
 {
-    RTGUI_APPLICATION_FLAG_EXITED  = 0x04,
-    RTGUI_APPLICATION_FLAG_SHOWN   = 0x08
+	RTGUI_APPLICATION_FLAG_EXITED  = 0x04,
+	RTGUI_APPLICATION_FLAG_SHOWN   = 0x08
 };
 
-typedef void (*rtgui_idle_func)(struct rtgui_object *obj, struct rtgui_event *event);
+typedef void (*rtgui_idle_func)(struct rtgui_object* obj, struct rtgui_event *event);
 
 struct rtgui_application
 {
-    struct rtgui_object parent;
+	struct rtgui_object parent;
 
-    /* application name */
-    unsigned char *name;
+	/* application name */
+	unsigned char *name;
 
-    enum rtgui_application_flag state_flag;
+	enum rtgui_application_flag state_flag;
 
-    rt_uint16_t ref_count;
-    rt_uint16_t exit_code;
+	rt_uint16_t ref_count;
+	rt_uint16_t exit_code;
 
-    /* the thread id */
-    rt_thread_t tid;
+	/* the thread id */
+	rt_thread_t tid;
     rt_thread_t server;
 
-    /* the message queue of thread */
-    rt_mq_t mq;
-    /* event buffer */
-    rt_uint8_t event_buffer[sizeof(union rtgui_event_generic)];
+	/* the message queue of thread */
+	rt_mq_t mq;
+	/* event buffer */
+	rt_uint8_t event_buffer[sizeof(union rtgui_event_generic)];
 
-    /* if not RT_NULL, the application is modaled by modal_object. If is
-     * RT_NULL, nothing modals. */
-    struct rtgui_object *modal_object;
+	/* if not RT_NULL, the application is modaled by modal_object. If is
+	 * RT_NULL, nothing modals. */
+	struct rtgui_object *modal_object;
 
-    /* on idle event handler */
-    rtgui_idle_func on_idle;
+	/* on idle event handler */
+	rtgui_idle_func on_idle;
 };
 
 /**
  * create an application named @myname on thread @param tid
  */
-struct rtgui_application *rtgui_application_create(
-    rt_thread_t tid,
-    const char *myname);
+struct rtgui_application* rtgui_application_create(
+        rt_thread_t tid,
+        const char *myname);
 void rtgui_application_destroy(struct rtgui_application *app);
 rt_err_t rtgui_application_show(struct rtgui_application *app);
 rt_err_t rtgui_application_hide(struct rtgui_application *app);
@@ -80,17 +80,17 @@ void rtgui_application_exit(struct rtgui_application *app, rt_uint16_t code);
 
 void rtgui_application_set_onidle(rtgui_idle_func onidle);
 rtgui_idle_func rtgui_application_get_onidle(void);
-struct rtgui_application *rtgui_application_self(void);
+struct rtgui_application* rtgui_application_self(void);
 
 rt_thread_t rtgui_application_get_server(void);
 
 struct rtgui_event;
-rt_err_t rtgui_application_send(rt_thread_t tid, struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_application_send_urgent(rt_thread_t tid, struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_application_send_sync(rt_thread_t tid, struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_application_ack(struct rtgui_event *event, rt_int32_t status);
-rt_err_t rtgui_application_recv(struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_application_recv_nosuspend(struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_application_recv_filter(rt_uint32_t type, struct rtgui_event *event, rt_size_t event_size);
+rt_err_t rtgui_application_send(rt_thread_t tid, struct rtgui_event* event, rt_size_t event_size);
+rt_err_t rtgui_application_send_urgent(rt_thread_t tid, struct rtgui_event* event, rt_size_t event_size);
+rt_err_t rtgui_application_send_sync(rt_thread_t tid, struct rtgui_event* event, rt_size_t event_size);
+rt_err_t rtgui_application_ack(struct rtgui_event* event, rt_int32_t status);
+rt_err_t rtgui_application_recv(struct rtgui_event* event, rt_size_t event_size);
+rt_err_t rtgui_application_recv_nosuspend(struct rtgui_event* event, rt_size_t event_size);
+rt_err_t rtgui_application_recv_filter(rt_uint32_t type, struct rtgui_event* event, rt_size_t event_size);
 
 #endif /* end of include guard: RTGUI_APPLICATION_H */

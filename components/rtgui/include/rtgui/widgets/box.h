@@ -22,34 +22,34 @@
 extern "C" {
 #endif
 
-    DECLARE_CLASS_TYPE(box);
+DECLARE_CLASS_TYPE(box);
 
-    /** Gets the type of a box */
+/** Gets the type of a box */
 #define RTGUI_BOX_TYPE       (RTGUI_TYPE(box))
-    /** Casts the object to an rtgui_box */
+/** Casts the object to an rtgui_box */
 #define RTGUI_BOX(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_BOX_TYPE, rtgui_box_t))
-    /** Checks if the object is an rtgui_box */
+/** Checks if the object is an rtgui_box */
 #define RTGUI_IS_BOX(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_BOX_TYPE))
 
-    struct rtgui_box
-    {
-        struct rtgui_container parent;
+struct rtgui_box
+{
+	struct rtgui_container parent;
 
-        rt_uint16_t orient;
-        rt_uint16_t border_size;
-    };
-    typedef struct rtgui_box rtgui_box_t;
+	rt_uint16_t orient;
+	rt_uint16_t border_size;
+};
+typedef struct rtgui_box rtgui_box_t;
 
-    struct rtgui_box *rtgui_box_create(int orientation, rtgui_rect_t *rect);
-    void rtgui_box_destroy(struct rtgui_box *box);
+struct rtgui_box* rtgui_box_create(int orientation, rtgui_rect_t* rect);
+void rtgui_box_destroy(struct rtgui_box* box);
 
-    rt_bool_t rtgui_box_event_handler(struct rtgui_object *object, rtgui_event_t *event);
+rt_bool_t rtgui_box_event_handler(struct rtgui_object* object, rtgui_event_t* event);
 
-    void rtgui_box_append(rtgui_box_t *box, rtgui_widget_t *widget);
-    void rtgui_box_layout(rtgui_box_t *box);
+void rtgui_box_append(rtgui_box_t* box, rtgui_widget_t* widget);
+void rtgui_box_layout(rtgui_box_t* box);
 
-    rt_uint32_t rtgui_box_get_width(rtgui_box_t *box);
-    rt_uint32_t rtgui_box_get_height(rtgui_box_t *box);
+rt_uint32_t rtgui_box_get_width(rtgui_box_t* box);
+rt_uint32_t rtgui_box_get_height(rtgui_box_t* box);
 
 #ifdef __cplusplus
 }

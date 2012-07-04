@@ -20,6 +20,8 @@ demo_view_ttf.c
 demo_view_dc_buffer.c
 demo_view_animation.c
 demo_view_buffer_animation.c
+demo_view_bmp.c
+demo_view_frame_rate.c
 demo_view_instrument_panel.c
 demo_view_window.c
 demo_view_label.c

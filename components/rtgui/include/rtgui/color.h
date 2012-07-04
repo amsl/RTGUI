@@ -16,17 +16,17 @@
 
 #include <rtgui/rtgui.h>
 
-#define RTGUI_ARGB(a, r, g, b)  \
-        ((rtgui_color_t)(((rt_uint8_t)(r)|\
-        (((unsigned)(rt_uint8_t)(g))<<8))|\
-        (((unsigned long)(rt_uint8_t)(b))<<16)|\
-        (((unsigned long)(rt_uint8_t)(a))<<24)))
-#define RTGUI_RGB(r, g, b)  RTGUI_ARGB(255, (r), (g), (b))
+#define RTGUI_ARGB(a, r, g, b)	\
+		((rtgui_color_t)(((rt_uint8_t)(r)|\
+		(((unsigned)(rt_uint8_t)(g))<<8))|\
+		(((unsigned long)(rt_uint8_t)(b))<<16)|\
+		(((unsigned long)(rt_uint8_t)(a))<<24)))
+#define RTGUI_RGB(r, g, b)	RTGUI_ARGB(255, (r), (g), (b))
 
-#define RTGUI_RGB_R(c)  ((c) & 0xff)
-#define RTGUI_RGB_G(c)  (((c) >> 8)  & 0xff)
-#define RTGUI_RGB_B(c)  (((c) >> 16) & 0xff)
-#define RTGUI_RGB_A(c)  (((c) >> 24) & 0xff)
+#define RTGUI_RGB_R(c)	((c) & 0xff)
+#define RTGUI_RGB_G(c)	(((c) >> 8)  & 0xff)
+#define RTGUI_RGB_B(c)	(((c) >> 16) & 0xff)
+#define RTGUI_RGB_A(c)	(((c) >> 24) & 0xff)
 
 extern const rtgui_color_t default_foreground;
 extern const rtgui_color_t default_background;
@@ -48,66 +48,66 @@ extern const rtgui_color_t light_grey;
 /* convert rtgui color to BBBBBGGGGGGRRRRR */
 rt_inline rt_uint16_t rtgui_color_to_565(rtgui_color_t c)
 {
-    rt_uint16_t pixel;
+	rt_uint16_t pixel;
 
-    pixel = (rt_uint16_t)(((RTGUI_RGB_B(c) >> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_R(c) >> 3));
+	pixel = (rt_uint16_t)(((RTGUI_RGB_B(c)>> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_R(c) >> 3));
 
-    return pixel;
+	return pixel;
 }
 
 rt_inline rtgui_color_t rtgui_color_from_565(rt_uint16_t pixel)
 {
-    rt_uint16_t r, g, b;
-    rtgui_color_t color;
+	rt_uint16_t r, g, b;
+	rtgui_color_t color;
 
-    r = pixel & 0x1f;
-    g = (pixel >> 5) & 0x3f;
-    b = (pixel >> 11) & 0x1f;
+	r = pixel & 0x1f;
+	g = (pixel >> 5) & 0x3f;
+	b = (pixel >> 11) & 0x1f;
 
-    color = r * 8225 / 1024 + ((g * 4047 / 1024) << 8) + ((b * 8225 / 1024) << 16);
+	color = r * 8225 / 1024 + ((g * 4047 / 1024) << 8) + ((b * 8225 / 1024) << 16);
 
-    return color;
+	return color;
 }
 
 /* convert rtgui color to RRRRRGGGGGGBBBBB */
 rt_inline rt_uint16_t rtgui_color_to_565p(rtgui_color_t c)
 {
-    rt_uint16_t pixel;
+	rt_uint16_t pixel;
 
-    pixel = (rt_uint16_t)(((RTGUI_RGB_R(c) >> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_B(c) >> 3));
-    return pixel;
+	pixel = (rt_uint16_t)(((RTGUI_RGB_R(c) >> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_B(c)>> 3));
+	return pixel;
 }
 
 rt_inline rtgui_color_t rtgui_color_from_565p(rt_uint16_t pixel)
 {
-    rt_uint8_t r, g, b;
-    rtgui_color_t color;
+	rt_uint8_t r, g, b;
+	rtgui_color_t color;
 
-    r = (pixel >> 11) & 0x1f;
-    g = (pixel >> 5)  & 0x3f;
-    b = pixel & 0x1f;
+	r = (pixel >> 11) & 0x1f;
+	g = (pixel >> 5)  & 0x3f;
+	b = pixel & 0x1f;
 
-    color = r * 8225 / 1024 + ((g * 4047 / 1024) << 8) + ((b * 8225 / 1024) << 16);
+	color = r * 8225 / 1024 + ((g * 4047 / 1024) << 8) + ((b * 8225 / 1024) << 16);
 
-    return color;
+	return color;
 }
 
 /* convert rtgui color to RGB */
 rt_inline rt_uint32_t rtgui_color_to_888(rtgui_color_t c)
 {
-    rt_uint32_t pixel;
+	rt_uint32_t pixel;
 
-    pixel = RTGUI_RGB_R(c) << 16 | RTGUI_RGB_G(c) << 8 | RTGUI_RGB_B(c);
-    return pixel;
+	pixel = RTGUI_RGB_R(c) << 16 | RTGUI_RGB_G(c) << 8 | RTGUI_RGB_B(c);
+	return pixel;
 }
 
 rt_inline rtgui_color_t rtgui_color_from_888(rt_uint32_t pixel)
 {
-    rtgui_color_t color;
+	rtgui_color_t color;
 
-    color = RTGUI_RGB(((pixel >> 16) & 0xff), ((pixel >> 8) & 0xff), pixel & 0xff);
+	color = RTGUI_RGB(((pixel >> 16) & 0xff), ((pixel >> 8) & 0xff), pixel & 0xff);
 
-    return color;
+	return color;
 }
 
 #endif

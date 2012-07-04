@@ -30,15 +30,15 @@ DECLARE_CLASS_TYPE(aboutview);
 
 struct rtgui_about_view
 {
-    struct rtgui_container parent;
+	struct rtgui_container parent;
 
-    /* widget private data */
-    rtgui_image_t *logo;
-    const char *description;
+	/* widget private data */
+	rtgui_image_t* logo;
+	const char* description;
 };
 typedef struct rtgui_about_view rtgui_about_view_t;
 
-rtgui_about_view_t *rtgui_about_view_create(rtgui_image_t *logo, const char *description);
-rt_bool_t rtgui_about_view_event_handler(struct rtgui_object *widget, struct rtgui_event *event);
+rtgui_about_view_t* rtgui_about_view_create(rtgui_image_t *logo, const char* description);
+rt_bool_t rtgui_about_view_event_handler(struct rtgui_object* widget, struct rtgui_event* event);
 
 #endif

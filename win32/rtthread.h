@@ -19,11 +19,11 @@ typedef rt_uint32_t	rt_size_t;		/* Type for size number.	*/
 typedef rt_uint8_t	rt_dev_t;		/* Type for device			*/
 typedef rt_int32_t	rt_off_t;		/* Type for offset, supports 4G at most */
 
-#ifdef RT_VERSION
-#undef RT_VERSION
+#ifdef RTT_VERSION
+#undef RTT_VERSION
 #endif
 
-#define RT_VERSION			4
+#define RTT_VERSION			4
 
 /* RT-Thread bool type definitions */
 #define RT_TRUE 			1

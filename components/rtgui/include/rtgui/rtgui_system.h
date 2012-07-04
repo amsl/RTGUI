@@ -22,36 +22,36 @@ struct rtgui_event;
 struct rtgui_widget;
 
 struct rtgui_timer;
-typedef void (*rtgui_timeout_func)(struct rtgui_timer *timer, void *parameter);
+typedef void (*rtgui_timeout_func)(struct rtgui_timer* timer, void* parameter);
 
 struct rtgui_timer
 {
-    /* context thread id */
-    rt_thread_t tid;
-    /* rt timer */
-    struct rt_timer timer;
+	/* context thread id */
+	rt_thread_t tid;
+	/* rt timer */
+	struct rt_timer timer;
 
-    /* timeout function and user data */
-    rtgui_timeout_func timeout;
-    void *user_data;
+	/* timeout function and user data */
+	rtgui_timeout_func timeout;
+	void* user_data;
 };
 typedef struct rtgui_timer rtgui_timer_t;
 
-rtgui_timer_t *rtgui_timer_create(rt_int32_t time, rt_base_t flag, rtgui_timeout_func timeout, void *parameter);
-void rtgui_timer_destory(rtgui_timer_t *timer);
+rtgui_timer_t* rtgui_timer_create(rt_int32_t time, rt_base_t flag, rtgui_timeout_func timeout, void* parameter);
+void rtgui_timer_destory(rtgui_timer_t* timer);
 
-void rtgui_timer_start(rtgui_timer_t *timer);
-void rtgui_timer_stop(rtgui_timer_t *timer);
+void rtgui_timer_start(rtgui_timer_t* timer);
+void rtgui_timer_stop (rtgui_timer_t* timer);
 
 /* rtgui system initialization function */
 void rtgui_system_server_init(void);
 
-void *rtgui_malloc(rt_size_t size);
-void rtgui_free(void *ptr);
-void *rtgui_realloc(void *ptr, rt_size_t size);
+void* rtgui_malloc(rt_size_t size);
+void rtgui_free(void* ptr);
+void* rtgui_realloc(void* ptr, rt_size_t size);
 
-#define rtgui_enter_critical    rt_enter_critical
-#define rtgui_exit_critical     rt_exit_critical
+#define rtgui_enter_critical	rt_enter_critical
+#define rtgui_exit_critical		rt_exit_critical
 
 #endif
 

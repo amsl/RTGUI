@@ -26,19 +26,19 @@ DECLARE_CLASS_TYPE(toplevel);
 
 struct rtgui_toplevel
 {
-    /* inherit from view */
-    rtgui_container_t parent;
+	/* inherit from view */
+	rtgui_container_t parent;
 
-    /* drawing count */
-    rt_base_t drawing;
+	/* drawing count */
+	rt_base_t drawing;
 
-    /* external clip info */
-    rtgui_rect_t   *external_clip_rect;
-    rt_uint32_t     external_clip_size;
+	/* external clip info */
+	rtgui_rect_t*	external_clip_rect;
+	rt_uint32_t		external_clip_size;
 };
 typedef struct rtgui_toplevel rtgui_toplevel_t;
 
-rt_bool_t rtgui_toplevel_event_handler(struct rtgui_object *widget, struct rtgui_event *event);
-void rtgui_toplevel_update_clip(rtgui_toplevel_t *top);
+rt_bool_t rtgui_toplevel_event_handler(struct rtgui_object* widget, struct rtgui_event* event);
+void rtgui_toplevel_update_clip(rtgui_toplevel_t* top);
 
 #endif
