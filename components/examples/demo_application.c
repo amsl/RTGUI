@@ -61,18 +61,11 @@ static void application_entry(void* parameter)
 
 	rtgui_container_add_child(RTGUI_CONTAINER(main_win), RTGUI_WIDGET(the_notebook));
 
-<<<<<<< HEAD
     /* 初始化各个例子的视图 */
     demo_view_benchmark();
 	demo_view_frame_rate();
     demo_view_dc();
 
-=======
-	/* 初始化各个例子的视图 */
-	demo_view_benchmark();
-
-	demo_view_dc();
->>>>>>> 6a6aea97752c3d46538c9048992774bad5fba74d
 #ifdef RTGUI_USING_TTF
 	demo_view_ttf();
 #endif
@@ -85,7 +78,6 @@ static void application_entry(void* parameter)
 	demo_view_buffer_animation();
 	demo_view_instrument_panel();
 #endif
-<<<<<<< HEAD
 
     demo_view_window();
     demo_view_label();
@@ -103,23 +95,6 @@ static void application_entry(void* parameter)
     demo_view_notebook();
     demo_view_mywidget();
 	demo_view_screen_grap();
-=======
-	demo_view_window();
-	demo_view_label();
-	demo_view_button();
-	demo_view_checkbox();
-	demo_view_progressbar();
-	demo_view_scrollbar();
-	demo_view_radiobox();
-	demo_view_textbox();
-	demo_view_listbox();
-	demo_view_menu();
-	demo_view_listctrl();
-	demo_view_combobox();
-	demo_view_slider();
-	demo_view_notebook();
-	demo_view_mywidget();
->>>>>>> 6a6aea97752c3d46538c9048992774bad5fba74d
 #if 0
 #if defined(RTGUI_USING_DFS_FILERW) || defined(RTGUI_USING_STDIO_FILERW)
 	demo_view_image();

@@ -5,7 +5,6 @@
 #include <rtgui/image_bmp.h>
 #include <rtgui/blit.h>
 
-<<<<<<< HEAD
 #ifdef _WIN32
 #include <fcntl.h>
 #include <sys\types.h>
@@ -14,62 +13,6 @@
 #endif
 
 #ifdef RTGUI_IMAGE_BMP
-=======
-#ifdef RTGUI_IMAGE_BMP
-/* Compression encodings for BMP files */
-#ifndef BI_RGB
-#define BI_RGB			0
-#define BI_RLE8			1
-#define BI_RLE4			2
-#define BI_BITFIELDS	3
-#endif
-
-#define hw_driver				(rtgui_graphic_driver_get_default())
-
-struct rtgui_image_bmp
-{
-	rt_bool_t is_loaded;
-
-	rt_uint32_t Rmask;
-	rt_uint32_t Gmask;
-	rt_uint32_t Bmask;
-
-	rt_size_t   pixel_offset;
-
-	rt_uint8_t  byte_per_pixel;
-	rt_uint8_t  pad;
-	rt_uint8_t  ExpandBMP;
-
-	rt_uint8_t *pixels;
-	rt_uint8_t *line_pixels;
-	rt_uint32_t pitch;
-
-	struct rtgui_filerw* filerw;
-};
-
-struct rtgui_image_bmp_header
-{
-	/* The Win32 BMP file header (14 bytes) */
-	char   magic[2];
-	rt_uint32_t bfSize;
-	rt_uint16_t bfReserved1;
-	rt_uint16_t bfReserved2;
-	rt_uint32_t bfOffBits;
-
-	/* The Win32 BITMAPINFOHEADER struct (40 bytes) */
-	rt_uint32_t biSize;
-	rt_int32_t  biWidth;
-	rt_int32_t  biHeight;
-	rt_uint16_t biPlanes;
-	rt_uint16_t biBitCount;
-	rt_uint32_t biCompression;
-	rt_uint32_t biSizeImage;
-	rt_int32_t  biXPelsPerMeter;
-	rt_int32_t  biYPelsPerMeter;
-	rt_uint32_t biClrUsed;
-	rt_uint32_t biClrImportant;
-};
->>>>>>> 6a6aea97752c3d46538c9048992774bad5fba74d
 
 static rt_bool_t rtgui_image_bmp_check(struct rtgui_filerw* file);
 static rt_bool_t rtgui_image_bmp_load(struct rtgui_image* image, struct rtgui_filerw* file, rt_bool_t load);
@@ -646,7 +589,6 @@ static void rtgui_image_bmp_blit(struct rtgui_image* image, struct rtgui_dc* dc,
 			if (line_ptr != RT_NULL) rtgui_free(line_ptr);
 		}
 	}
-<<<<<<< HEAD
 }
 
 void rtgui_image_bmp_header_cfg(struct rtgui_image_bmp_header *bhr, rt_int32_t w, rt_int32_t h, rt_uint16_t bits_per_pixel)
@@ -769,8 +711,6 @@ void bmp_create(const char *filename)
 	rt_free(line_buf);
 #endif
 	close(fd);
-=======
->>>>>>> 6a6aea97752c3d46538c9048992774bad5fba74d
 }
 
 void rtgui_image_bmp_init(void)

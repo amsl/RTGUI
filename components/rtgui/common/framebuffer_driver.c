@@ -61,18 +61,10 @@ static void _rgb565p_set_pixel(rtgui_color_t *c, int x, int y)
 static void _rgb565p_get_pixel(rtgui_color_t *c, int x, int y)
 {
 	rt_uint16_t pixel;
-<<<<<<< HEAD
 
 	pixel = *GET_PIXEL(rtgui_graphic_get_device(), x, y, rt_uint16_t);
 
 	/* get pixel from color */
-
-=======
-
-	pixel = *GET_PIXEL(rtgui_graphic_get_device(), x, y, rt_uint16_t);
-
-	/* get pixel from color */
->>>>>>> 6a6aea97752c3d46538c9048992774bad5fba74d
 	*c = rtgui_color_from_565p(pixel);
 }
 
