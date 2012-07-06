@@ -8,3 +8,8 @@ executables/
 *.pdb
 *.idb
 *.pub
+*.ncb
+*.sln
+*.user
+*.suo
+vcproj/Debug/
