@@ -32,7 +32,7 @@ rt_bool_t picture_win_onpaint(struct rtgui_object* object, struct rtgui_event* e
 		/* get window rect */
 		rtgui_widget_get_rect(RTGUI_WIDGET(widget), &rect);
 
-		RTGUI_DC_BC(dc) = white;
+		RTGUI_DC_BC(dc) = WHITE;
 		rtgui_dc_fill_rect(dc, &rect);
 
 		rtgui_dc_end_drawing(dc);
