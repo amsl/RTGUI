@@ -135,7 +135,7 @@ const struct rtgui_graphic_driver_ops _framebuffer_rgb565p_ops =
 
 static void _mono_set_pixel(rtgui_color_t *c, int x, int y)
 {
-	if (*c == white)
+	if (*c == WHITE)
 		MONO_PIXEL(FRAMEBUFFER, x, y) &= ~(1 << (y%8));
 	else
 		MONO_PIXEL(FRAMEBUFFER, x, y) |= (1 << (y%8));
@@ -144,16 +144,16 @@ static void _mono_set_pixel(rtgui_color_t *c, int x, int y)
 static void _mono_get_pixel(rtgui_color_t *c, int x, int y)
 {
 	if (MONO_PIXEL(FRAMEBUFFER, x, y) & (1 << (y%8)))
-		*c = black;
+		*c = BLACK;
 	else
-		*c = white;
+		*c = WHITE;
 }
 
 static void _mono_draw_hline(rtgui_color_t *c, int x1, int x2, int y)
 {
 	rt_ubase_t index;
 	
-	if (*c == white)
+	if (*c == WHITE)
 		for (index = x1; index < x2; index ++)
 		{
 			MONO_PIXEL(FRAMEBUFFER, index, y) &= ~(1 << (y%8));
@@ -169,7 +169,7 @@ static void _mono_draw_vline(rtgui_color_t *c, int x , int y1, int y2)
 {
 	rt_ubase_t index;
 	
-	if (*c == white)
+	if (*c == WHITE)
 		for (index = y1; index < y2; index ++)
 		{
 			MONO_PIXEL(FRAMEBUFFER, x, index) &= ~(1 << (index%8));

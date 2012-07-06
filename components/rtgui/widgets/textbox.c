@@ -39,8 +39,8 @@ static void _rtgui_textbox_constructor(rtgui_textbox_t *box)
 	rtgui_widget_set_onkey(RTGUI_WIDGET(box),rtgui_textbox_onkey);
 #endif
 
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(box)) = black;
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = white;
+	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(box)) = BLACK;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
 	/* set default text align */
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(box)) = RTGUI_ALIGN_CENTER_VERTICAL;
 	/* set proper of control */
@@ -490,7 +490,7 @@ void rtgui_textbox_ondraw(rtgui_textbox_t* box)
 	rtgui_rect_inflate(&rect, -1);
 
 	/* fill widget rect with white color */
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
 	rtgui_dc_fill_rect(dc,&rect);
 
 	rtgui_rect_inflate(&rect, 1);

@@ -30,7 +30,7 @@ static void _rtgui_listctrl_constructor(struct rtgui_listctrl *ctrl)
 	ctrl->on_item = 0;
 	ctrl->on_item_draw = RT_NULL;
 
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(ctrl)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(ctrl)) = WHITE;
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(ctrl)) = RTGUI_ALIGN_CENTER_VERTICAL;
 }
 

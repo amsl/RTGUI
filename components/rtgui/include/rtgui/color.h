@@ -31,14 +31,15 @@
 extern const rtgui_color_t default_foreground;
 extern const rtgui_color_t default_background;
 
-extern const rtgui_color_t red;
-extern const rtgui_color_t green;
-extern const rtgui_color_t blue;
-extern const rtgui_color_t black;
-extern const rtgui_color_t white;
-extern const rtgui_color_t high_light;
-extern const rtgui_color_t dark_grey;
-extern const rtgui_color_t light_grey;
+#define RED 			RTGUI_RGB(0xff, 0x00, 0x00)
+#define GREEN 			RTGUI_RGB(0x00, 0xff, 0x00)
+#define BLUE 			RTGUI_RGB(0x00, 0x00, 0xff)
+#define BLACK 			RTGUI_RGB(0x00, 0x00, 0x00)
+#define WHITE 			RTGUI_RGB(0xff, 0xff, 0xff)
+
+#define HIGH_LIGHT		RTGUI_RGB(0xff, 0xff, 0xff)
+#define DARK_GREY 		RTGUI_RGB(0x7f, 0x7f, 0x7f)
+#define LIGHT_GREY 		RTGUI_RGB(0xc0, 0xc0, 0xc0)
 
 /*
  * RTGUI default color format

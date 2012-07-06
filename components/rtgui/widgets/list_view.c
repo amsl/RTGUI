@@ -33,7 +33,7 @@ static void _rtgui_list_view_constructor(struct rtgui_list_view *view)
 	view->items_count = 0;
 	view->page_items = 0;
 
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(view)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(view)) = WHITE;
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(view)) = RTGUI_ALIGN_CENTER_VERTICAL;
 }
 

@@ -28,7 +28,7 @@ rtgui_container_t* demo_view_label(void)
 	/* 设置label控件上的文本对齐方式为：左对齐 */
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(label)) = RTGUI_ALIGN_LEFT;
 	/* 设置label控件的前景色为红色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(label)) = red;
+	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(label)) = RED;
 	/* 设置label的位置 */
 	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
 	/* container是一个container控件，调用add_child方法添加这个label控件 */
@@ -45,7 +45,7 @@ rtgui_container_t* demo_view_label(void)
 	/* 设置label控件上的文本对齐方式为：右对齐 */
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(label)) = RTGUI_ALIGN_RIGHT;
 	/* 设置label控件的前景色为蓝色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(label)) = blue;
+	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(label)) = BLUE;
 	/* 设置label的位置 */
 	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
 	/* container是一个container控件，调用add_child方法添加这个label控件 */
@@ -60,7 +60,7 @@ rtgui_container_t* demo_view_label(void)
 	/* 创建一个label控件 */
 	label = rtgui_label_create("Green Center");
 	/* 设置label控件的前景色为绿色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(label)) = green;
+	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(label)) = GREEN;
 	/* 设置label控件上的文本对齐方式为：右对齐 */
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(label)) = RTGUI_ALIGN_CENTER_HORIZONTAL;
 	/* 设置label的位置 */

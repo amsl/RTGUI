@@ -203,7 +203,7 @@ static void demo_ntitlewin_onbutton(struct rtgui_widget* widget, rtgui_event_t* 
 		"no title", &rect, RTGUI_WIN_STYLE_NO_TITLE |
 						   RTGUI_WIN_STYLE_NO_BORDER |
 						   RTGUI_WIN_STYLE_DESTROY_ON_CLOSE);
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(win)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(win)) = WHITE;
 
 	/* 创建一个文本标签 */
 	label = rtgui_label_create("无边框窗口");
@@ -213,7 +213,7 @@ static void demo_ntitlewin_onbutton(struct rtgui_widget* widget, rtgui_event_t* 
 	widget_rect.y2 += 20;
 	rtgui_widget_set_rect(RTGUI_WIDGET(label), &widget_rect);
 	rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(label));
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(label)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(label)) = WHITE;
 
 	/* 创建一个关闭按钮 */
 	widget_rect.x1 = 0;

@@ -68,10 +68,10 @@ rtgui_container_t *demo_view_dc_buffer()
 
 		/* ´´½¨ DC Buffer£¬³¤ 50£¬¿í 50 */
 		dc_buffer = rtgui_dc_buffer_create(50, 50);
-		RTGUI_DC_FC(dc_buffer) = blue;
+		RTGUI_DC_FC(dc_buffer) = BLUE;
 		rtgui_dc_fill_rect(dc_buffer, &rect);
 
-		RTGUI_DC_FC(dc_buffer) = red;
+		RTGUI_DC_FC(dc_buffer) = RED;
 		rtgui_dc_draw_circle(dc_buffer, 25, 25, 10);
 	}
 

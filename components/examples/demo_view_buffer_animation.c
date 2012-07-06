@@ -129,7 +129,7 @@ struct rtgui_container *demo_view_buffer_animation(void)
 		dc_buffer = rtgui_dc_buffer_create(rtgui_rect_width(rect), rtgui_rect_height(rect));
 		RTGUI_DC_FC(dc_buffer) = RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(container));
 		rtgui_dc_fill_rect(dc_buffer, &rect);
-		RTGUI_DC_FC(dc_buffer) = black;
+		RTGUI_DC_FC(dc_buffer) = BLACK;
 		rect.x1 = 1; rect.y1 = 1;
 		rtgui_dc_draw_text(dc_buffer, "»º³å¶¯»­", &rect);
 	}

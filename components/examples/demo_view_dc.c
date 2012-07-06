@@ -69,11 +69,11 @@ rt_bool_t dc_event_handler(struct rtgui_object* object, rtgui_event_t *event)
 			rtgui_image_blit((rtgui_image_t*)&stop_image, dc, &rect);
 		}
 		/* 绘制一个圆形 */
-		RTGUI_DC_FC(dc) = red;
+		RTGUI_DC_FC(dc) = RED;
 		rtgui_dc_draw_circle(dc, rect.x1 + 10, rect.y1 + 10, 10);
 
 		/* 填充一个圆形 */
-		RTGUI_DC_FC(dc) = green;
+		RTGUI_DC_FC(dc) = GREEN;
 		rtgui_dc_fill_circle(dc, rect.x1 + 30, rect.y1 + 10, 10);
 #if 0
 		/* 画一个圆角矩形 */
@@ -104,7 +104,7 @@ rt_bool_t dc_event_handler(struct rtgui_object* object, rtgui_event_t *event)
 		rtgui_dc_draw_polygon(dc, vx, vy, 6);
 
 #endif
-		RTGUI_DC_FC(dc) = blue;
+		RTGUI_DC_FC(dc) = BLUE;
 
 		/* 绘制不同的边框 */
 		{

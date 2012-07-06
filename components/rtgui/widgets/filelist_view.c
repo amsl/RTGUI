@@ -330,7 +330,7 @@ static void _rtgui_filelist_view_constructor(struct rtgui_filelist_view *view)
 
 	view->current_directory = RT_NULL;
 	view->pattern = RT_NULL;
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(view)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(view)) = WHITE;
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(view)) = RTGUI_ALIGN_CENTER_VERTICAL;
 
 	file_image = rtgui_image_create_from_mem("xpm",

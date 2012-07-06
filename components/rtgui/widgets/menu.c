@@ -115,7 +115,7 @@ static void _rtgui_menu_item_ondraw(struct rtgui_listctrl *list,
 		rtgui_color_t bc;
 
 		bc = RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list));
-		RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list)) = blue;
+		RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list)) = BLUE;
 		rtgui_dc_fill_rect(dc, rect);
 		RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list)) = bc;
 	}

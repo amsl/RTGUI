@@ -29,7 +29,7 @@ static void _rtgui_listbox_constructor(struct rtgui_listbox *box)
 	box->page_items = 1;
 	box->on_item = 0;
 
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
 	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(box)) = RTGUI_ALIGN_CENTER_VERTICAL;
 }
 

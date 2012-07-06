@@ -58,7 +58,7 @@ void rtgui_about_view_ondraw(struct rtgui_about_view* view)
 
 	rect.y1 += rtgui_dc_get_gc(dc)->font->height;
 	rtgui_dc_draw_hline(dc, rect.x1 + 3, rect.x2 - 3, rect.y1);
-	RTGUI_DC_FC(dc) = white;
+	RTGUI_DC_FC(dc) = WHITE;
 	rtgui_dc_draw_hline(dc, rect.x1 + 4, rect.x2 - 2, rect.y1 + 1);
 
 	rtgui_dc_end_drawing(dc);

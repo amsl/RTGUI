@@ -27,7 +27,7 @@ rtgui_container_t* demo_view_button(void)
 	/* 创建一个button控件 */
 	button = rtgui_button_create("Red");
 	/* 设置label控件的前景色为红色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = red;
+	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = RED;
 	/* 设置button的位置 */
 	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
 	rtgui_container_add_child(container, RTGUI_WIDGET(button));
@@ -41,7 +41,7 @@ rtgui_container_t* demo_view_button(void)
 	/* 创建一个button控件 */
 	button = rtgui_button_create("Blue");
 	/* 设置label控件的前景色为蓝色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = blue;
+	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = BLUE;
 	/* 设置button的位置 */
 	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
 	rtgui_container_add_child(container, RTGUI_WIDGET(button));

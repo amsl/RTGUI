@@ -62,7 +62,7 @@ rt_bool_t instrument_panel_event_handler(struct rtgui_object *object, rtgui_even
 
 
 	RTGUI_DC_TEXTALIGN(dc) = RTGUI_ALIGN_CENTER_VERTICAL | RTGUI_ALIGN_CENTER_HORIZONTAL;
-	RTGUI_DC_FC(dc) = blue;
+	RTGUI_DC_FC(dc) = BLUE;
 	rect.y2 = 270;
 	rtgui_dc_draw_text(dc, "rtgui-panel", &rect);
 
@@ -71,7 +71,7 @@ rt_bool_t instrument_panel_event_handler(struct rtgui_object *object, rtgui_even
 		rtgui_dc_draw_arc(dc, x0, y0, 117-i, 150, 30);
 	}
 
-	RTGUI_DC_FC(dc) = black;
+	RTGUI_DC_FC(dc) = BLACK;
 
 	RTGUI_DC_TEXTALIGN(dc) = RTGUI_ALIGN_LEFT;
 	for(i = 0; i <= 23; i++)
@@ -112,7 +112,7 @@ rt_bool_t instrument_panel_event_handler(struct rtgui_object *object, rtgui_even
 	rtgui_dc_draw_circle(dc, x0, y0, 5);
 
 	default_color = RTGUI_DC_BC(dc);
-	RTGUI_DC_BC(dc) = red;
+	RTGUI_DC_BC(dc) = RED;
 	rect.x1 = x0 + 7;
 	rect.y1 = y0 - 1;
 	rect.x2 = x0 + 75;

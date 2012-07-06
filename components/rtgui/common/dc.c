@@ -116,12 +116,12 @@ void rtgui_dc_draw_horizontal_line(struct rtgui_dc* dc, int x1, int x2, int y)
 	/* save old color */
 	color = RTGUI_DC_FC(dc);
 
-	RTGUI_DC_FC(dc) = dark_grey;
+	RTGUI_DC_FC(dc) = DARK_GREY;
 	rtgui_dc_draw_hline(dc, x1, x2, y);
 
 	y ++;
 
-	RTGUI_DC_FC(dc) = high_light;
+	RTGUI_DC_FC(dc) = HIGH_LIGHT;
 	rtgui_dc_draw_hline(dc, x1, x2, y);
 
 	/* restore color */
@@ -137,12 +137,12 @@ void rtgui_dc_draw_vertical_line(struct rtgui_dc* dc, int x, int y1, int y2)
 	/* save old color */
 	color = RTGUI_DC_FC(dc);
 
-	RTGUI_DC_FC(dc) = dark_grey;
+	RTGUI_DC_FC(dc) = DARK_GREY;
 	rtgui_dc_draw_vline(dc, x, y1, y2);
 
 	x ++;
 
-	RTGUI_DC_FC(dc) = high_light;
+	RTGUI_DC_FC(dc) = HIGH_LIGHT;
 	rtgui_dc_draw_vline(dc, x, y1, y2);
 
 	/* restore color */
@@ -332,34 +332,34 @@ void rtgui_dc_draw_border(struct rtgui_dc* dc, rtgui_rect_t* rect, int flag)
 	switch (flag)
 	{
 	case RTGUI_BORDER_RAISE:
-		rtgui_dc_draw_shaded_rect(dc, &r, high_light, black);
+		rtgui_dc_draw_shaded_rect(dc, &r, HIGH_LIGHT, BLACK);
 		rtgui_rect_inflate(&r, -1);
-		rtgui_dc_draw_shaded_rect(dc, &r, light_grey, dark_grey);
+		rtgui_dc_draw_shaded_rect(dc, &r, LIGHT_GREY, DARK_GREY);
 		break;
 
 	case RTGUI_BORDER_SUNKEN:
-		rtgui_dc_draw_shaded_rect(dc, &r, dark_grey, high_light);
+		rtgui_dc_draw_shaded_rect(dc, &r, DARK_GREY, HIGH_LIGHT);
 		rtgui_rect_inflate(&r, -1);
-		rtgui_dc_draw_shaded_rect(dc, &r, black, light_grey);
+		rtgui_dc_draw_shaded_rect(dc, &r, BLACK, LIGHT_GREY);
 		break;
 
 	case RTGUI_BORDER_BOX:
-		rtgui_dc_draw_shaded_rect(dc, &r, dark_grey, high_light);
+		rtgui_dc_draw_shaded_rect(dc, &r, DARK_GREY, HIGH_LIGHT);
 		rtgui_rect_inflate(&r, -1);
-		rtgui_dc_draw_shaded_rect(dc, &r, high_light, dark_grey);
+		rtgui_dc_draw_shaded_rect(dc, &r, HIGH_LIGHT, DARK_GREY);
 		break;
 
 	case RTGUI_BORDER_STATIC:
-		rtgui_dc_draw_shaded_rect(dc, &r, dark_grey, high_light);
+		rtgui_dc_draw_shaded_rect(dc, &r, DARK_GREY, HIGH_LIGHT);
 		break;
 
 	case RTGUI_BORDER_EXTRA:
-		RTGUI_DC_FC(dc) = light_grey;
+		RTGUI_DC_FC(dc) = LIGHT_GREY;
 		rtgui_dc_draw_rect(dc, &r);
 		break;
 
 	case RTGUI_BORDER_SIMPLE:
-		RTGUI_DC_FC(dc) = black;
+		RTGUI_DC_FC(dc) = BLACK;
 		rtgui_dc_draw_rect(dc, &r);
 		break;
 

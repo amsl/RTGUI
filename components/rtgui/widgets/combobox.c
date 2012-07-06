@@ -101,7 +101,7 @@ static void rtgui_combobox_ondraw(struct rtgui_combobox* box)
 
 	/* get widget rect */
 	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = white;
+	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
 
 	/* fill widget rect with background color */
 	rtgui_dc_fill_rect(dc, &rect);
