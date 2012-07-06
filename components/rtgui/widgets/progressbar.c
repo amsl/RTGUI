@@ -8,15 +8,15 @@ static void _rtgui_progressbar_constructor(rtgui_progressbar_t *bar)
 {
 	rtgui_rect_t rect = {0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT};
 
-	rtgui_object_set_event_handler(RTGUI_OBJECT(bar), rtgui_progressbar_event_handler);
-	rtgui_widget_set_rect(RTGUI_WIDGET(bar), &rect);
+	rtgui_object_set_event_handler(bar, rtgui_progressbar_event_handler);
+	rtgui_widget_set_rect(bar, &rect);
 
 	bar->orient = RTGUI_HORIZONTAL;
 	bar->range = RTGUI_PROGRESSBAR_DEFAULT_RANGE;
 	bar->position = 0;
 
 	/* set gc */
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(bar)) = RTGUI_ALIGN_CENTER_HORIZONTAL | RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_TEXTALIGN(bar) = RTGUI_ALIGN_CENTER_HORIZONTAL | RTGUI_ALIGN_CENTER_VERTICAL;
 }
 
 DEFINE_CLASS_TYPE(progressbar, "progressbar", 
@@ -25,8 +25,7 @@ DEFINE_CLASS_TYPE(progressbar, "progressbar",
 	RT_NULL,
 	sizeof(struct rtgui_progressbar));
 
-rt_bool_t rtgui_progressbar_event_handler(struct rtgui_object* object,
-                                            struct rtgui_event* event)
+rt_bool_t rtgui_progressbar_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_progressbar* bar;
 	RTGUI_WIDGET_EVENT_HANDLER_PREPARE
@@ -52,7 +51,7 @@ struct rtgui_progressbar* rtgui_progressbar_create(int orientation, int range,
     if (bar != RT_NULL)
     {
 		if (r != RT_NULL)
-			rtgui_widget_set_rect(RTGUI_WIDGET(bar), r);
+			rtgui_widget_set_rect(bar, r);
 
 		bar->orient = orientation;
         bar->range = range;
@@ -63,14 +62,14 @@ struct rtgui_progressbar* rtgui_progressbar_create(int orientation, int range,
 
 void rtgui_progressbar_destroy(struct rtgui_progressbar* bar)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(bar));
+	rtgui_widget_destroy(bar);
 }
 
 void rtgui_progressbar_set_value(struct rtgui_progressbar *bar, int value)
 {
     RT_ASSERT(bar != RT_NULL);
 
-	if (!RTGUI_WIDGET_IS_ENABLE(RTGUI_WIDGET(bar))) return;
+	if (!RTGUI_WIDGET_IS_ENABLE(bar)) return;
 
     bar->position = value;
 

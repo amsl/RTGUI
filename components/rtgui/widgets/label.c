@@ -19,7 +19,7 @@
 static void _rtgui_label_constructor(rtgui_label_t *label)
 {
 	/* init widget and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(label), rtgui_label_event_handler);
+	rtgui_object_set_event_handler(label, rtgui_label_event_handler);
 
 	/* set field */
 	label->text = RT_NULL;
@@ -38,7 +38,7 @@ DEFINE_CLASS_TYPE(label, "label",
 	_rtgui_label_destructor,
 	sizeof(struct rtgui_label));
 
-rt_bool_t rtgui_label_event_handler(struct rtgui_object *object, struct rtgui_event* event)
+rt_bool_t rtgui_label_event_handler(void *object, struct rtgui_event* event)
 {
 	struct rtgui_label *label;
 	RTGUI_WIDGET_EVENT_HANDLER_PREPARE
@@ -67,7 +67,7 @@ rtgui_label_t* rtgui_label_create(const char* text)
 		rtgui_font_get_metrics(rtgui_font_default(), text, &rect);
 		rect.x2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
 		rect.y2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
-		rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
+		rtgui_widget_set_rect(label, &rect);
 
 		/* set text */
 		label->text = (char*)rt_strdup((const char*)text);
@@ -78,7 +78,7 @@ rtgui_label_t* rtgui_label_create(const char* text)
 
 void rtgui_label_destroy(rtgui_label_t* label)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(label));
+	rtgui_widget_destroy(label);
 }
 
 char* rtgui_label_get_text(rtgui_label_t* label)

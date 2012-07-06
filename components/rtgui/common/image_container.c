@@ -365,7 +365,7 @@ void rtgui_system_image_container_init(rt_bool_t load)
 	load_image = load;
 }
 
-rtgui_image_item_t* rtgui_image_container_get(const char* filename)
+rtgui_image_item_t* rtgui_image_container_get(char* filename)
 {
 	struct rtgui_image_item* item;
 	

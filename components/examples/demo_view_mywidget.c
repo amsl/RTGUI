@@ -25,7 +25,7 @@ rtgui_container_t *demo_view_mywidget(void)
 	/* 创建一个自定义控件 */
 	mywidget = rtgui_mywidget_create(&rect);
 	/* container是一个container控件，调用add_child方法添加这个自控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(mywidget));
+	rtgui_container_add_child(container, mywidget);
 
 	/* 获得视图的位置信息 */
 	demo_view_get_rect(container, &rect);
@@ -36,7 +36,7 @@ rtgui_container_t *demo_view_mywidget(void)
 	/* 创建一个自定义控件 */
 	mywidget = rtgui_mywidget_create(&rect);
 	/* container是一个container控件，调用add_child方法添加这个自控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(mywidget));
+	rtgui_container_add_child(container, mywidget);
 
 	return container;
 }

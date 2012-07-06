@@ -24,7 +24,7 @@ void frame_rate_onidle(struct rtgui_object *object, rtgui_event_t *event)
 	}
 	else frame_rate ++;
 	
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(container));
+	dc = rtgui_dc_begin_drawing(container);
 	if (dc == RT_NULL)
 		return;
 
@@ -86,7 +86,7 @@ void frame_rate_onidle(struct rtgui_object *object, rtgui_event_t *event)
 	rtgui_dc_end_drawing(dc);
 }
 
-void frame_rate_draw_default(struct rtgui_object *object, rtgui_event_t* event)
+void frame_rate_draw_default(void *object, rtgui_event_t* event)
 {
 	struct rtgui_widget *widget = RTGUI_WIDGET(object);
 	struct rtgui_dc* dc;
@@ -114,7 +114,7 @@ void frame_rate_draw_default(struct rtgui_object *object, rtgui_event_t* event)
 	rtgui_dc_end_drawing(dc);
 }
 
-rt_bool_t frame_rate_event_handler(struct rtgui_object *object, rtgui_event_t *event)
+rt_bool_t frame_rate_event_handler(void *object, rtgui_event_t *event)
 {
 	if (event->type == RTGUI_EVENT_PAINT)
 	{
@@ -161,7 +161,7 @@ rtgui_container_t *demo_view_frame_rate(void)
 {
 	srand(100);
 	container = demo_view("²âÊÔË¢ĞÂÂÊ");
-	rtgui_object_set_event_handler(RTGUI_OBJECT(container), frame_rate_event_handler);
+	rtgui_object_set_event_handler(container, frame_rate_event_handler);
 
 	return container;
 }

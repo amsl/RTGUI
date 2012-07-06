@@ -38,7 +38,7 @@ struct rtgui_toplevel
 };
 typedef struct rtgui_toplevel rtgui_toplevel_t;
 
-rt_bool_t rtgui_toplevel_event_handler(struct rtgui_object* widget, struct rtgui_event* event);
+rt_bool_t rtgui_toplevel_event_handler(void* object, struct rtgui_event* event);
 void rtgui_toplevel_update_clip(rtgui_toplevel_t* top);
 
 #endif

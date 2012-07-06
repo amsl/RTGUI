@@ -16,7 +16,7 @@ void _onidle(struct rtgui_object *object, rtgui_event_t *event)
 	struct rtgui_dc *dc;
 
 	/* 获得控件所属的DC */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(container));
+	dc = rtgui_dc_begin_drawing(container);
 	if (dc == RT_NULL)
 		return;
 
@@ -27,7 +27,7 @@ void _onidle(struct rtgui_object *object, rtgui_event_t *event)
 	draw_rect.y2 = RAND(draw_rect.y1, rect.y2);
 
 	color = RTGUI_RGB(rand() % 255, rand() % 255, rand() % 255);
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(container)) = color;
+	RTGUI_WIDGET_BACKGROUND(container) = color;
 
 	rtgui_dc_fill_rect(dc, &draw_rect);
 
@@ -63,7 +63,7 @@ void _draw_default(struct rtgui_object *object, rtgui_event_t* event)
 	rtgui_dc_end_drawing(dc);
 }
 
-rt_bool_t benchmark_event_handler(struct rtgui_object *object, rtgui_event_t *event)
+rt_bool_t benchmark_event_handler(void *object, rtgui_event_t *event)
 {
 	if (event->type == RTGUI_EVENT_PAINT)
 	{
@@ -104,7 +104,7 @@ rtgui_container_t* demo_view_benchmark(void)
 {
 	srand(100);
 	container = demo_view("绘图测试");
-	rtgui_object_set_event_handler(RTGUI_OBJECT(container), benchmark_event_handler);
+	rtgui_object_set_event_handler(container, benchmark_event_handler);
 
 	return container;
 }

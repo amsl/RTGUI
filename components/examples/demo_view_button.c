@@ -27,10 +27,10 @@ rtgui_container_t* demo_view_button(void)
 	/* 创建一个button控件 */
 	button = rtgui_button_create("Red");
 	/* 设置label控件的前景色为红色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = RED;
+	RTGUI_WIDGET_FOREGROUND(button) = RED;
 	/* 设置button的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_widget_set_rect(button, &rect);
+	rtgui_container_add_child(container, button);
 
 	/* 获得视图的位置信息 */
 	demo_view_get_rect(container, &rect);
@@ -41,10 +41,10 @@ rtgui_container_t* demo_view_button(void)
 	/* 创建一个button控件 */
 	button = rtgui_button_create("Blue");
 	/* 设置label控件的前景色为蓝色 */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = BLUE;
+	RTGUI_WIDGET_FOREGROUND(button) = BLUE;
 	/* 设置button的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_widget_set_rect(button, &rect);
+	rtgui_container_add_child(container, button);
 
 	/* 获得视图的位置信息 */
 	demo_view_get_rect(container, &rect);
@@ -56,10 +56,10 @@ rtgui_container_t* demo_view_button(void)
 	button = rtgui_button_create("12 font");
 	/* 设置字体为12点阵的asc字体 */
 	font = rtgui_font_refer("asc", 12);
-	RTGUI_WIDGET_FONT(RTGUI_WIDGET(button)) = font;
+	RTGUI_WIDGET_FONT(button) = font;
 	/* 设置button的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_widget_set_rect(button, &rect);
+	rtgui_container_add_child(container, button);
 
 	/* 获得视图的位置信息 */
 	demo_view_get_rect(container, &rect);
@@ -71,10 +71,10 @@ rtgui_container_t* demo_view_button(void)
 	button = rtgui_button_create("16 font");
 	/* 设置字体为16点阵的asc字体 */
 	font = rtgui_font_refer("asc", 16);
-	RTGUI_WIDGET_FONT(RTGUI_WIDGET(button)) = font;
+	RTGUI_WIDGET_FONT(button) = font;
 	/* 设置button的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_widget_set_rect(button, &rect);
+	rtgui_container_add_child(container, button);
 
 	return container;
 }

@@ -15,7 +15,7 @@
 /*
  * container的事件处理函数
  */
-rt_bool_t instrument_panel_event_handler(struct rtgui_object *object, rtgui_event_t *event)
+rt_bool_t instrument_panel_event_handler(void *object, rtgui_event_t *event)
 {
 	struct rtgui_widget *widget = RTGUI_WIDGET(object);
 	char ac[4];
@@ -143,7 +143,7 @@ rtgui_container_t *demo_view_instrument_panel(void)
 	container = demo_view("instrument panel Demo");
 	if (container != RT_NULL)
 		/* 设置成自己的事件处理函数 */
-		rtgui_object_set_event_handler(RTGUI_OBJECT(container), instrument_panel_event_handler);
+		rtgui_object_set_event_handler(container, instrument_panel_event_handler);
 
 	return container;
 }

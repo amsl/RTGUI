@@ -20,7 +20,7 @@ static void _rtgui_button_constructor(rtgui_button_t *button)
 {
 	/* init widget and set event handler */
 	RTGUI_WIDGET(button)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
-	rtgui_object_set_event_handler(RTGUI_OBJECT(button), rtgui_button_event_handler);
+	rtgui_object_set_event_handler(button, rtgui_button_event_handler);
 
 	/* un-press button */
 	button->flag = 0;
@@ -31,9 +31,9 @@ static void _rtgui_button_constructor(rtgui_button_t *button)
 	button->on_button = RT_NULL;
 
 	/* set gc */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(button)) = default_foreground;
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(button)) = RTGUI_RGB(212, 208, 200);
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(button)) = RTGUI_ALIGN_CENTER_HORIZONTAL | RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_FOREGROUND(button) = default_foreground;
+	RTGUI_WIDGET_BACKGROUND(button) = RTGUI_RGB(212, 208, 200);
+	RTGUI_WIDGET_TEXTALIGN(button) = RTGUI_ALIGN_CENTER_HORIZONTAL | RTGUI_ALIGN_CENTER_VERTICAL;
 }
 
 static void _rtgui_button_destructor(rtgui_button_t *button)
@@ -57,9 +57,9 @@ DEFINE_CLASS_TYPE(button, "button",
 	_rtgui_button_destructor,
 	sizeof(struct rtgui_button));
 
-rt_bool_t rtgui_button_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_button_event_handler(void* object, struct rtgui_event* event)
 {
-	struct rtgui_widget *widget;
+	struct rtgui_widget *widget = RTGUI_WIDGET(object);
 	struct rtgui_button *btn;
 
 	RT_ASSERT(widget != RT_NULL);
@@ -95,7 +95,7 @@ rt_bool_t rtgui_button_event_handler(struct rtgui_object* object, struct rtgui_e
 				if ((btn->flag & RTGUI_BUTTON_FLAG_PRESS) && (btn->on_button != RT_NULL))
 				{
 					/* call on button handler */
-					btn->on_button(RTGUI_OBJECT(widget), event);
+					btn->on_button(btn, event);
 				}
 			}
 		}
@@ -137,14 +137,14 @@ rt_bool_t rtgui_button_event_handler(struct rtgui_object* object, struct rtgui_e
 					if (btn->on_button != RT_NULL)
 					{
 						/* call on button handler */
-						btn->on_button(RTGUI_OBJECT(widget), event);
+						btn->on_button(btn, event);
 					}
 
 #ifndef RTGUI_USING_SMALL_SIZE
 					/* invokes call back */
 					if (widget->on_mouseclick != RT_NULL &&
 						emouse->button & RTGUI_MOUSE_BUTTON_UP)
-						return widget->on_mouseclick(RTGUI_OBJECT(widget), event);
+						return widget->on_mouseclick(widget, event);
 #endif
 				}
 			}
@@ -175,13 +175,13 @@ rt_bool_t rtgui_button_event_handler(struct rtgui_object* object, struct rtgui_e
 					/* invokes call back */
 					if (widget->on_mouseclick != RT_NULL &&
 						emouse->button & RTGUI_MOUSE_BUTTON_UP)
-						return widget->on_mouseclick(RTGUI_OBJECT(widget), event);
+						return widget->on_mouseclick(widget, event);
 #endif
 
 					if (!(btn->flag & RTGUI_BUTTON_FLAG_PRESS) && (btn->on_button != RT_NULL))
 					{
 						/* call on button handler */
-						btn->on_button(RTGUI_OBJECT(widget), event);
+						btn->on_button(btn, event);
 					}
 				}
 
@@ -207,7 +207,7 @@ rtgui_button_t* rtgui_button_create(const char* text)
 		rtgui_font_get_metrics(rtgui_font_default(), text, &rect);
 		rect.x2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
 		rect.y2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
-		rtgui_widget_set_rect(RTGUI_WIDGET(btn), &rect);
+		rtgui_widget_set_rect(btn, &rect);
 		rtgui_label_set_text(RTGUI_LABEL(btn), text);
     }
 
@@ -226,7 +226,7 @@ rtgui_button_t* rtgui_pushbutton_create(const char* text)
 
 void rtgui_button_destroy(rtgui_button_t* btn)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(btn));
+	rtgui_widget_destroy(btn);
 }
 
 void rtgui_button_set_pressed_image(rtgui_button_t* btn, rtgui_image_t* image)

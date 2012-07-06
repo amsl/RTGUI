@@ -33,31 +33,31 @@ extern "C" {
 #define RTGUI_WIDGET_FLAG_FOCUSABLE		0x0010
 #define RTGUI_WIDGET_FLAG_DC_VISIBLE	0x0100
 
-#define RTGUI_WIDGET_UNHIDE(w)			(w)->flag &= ~RTGUI_WIDGET_FLAG_HIDE
-#define RTGUI_WIDGET_HIDE(w)			(w)->flag |= RTGUI_WIDGET_FLAG_HIDE
-#define RTGUI_WIDGET_IS_HIDE(w)			((w)->flag & RTGUI_WIDGET_FLAG_HIDE)
-
-#define RTGUI_WIDGET_ENABLE(w)			(w)->flag &= ~RTGUI_WIDGET_FLAG_DISABLE
-#define RTGUI_WIDGET_DISABLE(w)			(w)->flag |= RTGUI_WIDGET_FLAG_DISABLE
-#define RTGUI_WIDGET_IS_ENABLE(w)		!(w->flag & RTGUI_WIDGET_FLAG_DISABLE)
-
-#define RTGUI_WIDGET_UNFOCUS(w)			(w)->flag &= ~RTGUI_WIDGET_FLAG_FOCUS
-#define RTGUI_WIDGET_FOCUS(w)			(w)->flag |= RTGUI_WIDGET_FLAG_FOCUS
-#define RTGUI_WIDGET_IS_FOCUSED(w)		((w)->flag & RTGUI_WIDGET_FLAG_FOCUS)
-
-#define RTGUI_WIDGET_IS_FOCUSABLE(w) 	((w)->flag & RTGUI_WIDGET_FLAG_FOCUSABLE)
-
-#define RTGUI_WIDGET_IS_DC_VISIBLE(w)	((w)->flag & RTGUI_WIDGET_FLAG_DC_VISIBLE)
-#define RTGUI_WIDGET_DC_SET_VISIBLE(w)	(w)->flag |= RTGUI_WIDGET_FLAG_DC_VISIBLE 
-#define RTGUI_WIDGET_DC_SET_UNVISIBLE(w) (w)->flag &= ~RTGUI_WIDGET_FLAG_DC_VISIBLE
-#define RTGUI_WIDGET_DC(w)				((struct rtgui_dc*)&((w)->dc_type))
-
 /* get rtgui widget object */
-#define RTGUI_WIDGET_FOREGROUND(w) 		((w)->gc.foreground)
-#define RTGUI_WIDGET_BACKGROUND(w)		((w)->gc.background)
-#define RTGUI_WIDGET_TEXTALIGN(w)		((w)->gc.textalign)
-#define RTGUI_WIDGET_FONT(w)			((w)->gc.font)
-#define RTGUI_WIDGET_FLAG(w)			((w)->flag)
+#define RTGUI_WIDGET_FOREGROUND(w) 		((RTGUI_WIDGET(w))->gc.foreground)
+#define RTGUI_WIDGET_BACKGROUND(w)		((RTGUI_WIDGET(w))->gc.background)
+#define RTGUI_WIDGET_TEXTALIGN(w)		((RTGUI_WIDGET(w))->gc.textalign)
+#define RTGUI_WIDGET_FONT(w)			((RTGUI_WIDGET(w))->gc.font)
+#define RTGUI_WIDGET_FLAG(w)			((RTGUI_WIDGET(w))->flag)
+
+#define RTGUI_WIDGET_UNHIDE(w)			RTGUI_WIDGET_FLAG(w) &= ~RTGUI_WIDGET_FLAG_HIDE
+#define RTGUI_WIDGET_HIDE(w)			RTGUI_WIDGET_FLAG(w) |= RTGUI_WIDGET_FLAG_HIDE
+#define RTGUI_WIDGET_IS_HIDE(w)			(RTGUI_WIDGET_FLAG(w) & RTGUI_WIDGET_FLAG_HIDE)
+
+#define RTGUI_WIDGET_ENABLE(w)			RTGUI_WIDGET_FLAG(w) &= ~RTGUI_WIDGET_FLAG_DISABLE
+#define RTGUI_WIDGET_DISABLE(w)			RTGUI_WIDGET_FLAG(w) |= RTGUI_WIDGET_FLAG_DISABLE
+#define RTGUI_WIDGET_IS_ENABLE(w)		!(RTGUI_WIDGET_FLAG(w) & RTGUI_WIDGET_FLAG_DISABLE)
+
+#define RTGUI_WIDGET_UNFOCUS(w)			RTGUI_WIDGET_FLAG(w) &= ~RTGUI_WIDGET_FLAG_FOCUS
+#define RTGUI_WIDGET_FOCUS(w)			RTGUI_WIDGET_FLAG(w) |= RTGUI_WIDGET_FLAG_FOCUS
+#define RTGUI_WIDGET_IS_FOCUSED(w)		(RTGUI_WIDGET_FLAG(w) & RTGUI_WIDGET_FLAG_FOCUS)
+
+#define RTGUI_WIDGET_IS_FOCUSABLE(w) 	(RTGUI_WIDGET_FLAG(w) & RTGUI_WIDGET_FLAG_FOCUSABLE)
+
+#define RTGUI_WIDGET_IS_DC_VISIBLE(w)	(RTGUI_WIDGET_FLAG(w) & RTGUI_WIDGET_FLAG_DC_VISIBLE)
+#define RTGUI_WIDGET_DC_SET_VISIBLE(w)	RTGUI_WIDGET_FLAG(w) |= RTGUI_WIDGET_FLAG_DC_VISIBLE 
+#define RTGUI_WIDGET_DC_SET_UNVISIBLE(w) RTGUI_WIDGET_FLAG(w) &= ~RTGUI_WIDGET_FLAG_DC_VISIBLE
+#define RTGUI_WIDGET_DC(w)				((struct rtgui_dc*)&(RTGUI_WIDGET(w)->dc_type))
 
 DECLARE_CLASS_TYPE(widget);
 
@@ -109,24 +109,24 @@ struct rtgui_widget
 	rtgui_region_t clip;
 
 	/* call back */
-	rt_bool_t (*on_focus_in)	(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_focus_out)	(struct rtgui_object* widget, struct rtgui_event* event);
+	rt_bool_t (*on_focus_in)	(void* wdt, struct rtgui_event* event);
+	rt_bool_t (*on_focus_out)	(void* wdt, struct rtgui_event* event);
 	/* will be called just before the widget is shown. You can setup your
 	 * widget in this call back. It's return value is ignored. The @param event
 	 * will always be RT_NULL
 	 */
-	rt_bool_t (*on_show)        (struct rtgui_object* widget, struct rtgui_event* event);
+	rt_bool_t (*on_show)        (void* wdt, struct rtgui_event* event);
 	/* will be called just before the widget is hiden. You can setup your
 	 * widget in this call back. It's return value is ignored. The @param event
 	 * will always be RT_NULL
 	 */
-	rt_bool_t (*on_hide)        (struct rtgui_object* widget, struct rtgui_event* event);
+	rt_bool_t (*on_hide)        (void* wdt, struct rtgui_event* event);
 #ifndef RTGUI_USING_SMALL_SIZE
-	rt_bool_t (*on_draw)		(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_mouseclick)	(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_key)			(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_size)		(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_command)		(struct rtgui_object* widget, struct rtgui_event* event);
+	rt_bool_t (*on_draw)		(void* wdt, struct rtgui_event* event);
+	rt_bool_t (*on_mouseclick)	(void* wdt, struct rtgui_event* event);
+	rt_bool_t (*on_key)			(void* wdt, struct rtgui_event* event);
+	rt_bool_t (*on_size)		(void* wdt, struct rtgui_event* event);
+	rt_bool_t (*on_command)		(void* wdt, struct rtgui_event* event);
 #endif
 
 	/* user private data */
@@ -135,74 +135,74 @@ struct rtgui_widget
 typedef struct rtgui_widget rtgui_widget_t;
 
 rtgui_widget_t *rtgui_widget_create(rtgui_type_t *widget_type);
-void rtgui_widget_destroy(rtgui_widget_t* widget);
+void rtgui_widget_destroy(void* wdt);
 
-rt_bool_t rtgui_widget_event_handler(struct rtgui_object* object, rtgui_event_t* event);
+rt_bool_t rtgui_widget_event_handler(void* object, rtgui_event_t* event);
 
 /* focus and unfocus */
-void rtgui_widget_focus(rtgui_widget_t * widget);
-void rtgui_widget_unfocus(rtgui_widget_t *widget);
+void rtgui_widget_focus(void * wdt);
+void rtgui_widget_unfocus(void *wdt);
 
 /* event handler for each command */
-void rtgui_widget_set_onfocus(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_onunfocus(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_onshow(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_onhide(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onfocus(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onunfocus(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onshow(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onhide(void* wdt, rtgui_event_handler_ptr handler);
 #ifndef RTGUI_USING_SMALL_SIZE
-void rtgui_widget_set_ondraw(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_onmouseclick(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_onkey(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_onsize(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
-void rtgui_widget_set_oncommand(rtgui_widget_t* widget, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_ondraw(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onmouseclick(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onkey(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_onsize(void* wdt, rtgui_event_handler_ptr handler);
+void rtgui_widget_set_oncommand(void* wdt, rtgui_event_handler_ptr handler);
 #endif
 
 /* get and set rect of widget */
-void rtgui_widget_get_rect(rtgui_widget_t* widget, rtgui_rect_t *rect);
-void rtgui_widget_set_rect(rtgui_widget_t* widget, const rtgui_rect_t* rect);
-void rtgui_widget_set_rectangle(rtgui_widget_t* widget, int x, int y, int width, int height);
-void rtgui_widget_get_extent(rtgui_widget_t* widget, rtgui_rect_t *rect);
+void rtgui_widget_get_rect(void* wdt, rtgui_rect_t *rect);
+void rtgui_widget_set_rect(void* wdt, const rtgui_rect_t* rect);
+void rtgui_widget_set_rectangle(void* wdt, int x, int y, int width, int height);
+void rtgui_widget_get_extent(void* wdt, rtgui_rect_t *rect);
 
 #ifndef RTGUI_USING_SMALL_SIZE
-void rtgui_widget_set_miniwidth(rtgui_widget_t* widget, int width);
-void rtgui_widget_set_miniheight(rtgui_widget_t* widget, int height);
+void rtgui_widget_set_miniwidth(void* wdt, int width);
+void rtgui_widget_set_miniheight(void* wdt, int height);
 #endif
 
-void rtgui_widget_set_parent(rtgui_widget_t* widget, rtgui_widget_t* parent);
+void rtgui_widget_set_parent(void* wdt, void* pat);
 
 /* get the physical position of a logic point on widget */
-void rtgui_widget_point_to_device(rtgui_widget_t * widget, rtgui_point_t * point);
+void rtgui_widget_point_to_device(void* wdt, rtgui_point_t * point);
 /* get the physical position of a logic rect on widget */
-void rtgui_widget_rect_to_device(rtgui_widget_t * widget, rtgui_rect_t * rect);
+void rtgui_widget_rect_to_device(void* wdt, rtgui_rect_t * rect);
 
 /* get the logic position of a physical point on widget */
-void rtgui_widget_point_to_logic(rtgui_widget_t* widget, rtgui_point_t * point);
+void rtgui_widget_point_to_logic(void* wdt, rtgui_point_t * point);
 /* get the logic position of a physical rect on widget */
-void rtgui_widget_rect_to_logic(rtgui_widget_t* widget, rtgui_rect_t* rect);
+void rtgui_widget_rect_to_logic(void* wdt, rtgui_rect_t* rect);
 
 /* move widget and its children to a logic point */
-void rtgui_widget_move_to_logic(rtgui_widget_t* widget, int dx, int dy);
+void rtgui_widget_move_to_logic(void* wdt, int dx, int dy);
 
 /* update the clip info of widget */
-void rtgui_widget_update_clip(rtgui_widget_t* widget);
+void rtgui_widget_update_clip(void* wdt);
 
 /* get the toplevel widget of widget */
-struct rtgui_win* rtgui_widget_get_toplevel(rtgui_widget_t* widget);
+struct rtgui_win* rtgui_widget_get_toplevel(void* wdt);
 
-void rtgui_widget_show(rtgui_widget_t* widget);
-void rtgui_widget_hide(rtgui_widget_t* widget);
-void rtgui_widget_update(rtgui_widget_t* widget);
+void rtgui_widget_show(void* wdt);
+void rtgui_widget_hide(void* wdt);
+void rtgui_widget_update(void* wdt);
 
 /* get parent color */
-rtgui_color_t rtgui_widget_get_parent_foreground(rtgui_widget_t* widget);
-rtgui_color_t rtgui_widget_get_parent_background(rtgui_widget_t* widget);
+rtgui_color_t rtgui_widget_get_parent_foreground(void* wdt);
+rtgui_color_t rtgui_widget_get_parent_background(void* wdt);
 
 /* get the next sibling of widget */
-rtgui_widget_t* rtgui_widget_get_next_sibling(rtgui_widget_t* widget);
+rtgui_widget_t* rtgui_widget_get_next_sibling(void* wdt);
 /* get the prev sibling of widget */
-rtgui_widget_t* rtgui_widget_get_prev_sibling(rtgui_widget_t* widget);
+rtgui_widget_t* rtgui_widget_get_prev_sibling(void* wdt);
 
 /* dump widget information */
-void rtgui_widget_dump(rtgui_widget_t* widget);
+void rtgui_widget_dump(void* wdt);
 
 #ifdef __cplusplus
 }

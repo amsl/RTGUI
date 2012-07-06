@@ -27,8 +27,8 @@ rtgui_container_t* demo_view_textbox(void)
 	/* 创建一个label控件 */
 	label = rtgui_label_create("名字: ");
 	/* 设置label的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	rtgui_widget_set_rect(label, &rect);
+	rtgui_container_add_child(container, label);
 
 	/* 让textbox_rect赋值到rect，以计算textbox控件的位置 */
 	textbox_rect = rect;
@@ -37,9 +37,9 @@ rtgui_container_t* demo_view_textbox(void)
 	/* 创建一个textbox控件 */
 	text = rtgui_textbox_create("bernard",RTGUI_TEXTBOX_SINGLE);
 	/* 设置textbox控件的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(text), &textbox_rect);
+	rtgui_widget_set_rect(text, &textbox_rect);
 	/* 添加textbox控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(text));
+	rtgui_container_add_child(container, text);
 
 	/* 计算下一个label控件的位置 */
 	rect.y1 += 23;
@@ -47,27 +47,27 @@ rtgui_container_t* demo_view_textbox(void)
 	/* 创建一个label控件 */
 	label = rtgui_label_create("邮件: ");
 	/* 设置label的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
+	rtgui_widget_set_rect(label, &rect);
 	/* 添加label控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	rtgui_container_add_child(container, label);
 	textbox_rect = rect;
 	textbox_rect.x1 = textbox_rect.x2 + 5;
 	textbox_rect.x2 = textbox_rect.x1 + 160;
 	/* 创建一个textbox控件 */
 	text = rtgui_textbox_create("bernard.xiong@gmail.com",RTGUI_TEXTBOX_SINGLE);
 	/* 设置textbox控件的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(text), &textbox_rect);
+	rtgui_widget_set_rect(text, &textbox_rect);
 	/* 添加textbox控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(text));
+	rtgui_container_add_child(container, text);
 
 	rect.y1 += 23;
 	rect.y2 = rect.y1 + 20;
 	/* 创建一个label控件 */
 	label = rtgui_label_create("密码: ");
 	/* 设置label的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
+	rtgui_widget_set_rect(label, &rect);
 	/* 添加label控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	rtgui_container_add_child(container, label);
 	textbox_rect = rect;
 	textbox_rect.x1 = textbox_rect.x2 + 5;
 	textbox_rect.x2 = textbox_rect.x1 + 160;
@@ -76,27 +76,27 @@ rtgui_container_t* demo_view_textbox(void)
 	/* 设置textbox显示文本为掩码形式(即显示为*号，适合于显示密码的情况) */
 	text->flag |= RTGUI_TEXTBOX_MASK;
 	/* 设置textbox控件的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(text), &textbox_rect);
+	rtgui_widget_set_rect(text, &textbox_rect);
 	/* 添加textbox控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(text));
+	rtgui_container_add_child(container, text);
 
 	rect.y1 += 23;
 	rect.y2 = rect.y1 + 20;
 	/* 创建一个label控件 */
 	label = rtgui_label_create("主页: ");
 	/* 设置label的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
+	rtgui_widget_set_rect(label, &rect);
 	/* 添加label控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	rtgui_container_add_child(container, label);
 	textbox_rect = rect;
 	textbox_rect.x1 = textbox_rect.x2 + 5;
 	textbox_rect.x2 = textbox_rect.x1 + 160;
 	/* 创建一个textbox控件 */
 	text = rtgui_textbox_create("http://www.rt-thread.org",RTGUI_TEXTBOX_SINGLE);
 	/* 设置textbox控件的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(text), &textbox_rect);
+	rtgui_widget_set_rect(text, &textbox_rect);
 	/* 添加textbox控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(text));
+	rtgui_container_add_child(container, text);
 
 	return container;
 }

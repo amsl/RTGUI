@@ -19,7 +19,7 @@ static void _rtgui_iconbox_constructor(rtgui_iconbox_t *iconbox)
 {
 	/* init widget and set event handler */
 	RTGUI_WIDGET(iconbox)->flag |= RTGUI_WIDGET_FLAG_TRANSPARENT;
-	rtgui_object_set_event_handler(RTGUI_OBJECT(iconbox), rtgui_iconbox_event_handler);
+	rtgui_object_set_event_handler(iconbox, rtgui_iconbox_event_handler);
 
 	/* set proper of control */
 	iconbox->image = RT_NULL;
@@ -46,7 +46,7 @@ DEFINE_CLASS_TYPE(iconbox, "iconbox",
 	_rtgui_iconbox_destructor,
 	sizeof(struct rtgui_iconbox));
 
-rt_bool_t rtgui_iconbox_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_iconbox_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_iconbox* iconbox;
 	RTGUI_WIDGET_EVENT_HANDLER_PREPARE
@@ -58,7 +58,7 @@ rt_bool_t rtgui_iconbox_event_handler(struct rtgui_object* object, struct rtgui_
 	case RTGUI_EVENT_PAINT:
 #ifndef RTGUI_USING_SMALL_SIZE
 		if (widget->on_draw != RT_NULL)
-			widget->on_draw(RTGUI_OBJECT(widget), event);
+			widget->on_draw(widget, event);
 		else
 #endif
 		{
@@ -107,7 +107,7 @@ struct rtgui_iconbox* rtgui_iconbox_create(struct rtgui_image* image,
 		}
 
 		/* set widget rect */
-		rtgui_widget_set_rect(RTGUI_WIDGET(iconbox), &rect);
+		rtgui_widget_set_rect(iconbox, &rect);
 
 		/* set image and text position */
 		iconbox->image = image;
@@ -120,7 +120,7 @@ struct rtgui_iconbox* rtgui_iconbox_create(struct rtgui_image* image,
 
 void rtgui_iconbox_destroy(struct rtgui_iconbox* iconbox)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(iconbox));
+	rtgui_widget_destroy(iconbox);
 }
 
 void rtgui_iconbox_set_text_position(struct rtgui_iconbox* iconbox, int position)
@@ -161,7 +161,7 @@ void rtgui_iconbox_set_text_position(struct rtgui_iconbox* iconbox, int position
 	}
 
 #ifndef RTGUI_USING_SMALL_SIZE
-	rtgui_widget_set_miniwidth(RTGUI_WIDGET(iconbox), rect.x2);
-	rtgui_widget_set_miniheight(RTGUI_WIDGET(iconbox), rect.y2);
+	rtgui_widget_set_miniwidth(iconbox, rect.x2);
+	rtgui_widget_set_miniheight(iconbox, rect.y2);
 #endif
 }

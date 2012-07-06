@@ -99,7 +99,6 @@ rt_err_t rt_device_init_all()
 rt_device_t rt_device_find(const char* name)
 {
 	struct rt_device* device;
-	register rt_err_t result;
 	struct rt_list_node* node;
 
 	rt_list_foreach(node, &(_device_list), next)

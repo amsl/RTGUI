@@ -20,7 +20,7 @@ static void rtgui_listctrl_update_current(struct rtgui_listctrl* ctrl, rt_uint16
 static void _rtgui_listctrl_constructor(struct rtgui_listctrl *ctrl)
 {
 	/* set default widget rect and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(ctrl), rtgui_listctrl_event_handler);
+	rtgui_object_set_event_handler(ctrl, rtgui_listctrl_event_handler);
 
 	RTGUI_WIDGET(ctrl)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
 
@@ -30,8 +30,8 @@ static void _rtgui_listctrl_constructor(struct rtgui_listctrl *ctrl)
 	ctrl->on_item = 0;
 	ctrl->on_item_draw = RT_NULL;
 
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(ctrl)) = WHITE;
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(ctrl)) = RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_BACKGROUND(ctrl) = WHITE;
+	RTGUI_WIDGET_TEXTALIGN(ctrl) = RTGUI_ALIGN_CENTER_VERTICAL;
 }
 
 DEFINE_CLASS_TYPE(listctrl, "listctrl",
@@ -42,7 +42,7 @@ DEFINE_CLASS_TYPE(listctrl, "listctrl",
 
 static void _rtgui_listctrl_get_rect(struct rtgui_listctrl* ctrl, rtgui_rect_t* rect)
 {
-	rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), rect);
+	rtgui_widget_get_rect(ctrl, rect);
 	if (ctrl->items_count > rtgui_rect_height(*rect)/rtgui_theme_get_selected_height())
 	{
 		rect->x2 = rect->x2 - 8;
@@ -51,7 +51,7 @@ static void _rtgui_listctrl_get_rect(struct rtgui_listctrl* ctrl, rtgui_rect_t* 
 
 static void _rtgui_listctrl_get_scrollbar_rect(struct rtgui_listctrl* ctrl, rtgui_rect_t* rect)
 {
-	rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), rect);
+	rtgui_widget_get_rect(ctrl, rect);
 	if (ctrl->items_count > rtgui_rect_height(*rect)/rtgui_theme_get_selected_height())
 	{
 		rect->x1 = rect->x2 - 8;
@@ -95,7 +95,7 @@ static void _rtgui_listctrl_scrollbar_onmouse(struct rtgui_listctrl* ctrl, struc
 	y1 = (ctrl->current_item / ctrl->page_items) * height;
 
 	rect.y1 = rect.y1 + y1; rect.y2 = rect.y1 + height;
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(ctrl), &rect);
+	rtgui_widget_rect_to_device(ctrl, &rect);
 
 	old_item = ctrl->current_item;
 	if (mouse->y < rect.y1)
@@ -120,7 +120,7 @@ static void _rtgui_listctrl_ondraw(struct rtgui_listctrl* ctrl)
 	struct rtgui_dc* dc;
 	rt_uint16_t page_index, index;
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(ctrl));
+	dc = rtgui_dc_begin_drawing(ctrl);
 	if (dc == RT_NULL) return;
 
 	_rtgui_listctrl_get_rect(ctrl, &rect);
@@ -168,11 +168,11 @@ void rtgui_listctrl_update_current(struct rtgui_listctrl* ctrl, rt_uint16_t old_
 	if (old_item/ctrl->page_items != ctrl->current_item/ctrl->page_items)
 	{
 		/* it's not a same page, update all */
-		rtgui_widget_update(RTGUI_WIDGET(ctrl));
+		rtgui_widget_update(ctrl);
 		return;
 	}
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(ctrl));
+	dc = rtgui_dc_begin_drawing(ctrl);
 	if (dc == RT_NULL) return;
 
 	_rtgui_listctrl_get_rect(ctrl, &rect);
@@ -206,7 +206,7 @@ void rtgui_listctrl_update_current(struct rtgui_listctrl* ctrl, rt_uint16_t old_
 	rtgui_dc_end_drawing(dc);
 }
 
-rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_listctrl_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_listctrl* ctrl;
 	RTGUI_WIDGET_EVENT_HANDLER_PREPARE
@@ -238,7 +238,7 @@ rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object* object, struct rtgui
 
 			/* get scrollbar rect */
 			_rtgui_listctrl_get_scrollbar_rect(ctrl, &rect);
-			rtgui_widget_rect_to_device(RTGUI_WIDGET(ctrl), &rect);
+			rtgui_widget_rect_to_device(ctrl, &rect);
 			if (rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK)
 			{
 				_rtgui_listctrl_scrollbar_onmouse(ctrl, emouse);
@@ -263,11 +263,11 @@ rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object* object, struct rtgui
 					struct rtgui_rect rect;
 					struct rtgui_dc* dc;
 
-					dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(ctrl));
+					dc = rtgui_dc_begin_drawing(ctrl);
 					if (dc != RT_NULL)
 					{
 						/* get widget rect */
-						rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), &rect);
+						rtgui_widget_get_rect(ctrl, &rect);
 						/* update focus border */
 						rect.x2 -= 1; rect.y2 -= 1;
 						rtgui_dc_end_drawing(dc);
@@ -293,7 +293,7 @@ rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object* object, struct rtgui
 						/* up event */
 						if (ctrl->on_item != RT_NULL)
 						{
-							ctrl->on_item(RTGUI_OBJECT(ctrl), RT_NULL);
+							ctrl->on_item(ctrl, RT_NULL);
 						}
 					}
 				}
@@ -344,7 +344,7 @@ rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object* object, struct rtgui
 				case RTGUIK_RETURN:
                     if (ctrl->on_item != RT_NULL)
 					{
-						ctrl->on_item(RTGUI_OBJECT(ctrl), RT_NULL);
+						ctrl->on_item(ctrl, RT_NULL);
 					}
 					return RT_FALSE;
 
@@ -357,7 +357,7 @@ rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object* object, struct rtgui
 	}
 
     /* use ctrl event handler */
-    return rtgui_widget_event_handler(RTGUI_OBJECT(widget), event);
+    return rtgui_widget_event_handler(widget, event);
 }
 
 rtgui_listctrl_t* rtgui_listctrl_create(rt_uint32_t items, rt_uint16_t count, rtgui_rect_t *rect,
@@ -373,7 +373,7 @@ rtgui_listctrl_t* rtgui_listctrl_create(rt_uint32_t items, rt_uint16_t count, rt
 		ctrl->on_item_draw = ondraw;
 
 		ctrl->page_items = rtgui_rect_height(*rect) / (2 + rtgui_theme_get_selected_height());
-		rtgui_widget_set_rect(RTGUI_WIDGET(ctrl), rect);
+		rtgui_widget_set_rect(ctrl, rect);
 	}
 
 	return ctrl;
@@ -382,10 +382,10 @@ rtgui_listctrl_t* rtgui_listctrl_create(rt_uint32_t items, rt_uint16_t count, rt
 void rtgui_listctrl_destroy(rtgui_listctrl_t* ctrl)
 {
     /* destroy ctrl */
-	rtgui_widget_destroy(RTGUI_WIDGET(ctrl));
+	rtgui_widget_destroy(ctrl);
 }
 
-void rtgui_listctrl_set_onitem(rtgui_listctrl_t* ctrl, rtgui_event_handler_ptr func)
+void rtgui_listctrl_set_onitem(rtgui_listctrl_t* ctrl, rtgui_listctrl_onitem_t func)
 {
 	RT_ASSERT(ctrl != RT_NULL);
 
@@ -400,10 +400,10 @@ void rtgui_listctrl_set_items(rtgui_listctrl_t* ctrl, rt_uint32_t items, rt_uint
 	ctrl->items_count = count;
 	ctrl->current_item = 0;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), &rect);
+	rtgui_widget_get_rect(ctrl, &rect);
 	ctrl->page_items = rtgui_rect_height(rect) / (2 + rtgui_theme_get_selected_height());
 
-	rtgui_widget_update(RTGUI_WIDGET(ctrl));
+	rtgui_widget_update(ctrl);
 }
 
 rt_bool_t rtgui_listctrl_get_item_rect(rtgui_listctrl_t* ctrl, rt_uint16_t item, rtgui_rect_t* item_rect)
@@ -416,7 +416,7 @@ rt_bool_t rtgui_listctrl_get_item_rect(rtgui_listctrl_t* ctrl, rt_uint16_t item,
 		index = (ctrl->current_item / ctrl->page_items) * ctrl->page_items;
 		if (index > item || index + ctrl->page_items <= item) return RT_FALSE;
 
-		rtgui_widget_get_extent(RTGUI_WIDGET(ctrl), item_rect);
+		rtgui_widget_get_extent(ctrl, item_rect);
 		item_rect->y1 -= 2;
 		item_rect->y1 += (item % ctrl->page_items) * (2 + rtgui_theme_get_selected_height());
 		item_rect->y2 = item_rect->y1 + (2 + rtgui_theme_get_selected_height());

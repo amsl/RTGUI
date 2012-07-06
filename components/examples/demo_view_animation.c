@@ -59,7 +59,7 @@ void timeout(struct rtgui_timer* timer, void* parameter)
 	rtgui_dc_end_drawing(dc);
 }
 
-rt_bool_t animation_event_handler(struct rtgui_object* object, rtgui_event_t *event)
+rt_bool_t animation_event_handler(void* object, rtgui_event_t *event)
 {
     struct rtgui_widget *widget = RTGUI_WIDGET(object);
 
@@ -119,14 +119,14 @@ rtgui_container_t *demo_view_animation()
 
 	container = demo_view("DC ¶¯»­");
 	if (container != RT_NULL)
-		rtgui_object_set_event_handler(RTGUI_OBJECT(container), animation_event_handler);
+		rtgui_object_set_event_handler(container, animation_event_handler);
 
-	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(RTGUI_WIDGET(container)), "·ÉÏßÂÒ·É", &text_rect);
+	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(container), "·ÉÏßÂÒ·É", &text_rect);
 	rtgui_rect_moveto(&text_rect, 0, 45);
 	timer = rtgui_timer_create(2, RT_TIMER_FLAG_PERIODIC, timeout, (void*)container);
 
-	rtgui_widget_set_onshow(RTGUI_WIDGET(container), animation_on_show);
-	rtgui_widget_set_onhide(RTGUI_WIDGET(container), animation_on_hide);
+	rtgui_widget_set_onshow(container, animation_on_show);
+	rtgui_widget_set_onhide(container, animation_on_hide);
 
 	return container;
 }

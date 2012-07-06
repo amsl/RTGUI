@@ -44,6 +44,6 @@ void rtgui_notebook_set_current_by_index(struct rtgui_notebook* notebook, rt_uin
 
 struct rtgui_widget* rtgui_notebook_get_widget_at(struct rtgui_notebook* notebook, rt_uint16_t index);
 
-rt_bool_t rtgui_notebook_event_handler(struct rtgui_object* widget, struct rtgui_event* event);
+rt_bool_t rtgui_notebook_event_handler(void* object, struct rtgui_event* event);
 
 #endif

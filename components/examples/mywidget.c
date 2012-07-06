@@ -9,11 +9,11 @@ static void rtgui_mywidget_ondraw(struct rtgui_mywidget* me)
 	rt_uint16_t x, y;
 
 	/* 获得目标DC，开始绘�?*/
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(me));
+	dc = rtgui_dc_begin_drawing(me);
 	if (dc == RT_NULL) return;
 
 	/* 获得窗口的尺�?*/
-	rtgui_widget_get_rect(RTGUI_WIDGET(me), &rect);
+	rtgui_widget_get_rect(me, &rect);
 	/* 绘制背景�?*/
 	RTGUI_DC_BC(dc) = WHITE;
 	rtgui_dc_fill_rect(dc, &rect);
@@ -49,9 +49,9 @@ static void rtgui_mywidget_onmouse(struct rtgui_mywidget* me, struct rtgui_event
 	if (!(mouse->button & RTGUI_MOUSE_BUTTON_UP)) return;
 
 	/* 获得控件的位�?*/
-	rtgui_widget_get_rect(RTGUI_WIDGET(me), &rect);
+	rtgui_widget_get_rect(me, &rect);
 	/* get_rect函数获得是控件的相对位置，而鼠标事件给出的坐标是绝对坐标，需要做一个转�?*/
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(me), &rect);
+	rtgui_widget_rect_to_device(me, &rect);
 
 	/* 计算中心原点 */
 	x = (rect.x2 + rect.x1)/2;
@@ -71,10 +71,10 @@ static void rtgui_mywidget_onmouse(struct rtgui_mywidget* me, struct rtgui_event
 }
 
 /* mywidget控件的事件处理函�?*/
-rt_bool_t rtgui_mywidget_event_handler(struct rtgui_widget* widget, struct rtgui_event* event)
+rt_bool_t rtgui_mywidget_event_handler(void* object, struct rtgui_event* event)
 {
 	/* 调用事件处理函数时，widget指针指向控件本身，所以先获得相应控件对象的指�?*/
-	struct rtgui_mywidget* me = RTGUI_MYWIDGET(widget);
+	struct rtgui_mywidget* me = RTGUI_MYWIDGET(object);
 
 	switch (event->type)
 	{
@@ -90,7 +90,7 @@ rt_bool_t rtgui_mywidget_event_handler(struct rtgui_widget* widget, struct rtgui
 
 		/* 其他事件调用父类的事件处理函�?*/
 	default:
-		return rtgui_widget_event_handler(RTGUI_OBJECT(widget), event);
+		return rtgui_widget_event_handler(object, event);
 	}
 
 	return RT_FALSE;
@@ -102,7 +102,7 @@ static void _rtgui_mywidget_constructor(rtgui_mywidget_t *mywidget)
 	/* 默认这个控件接收聚焦 */
 	RTGUI_WIDGET(mywidget)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
 	/* 初始化控件并设置事件处理函数 */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(mywidget), rtgui_mywidget_event_handler);
+	rtgui_object_set_event_handler(mywidget, rtgui_mywidget_event_handler);
 
 	/* 初始状态时OFF */
 	mywidget->status = MYWIDGET_STATUS_OFF;
@@ -123,7 +123,7 @@ struct rtgui_mywidget* rtgui_mywidget_create(rtgui_rect_t* r)
 	me = (struct rtgui_mywidget*) rtgui_widget_create (RTGUI_MYWIDGET_TYPE);
 	if (me != RT_NULL)
 	{
-		rtgui_widget_set_rect(RTGUI_WIDGET(me), r);
+		rtgui_widget_set_rect(me, r);
 	}
 
 	return me;
@@ -132,5 +132,5 @@ struct rtgui_mywidget* rtgui_mywidget_create(rtgui_rect_t* r)
 /* 删除一个自定义控件 */
 void rtgui_mywidget_destroy(struct rtgui_mywidget* me)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(me));
+	rtgui_widget_destroy(me);
 }

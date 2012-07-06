@@ -42,6 +42,8 @@ DECLARE_CLASS_TYPE(button);
 #define RTGUI_BUTTON_TYPE_NORMAL	0x00
 #define RTGUI_BUTTON_TYPE_PUSH		0x10
 
+typedef void (*rtgui_onbutton_func_t)(struct rtgui_button* object, struct rtgui_event* event);
+
 /*
  * the button widget
  */
@@ -57,7 +59,7 @@ struct rtgui_button
 	rtgui_image_t *pressed_image, *unpressed_image;
 
 	/* click button event handler */
-	rtgui_onbutton_func_t on_button;
+	void (*on_button)(struct rtgui_button* button, struct rtgui_event* event);
 };
 typedef struct rtgui_button rtgui_button_t;
 
@@ -70,7 +72,7 @@ void rtgui_button_set_unpressed_image(rtgui_button_t* btn, rtgui_image_t* image)
 
 void rtgui_button_set_onbutton(rtgui_button_t* btn, rtgui_onbutton_func_t func);
 
-rt_bool_t rtgui_button_event_handler(struct rtgui_object* object, struct rtgui_event* event);
+rt_bool_t rtgui_button_event_handler(void* object, struct rtgui_event* event);
 
 /** @} */
 

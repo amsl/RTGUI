@@ -19,7 +19,7 @@ struct rtgui_image_hdcmm stop_image = RTGUI_IMAGE_HDC_DEF(2, 0x1c, 0x16, stop_hd
 /*
  * view的事件处理函数
  */
-rt_bool_t dc_event_handler(struct rtgui_object* object, rtgui_event_t *event)
+rt_bool_t dc_event_handler(void* object, rtgui_event_t *event)
 {
 	struct rtgui_widget *widget = RTGUI_WIDGET(object);
 
@@ -186,7 +186,7 @@ rtgui_container_t *demo_view_dc(void)
 	view = demo_view("DC Demo");
 	if (view != RT_NULL)
 		/* 设置成自己的事件处理函数 */
-		rtgui_object_set_event_handler(RTGUI_OBJECT(view), dc_event_handler);
+		rtgui_object_set_event_handler(view, dc_event_handler);
 
 	return view;
 }

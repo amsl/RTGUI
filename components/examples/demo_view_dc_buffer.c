@@ -16,7 +16,7 @@ static struct rtgui_dc *dc_buffer;
 /*
  * view的事件处理函数
  */
-static rt_bool_t dc_buffer_event_handler(struct rtgui_object* object, rtgui_event_t *event)
+static rt_bool_t dc_buffer_event_handler(void* object, rtgui_event_t *event)
 {
 	struct rtgui_widget *widget = RTGUI_WIDGET(object);
 
@@ -68,7 +68,7 @@ rtgui_container_t *demo_view_dc_buffer()
 
 		/* 创建 DC Buffer，长 50，宽 50 */
 		dc_buffer = rtgui_dc_buffer_create(50, 50);
-		RTGUI_DC_FC(dc_buffer) = BLUE;
+		RTGUI_DC_BC(dc_buffer) = BLUE;
 		rtgui_dc_fill_rect(dc_buffer, &rect);
 
 		RTGUI_DC_FC(dc_buffer) = RED;
@@ -78,7 +78,7 @@ rtgui_container_t *demo_view_dc_buffer()
 	view = demo_view("缓冲DC演示");
 	if (view != RT_NULL)
 		/* 设置成自己的事件处理函数 */
-		rtgui_object_set_event_handler(RTGUI_OBJECT(view), dc_buffer_event_handler);
+		rtgui_object_set_event_handler(view, dc_buffer_event_handler);
 
 	return view;
 }

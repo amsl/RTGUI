@@ -204,12 +204,8 @@ void _rtgui_listctrl_item_draw(struct rtgui_listctrl *list,
 	}
 }
 
-static void on_items(rtgui_widget_t* widget, struct rtgui_event* event)
+static void on_items(rtgui_listctrl_t* ctrl, struct rtgui_event* event)
 {
-	rtgui_listctrl_t* ctrl;
-	/* get listctrl */
-	ctrl = RTGUI_LISTCTRL(widget);
-
 	/* 打印当前的项 */
 	rt_kprintf("current item: %d\n", ctrl->current_item);
 }
@@ -239,9 +235,9 @@ rtgui_container_t* demo_view_listctrl(void)
 	/* 创建一个label控件 */
 	label = rtgui_label_create("List Control: ");
 	/* 设置label的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
+	rtgui_widget_set_rect(label, &rect);
 	/* container是一个container控件，调用add_child方法添加这个label控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	rtgui_container_add_child(container, label);
 
 	rect.y1 = rect.y2 + 3;
 	rect.y2 = 250;
@@ -249,7 +245,7 @@ rtgui_container_t* demo_view_listctrl(void)
 		_rtgui_listctrl_item_draw);
 	rtgui_listctrl_set_onitem(box, on_items);
 	/* container是一个container控件，调用add_child方法添加这个listctrl控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(box));
+	rtgui_container_add_child(container, box);
 
 	return container;
 }

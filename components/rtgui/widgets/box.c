@@ -18,10 +18,10 @@
 static void _rtgui_box_constructor(rtgui_box_t *box)
 {
 	/* init widget and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(box), rtgui_box_event_handler);
+	rtgui_object_set_event_handler(box, rtgui_box_event_handler);
 
 	RTGUI_WIDGET(box)->flag |= RTGUI_WIDGET_FLAG_TRANSPARENT;
-	rtgui_object_set_event_handler(RTGUI_OBJECT(box), rtgui_box_event_handler);
+	rtgui_object_set_event_handler(box, rtgui_box_event_handler);
 
 	/* set proper of control */
 	box->orient = RTGUI_HORIZONTAL;
@@ -34,7 +34,7 @@ DEFINE_CLASS_TYPE(box, "box",
 	RT_NULL,
 	sizeof(struct rtgui_box));
 
-rt_bool_t rtgui_box_event_handler(struct rtgui_object *widget, rtgui_event_t *event)
+rt_bool_t rtgui_box_event_handler(void *widget, rtgui_event_t *event)
 {
 	struct rtgui_box* box = (struct rtgui_box*)widget;
 
@@ -62,7 +62,7 @@ struct rtgui_box* rtgui_box_create(int orientation, rtgui_rect_t* rect)
     if (box != RT_NULL)
     {
 		/* set proper of control */
-		rtgui_widget_set_rect(RTGUI_WIDGET(box), rect);
+		rtgui_widget_set_rect(box, rect);
 		box->orient = orientation;
 	}
 
@@ -72,7 +72,7 @@ struct rtgui_box* rtgui_box_create(int orientation, rtgui_rect_t* rect)
 void rtgui_box_append(struct rtgui_box* box, rtgui_widget_t* widget)
 {
 	/* put to box's children list */
-	rtgui_container_add_child(RTGUI_CONTAINER(box), widget);
+	rtgui_container_add_child(box, widget);
 }
 
 void rtgui_box_delete(struct rtgui_box* box, rtgui_widget_t* widget)
@@ -281,9 +281,9 @@ void rtgui_box_layout(rtgui_box_t* box)
 	}
 
 	/* update box and its children clip */
-	if (!RTGUI_WIDGET_IS_HIDE(RTGUI_WIDGET(box)))
+	if (!RTGUI_WIDGET_IS_HIDE(box))
 	{
-		rtgui_widget_update_clip(RTGUI_WIDGET(box));
+		rtgui_widget_update_clip(box);
 	}
 }
 

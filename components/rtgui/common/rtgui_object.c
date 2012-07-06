@@ -179,14 +179,15 @@ const rtgui_type_t *rtgui_object_object_type_get(rtgui_object_t *object)
 	return object->type;
 }
 
-void rtgui_object_set_event_handler(struct rtgui_object *object, rtgui_event_handler_ptr handler)
+void rtgui_object_set_event_handler(void *obj, rtgui_event_handler_ptr handler)
 {
+	struct rtgui_object *object = RTGUI_OBJECT(obj);
 	RT_ASSERT(object != RT_NULL);
 
 	object->event_handler = handler;
 }
 
-rt_bool_t rtgui_object_event_handler(struct rtgui_object *object, struct rtgui_event* event)
+rt_bool_t rtgui_object_event_handler(void *obj, struct rtgui_event* event)
 {
 	return RT_FALSE;
 }

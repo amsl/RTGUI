@@ -59,7 +59,7 @@ static void application_entry(void* parameter)
 		return;
 	}
 
-	rtgui_container_add_child(RTGUI_CONTAINER(main_win), RTGUI_WIDGET(the_notebook));
+	rtgui_container_add_child(main_win, the_notebook);
 
     /* 初始化各个例子的视图 */
     demo_view_benchmark();

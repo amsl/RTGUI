@@ -37,15 +37,15 @@ static void _rtgui_menu_destructor(rtgui_menu_t* menu)
 	menu->items_list = RT_NULL;
 }
 
-static rt_bool_t _rtgui_menu_onitem(struct rtgui_object* object, struct rtgui_event* event)
+static rt_bool_t _rtgui_menu_onitem(struct rtgui_listctrl* ctrl, struct rtgui_event* event)
 {
 	struct rtgui_menu* menu;
 
 	/* event will be NULL, don't check it. */
-	RT_ASSERT(object);
+	RT_ASSERT(ctrl != RT_NULL);
 
 	/* get menu */
-	menu = RTGUI_MENU(rtgui_widget_get_toplevel(RTGUI_WIDGET(object)));
+	menu = RTGUI_MENU(rtgui_widget_get_toplevel(ctrl));
 	if (menu->items[menu->items_list->current_item].type == RTGUI_ITEM_SUBMENU)
 	{
 		const rtgui_menu_item_t* items;
@@ -58,7 +58,7 @@ static rt_bool_t _rtgui_menu_onitem(struct rtgui_object* object, struct rtgui_ev
 		{
 			if (menu->sub_menu->items == items)
 			{
-				if (!RTGUI_WIDGET_IS_HIDE(RTGUI_WIDGET(menu->sub_menu)))
+				if (!RTGUI_WIDGET_IS_HIDE(menu->sub_menu))
 				{
 					/* hide this sub menu */
 					rtgui_win_hiden(RTGUI_WIN(menu->sub_menu));
@@ -114,10 +114,10 @@ static void _rtgui_menu_item_ondraw(struct rtgui_listctrl *list,
 	{
 		rtgui_color_t bc;
 
-		bc = RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list));
-		RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list)) = BLUE;
+		bc = RTGUI_WIDGET_BACKGROUND(list);
+		RTGUI_WIDGET_BACKGROUND(list) = BLUE;
 		rtgui_dc_fill_rect(dc, rect);
-		RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(list)) = bc;
+		RTGUI_WIDGET_BACKGROUND(list) = bc;
 	}
 
 	/* get menu item */
@@ -178,7 +178,7 @@ static rt_bool_t rtgui_menu_on_deactivate(struct rtgui_object *object, rtgui_eve
 		 * before the new window got activated. But the window will be shown in
 		 * this context, so use 'is not hide'. */
 		if (menu->sub_menu != RT_NULL &&
-			!RTGUI_WIDGET_IS_HIDE(RTGUI_WIDGET(menu->sub_menu)))
+			!RTGUI_WIDGET_IS_HIDE(menu->sub_menu))
 			return RT_TRUE;
 	}
 
@@ -215,12 +215,12 @@ struct rtgui_menu* rtgui_menu_create(const char* title, struct rtgui_menu* paren
 		menu->items = items;
 		menu->items_count = count;
 
-		rtgui_widget_set_rect(RTGUI_WIDGET(menu), &rect);
+		rtgui_widget_set_rect(menu, &rect);
 		rtgui_rect_inflate(&rect, -1);
 		/* create menu item list */
 		menu->items_list = rtgui_listctrl_create((rt_uint32_t)items, count, &rect, _rtgui_menu_item_ondraw);
-		RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(menu->items_list)) = rtgui_theme_default_bc();
-		rtgui_container_add_child(RTGUI_CONTAINER(menu), RTGUI_WIDGET(menu->items_list));
+		RTGUI_WIDGET_BACKGROUND(menu->items_list) = rtgui_theme_default_bc();
+		rtgui_container_add_child(menu, menu->items_list);
 		rtgui_listctrl_set_onitem(menu->items_list, _rtgui_menu_onitem);
 	}
 
@@ -229,7 +229,7 @@ struct rtgui_menu* rtgui_menu_create(const char* title, struct rtgui_menu* paren
 
 void rtgui_menu_destroy(struct rtgui_menu* menu)
 {
-	rtgui_widget_destroy (RTGUI_WIDGET(menu));
+	rtgui_widget_destroy (menu);
 }
 
 void rtgui_menu_set_onmenupop(struct rtgui_menu* menu, rtgui_event_handler_ptr handler)
@@ -260,7 +260,7 @@ void rtgui_menu_pop(struct rtgui_menu* menu, int x, int y)
 	rtgui_rect_moveto(&rect, x, y);
 	rtgui_win_set_rect(RTGUI_WIN(menu), &rect);
 	rtgui_rect_inflate(&rect, -1);
-	rtgui_widget_set_rect(RTGUI_WIDGET(menu->items_list), &rect);
+	rtgui_widget_set_rect(menu->items_list, &rect);
 
 	eresize.parent.type = RTGUI_EVENT_RESIZE;
 	eresize.x = rect.x1; eresize.y = rect.y1;

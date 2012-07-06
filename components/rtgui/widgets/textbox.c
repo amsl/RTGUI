@@ -32,17 +32,17 @@ static void _rtgui_textbox_constructor(rtgui_textbox_t *box)
 
 	RTGUI_WIDGET_FLAG(RTGUI_WIDGET(box)) |= RTGUI_WIDGET_FLAG_FOCUSABLE;
 
-	rtgui_object_set_event_handler(RTGUI_OBJECT(box), rtgui_textbox_event_handler);
-	rtgui_widget_set_onfocus(RTGUI_WIDGET(box), rtgui_textbox_onfocus);
-	rtgui_widget_set_onunfocus(RTGUI_WIDGET(box), rtgui_textbox_onunfocus);
+	rtgui_object_set_event_handler(box, rtgui_textbox_event_handler);
+	rtgui_widget_set_onfocus(box, rtgui_textbox_onfocus);
+	rtgui_widget_set_onunfocus(box, rtgui_textbox_onunfocus);
 #ifndef RTGUI_USING_SMALL_SIZE
-	rtgui_widget_set_onkey(RTGUI_WIDGET(box),rtgui_textbox_onkey);
+	rtgui_widget_set_onkey(box,rtgui_textbox_onkey);
 #endif
 
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(box)) = BLACK;
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
+	RTGUI_WIDGET_FOREGROUND(box) = BLACK;
+	RTGUI_WIDGET_BACKGROUND(box) = WHITE;
 	/* set default text align */
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(box)) = RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_TEXTALIGN(box) = RTGUI_ALIGN_CENTER_VERTICAL;
 	/* set proper of control */
 	box->caret_timer = RT_NULL;
 	box->caret = RT_NULL;
@@ -52,7 +52,7 @@ static void _rtgui_textbox_constructor(rtgui_textbox_t *box)
 	/* allocate default line buffer */
 	box->text = RT_NULL;
 
-	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(RTGUI_WIDGET(box)), "H", &rect);
+	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(box), "H", &rect);
 	box->font_width = rtgui_rect_width(rect);
 	box->on_enter = RT_NULL;
 	box->dis_length = 0;
@@ -90,9 +90,9 @@ static void rtgui_textbox_get_caret_rect(rtgui_textbox_t *box, rtgui_rect_t *rec
 
 	RT_ASSERT(box != RT_NULL);
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), rect);
+	rtgui_widget_get_rect(box, rect);
 
-	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(RTGUI_WIDGET(box)), "H", &item_rect);
+	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(box), "H", &item_rect);
 	font_h = rtgui_rect_height(item_rect);
 	box_h = rtgui_rect_height(*rect);
 
@@ -111,12 +111,12 @@ static void rtgui_textbox_init_caret(rtgui_textbox_t *box, rt_uint16_t position)
 
 	RT_ASSERT(box != RT_NULL);
 
-	if (!RTGUI_WIDGET_IS_FOCUSED(RTGUI_WIDGET(box)))
+	if (!RTGUI_WIDGET_IS_FOCUSED(box))
 		return;
 
 	rtgui_textbox_get_caret_rect(box, &box->caret_rect, position);
 	rect = box->caret_rect;
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(box), &rect);
+	rtgui_widget_rect_to_device(box, &rect);
 
 	if (box->caret == RT_NULL)
 		box->caret = rtgui_malloc(rtgui_rect_width(rect)*rtgui_rect_height(rect)*sizeof(rtgui_color_t));
@@ -145,7 +145,7 @@ static void rtgui_textbox_draw_caret(rtgui_textbox_t *box, rt_uint16_t position)
 	if (box->caret == RT_NULL)
 		return;
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(box));
+	dc = rtgui_dc_begin_drawing(box);
 	if (dc == RT_NULL)
 		return;
 
@@ -246,7 +246,7 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object* widget, rtgui_event_t*
 	{
 		rtgui_rect_t rect;
 
-		rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
+		rtgui_widget_get_rect(box, &rect);
 
 		if (box->font_width == 0)
 			return RT_FALSE;
@@ -466,7 +466,7 @@ rtgui_textbox_t* rtgui_textbox_create(const char* text, rt_uint32_t flag)
 
 void rtgui_textbox_destroy(rtgui_textbox_t* box)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(box));
+	rtgui_widget_destroy(box);
 }
 
 void rtgui_textbox_ondraw(rtgui_textbox_t* box)
@@ -479,27 +479,27 @@ void rtgui_textbox_ondraw(rtgui_textbox_t* box)
 	RT_ASSERT(box != RT_NULL);
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(box));
+	dc = rtgui_dc_begin_drawing(box);
 	if (dc == RT_NULL)
 		return;
 
 	/* get widget rect */
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
-	fc = RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(box));
+	rtgui_widget_get_rect(box, &rect);
+	fc = RTGUI_WIDGET_FOREGROUND(box);
 
 	rtgui_rect_inflate(&rect, -1);
 
 	/* fill widget rect with white color */
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
+	RTGUI_WIDGET_BACKGROUND(box) = WHITE;
 	rtgui_dc_fill_rect(dc,&rect);
 
 	rtgui_rect_inflate(&rect, 1);
 	/* draw border */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(box)) = RTGUI_RGB(123, 158, 189);
+	RTGUI_WIDGET_FOREGROUND(box) = RTGUI_RGB(123, 158, 189);
 	rtgui_dc_draw_rect(dc, &rect);
 
 	/* draw text */
-	RTGUI_WIDGET_FOREGROUND(RTGUI_WIDGET(box)) = fc;
+	RTGUI_WIDGET_FOREGROUND(box) = fc;
 	if(box->text != RT_NULL)
 	{
 		rect.x1 += RTGUI_WIDGET_DEFAULT_MARGIN;
@@ -583,11 +583,11 @@ void rtgui_textbox_set_line_length(rtgui_textbox_t* box, rt_size_t length)
 /* get textbox text area */
 void rtgui_textbox_get_edit_rect(rtgui_textbox_t *box,rtgui_rect_t *rect)
 {
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), rect);
+	rtgui_widget_get_rect(box, rect);
 	rtgui_rect_inflate(rect,-1);
 }
 
-rt_bool_t rtgui_textbox_event_handler(struct rtgui_object *object, rtgui_event_t* event)
+rt_bool_t rtgui_textbox_event_handler(void *object, rtgui_event_t* event)
 {
 	rtgui_widget_t *widget = RTGUI_WIDGET(object);
 	rtgui_textbox_t* box = RTGUI_TEXTBOX(object);
@@ -597,7 +597,7 @@ rt_bool_t rtgui_textbox_event_handler(struct rtgui_object *object, rtgui_event_t
 		case RTGUI_EVENT_PAINT:
 #ifndef RTGUI_USING_SMALL_SIZE
 			if(widget->on_draw != RT_NULL)
-				widget->on_draw(RTGUI_OBJECT(widget), event);
+				widget->on_draw(widget, event);
 			else
 #endif
 				rtgui_textbox_ondraw(box);
@@ -606,7 +606,7 @@ rt_bool_t rtgui_textbox_event_handler(struct rtgui_object *object, rtgui_event_t
 		case RTGUI_EVENT_MOUSE_BUTTON:
 #ifndef RTGUI_USING_SMALL_SIZE
 			if(widget->on_mouseclick != RT_NULL)
-				widget->on_mouseclick(RTGUI_OBJECT(widget), event);
+				widget->on_mouseclick(widget, event);
 			else
 #endif
 				rtgui_textbox_onmouse(box, (struct rtgui_event_mouse*)event);
@@ -615,14 +615,14 @@ rt_bool_t rtgui_textbox_event_handler(struct rtgui_object *object, rtgui_event_t
 		case RTGUI_EVENT_KBD:
 #ifndef RTGUI_USING_SMALL_SIZE
 			if(widget->on_key != RT_NULL)
-				widget->on_key(RTGUI_OBJECT(widget), event);
+				widget->on_key(widget, event);
 			else
 #endif
 				rtgui_textbox_onkey(RTGUI_OBJECT(box), (struct rtgui_event*)event);
 			return RT_TRUE;
 
 		default:
-			return rtgui_widget_event_handler(RTGUI_OBJECT(widget),event);
+			return rtgui_widget_event_handler(widget,event);
 	}
 
 	return RT_FALSE;

@@ -42,7 +42,7 @@ typedef struct rtgui_container rtgui_container_t;
 rtgui_container_t* rtgui_container_create(void);
 void rtgui_container_destroy(rtgui_container_t* container);
 
-rt_bool_t rtgui_container_event_handler(struct rtgui_object* widget, struct rtgui_event* event);
+rt_bool_t rtgui_container_event_handler(void* object, struct rtgui_event* event);
 
 #ifndef RTGUI_USING_SMALL_SIZE
 struct rtgui_box;
@@ -51,15 +51,15 @@ void rtgui_container_set_box(struct rtgui_container* container, struct rtgui_box
 
 void rtgui_container_hide(rtgui_container_t* container);
 
-void rtgui_container_add_child(rtgui_container_t *container, rtgui_widget_t* child);
-void rtgui_container_remove_child(rtgui_container_t *container, rtgui_widget_t* child);
+void rtgui_container_add_child(void *cbox, void* wdt);
+void rtgui_container_remove_child(rtgui_container_t *container, void* wdt);
 void rtgui_container_destroy_children(rtgui_container_t *container);
 rtgui_widget_t* rtgui_container_get_first_child(rtgui_container_t* container);
 
-rt_bool_t rtgui_container_event_handler(struct rtgui_object* widget, rtgui_event_t* event);
+rt_bool_t rtgui_container_event_handler(void* widget, rtgui_event_t* event);
 
-rt_bool_t rtgui_container_dispatch_event(rtgui_container_t *container, rtgui_event_t* event);
-rt_bool_t rtgui_container_dispatch_mouse_event(rtgui_container_t *container, struct rtgui_event_mouse* event);
+rt_bool_t rtgui_container_dispatch_event(void *wdt, rtgui_event_t* event);
+rt_bool_t rtgui_container_dispatch_mouse_event(void *wdt, struct rtgui_event_mouse* event);
 
 #ifdef __cplusplus
 }

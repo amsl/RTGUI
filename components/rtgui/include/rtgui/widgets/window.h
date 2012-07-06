@@ -99,9 +99,9 @@ struct rtgui_win
 	char* title;
 
 	/* call back */
-	rt_bool_t (*on_activate)	(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_deactivate)	(struct rtgui_object* widget, struct rtgui_event* event);
-	rt_bool_t (*on_close)		(struct rtgui_object* widget, struct rtgui_event* event);
+	rt_bool_t (*on_activate)	(rtgui_win_t* win, struct rtgui_event* event);
+	rt_bool_t (*on_deactivate)	(rtgui_win_t* win, struct rtgui_event* event);
+	rt_bool_t (*on_close)		(rtgui_win_t* win, struct rtgui_event* event);
 	/* the key is sent to the focused widget by default. If the focused widget
 	 * and all of it's parents didn't handle the key event, it will be handled
 	 * by @func on_key
@@ -109,7 +109,7 @@ struct rtgui_win
 	 * If you want to handle key event on your own, it's better to overload
 	 * this function other than handle EVENT_KBD in event_handler.
 	 */
-	rt_bool_t (*on_key)		    (struct rtgui_object* widget, struct rtgui_event* event);
+	rt_bool_t (*on_key)		    (rtgui_win_t* win, struct rtgui_event* event);
 
 	/* reserved user data */
 	rt_uint32_t user_data;
@@ -150,7 +150,7 @@ void rtgui_win_set_ondeactivate(rtgui_win_t* win, rtgui_event_handler_ptr handle
 void rtgui_win_set_onclose(rtgui_win_t* win, rtgui_event_handler_ptr handler);
 void rtgui_win_set_onkey(rtgui_win_t* win, rtgui_event_handler_ptr handler);
 
-rt_bool_t rtgui_win_event_handler(struct rtgui_object* win, struct rtgui_event* event);
+rt_bool_t rtgui_win_event_handler(void* obj, struct rtgui_event* event);
 
 void rtgui_win_event_loop(rtgui_win_t* wnd);
 

@@ -56,7 +56,7 @@ static void timeout(struct rtgui_timer* timer, void* parameter)
 	rtgui_dc_end_drawing(dc);
 }
 
-static rt_bool_t animation_event_handler(struct rtgui_object *object, rtgui_event_t *event)
+static rt_bool_t animation_event_handler(void *object, rtgui_event_t *event)
 {
 	struct rtgui_widget *widget = RTGUI_WIDGET(object);
 
@@ -115,9 +115,9 @@ struct rtgui_container *demo_view_buffer_animation(void)
 
 	container= demo_view("DC 缓冲区动画");
 	if (container!= RT_NULL)
-		rtgui_object_set_event_handler(RTGUI_OBJECT(container), animation_event_handler);
+		rtgui_object_set_event_handler(container, animation_event_handler);
 
-	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(RTGUI_WIDGET(container)), "缓冲动画", &text_rect);
+	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(container), "缓冲动画", &text_rect);
 	if (dc_buffer == RT_NULL)
 	{
 		rtgui_rect_t rect;
@@ -127,7 +127,7 @@ struct rtgui_container *demo_view_buffer_animation(void)
 
 		/* 创建 DC Buffer，长 50，宽 50 */
 		dc_buffer = rtgui_dc_buffer_create(rtgui_rect_width(rect), rtgui_rect_height(rect));
-		RTGUI_DC_FC(dc_buffer) = RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(container));
+		RTGUI_DC_FC(dc_buffer) = RTGUI_WIDGET_BACKGROUND(container);
 		rtgui_dc_fill_rect(dc_buffer, &rect);
 		RTGUI_DC_FC(dc_buffer) = BLACK;
 		rect.x1 = 1; rect.y1 = 1;
@@ -137,8 +137,8 @@ struct rtgui_container *demo_view_buffer_animation(void)
 	/* 启动定时器以触发动画 */
 	timer = rtgui_timer_create(1, RT_TIMER_FLAG_PERIODIC, timeout, (void*)container);
 
-	rtgui_widget_set_onshow(RTGUI_WIDGET(container), animation_on_show);
-	rtgui_widget_set_onhide(RTGUI_WIDGET(container), animation_on_hide);
+	rtgui_widget_set_onshow(container, animation_on_show);
+	rtgui_widget_set_onhide(container, animation_on_hide);
 
 	return container;
 }

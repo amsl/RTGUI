@@ -177,7 +177,7 @@ static void _calc_width(rtgui_textview_t *textview)
 	width = rtgui_rect_width(RTGUI_WIDGET(textview)->extent) - 6;
 	height = rtgui_rect_height(RTGUI_WIDGET(textview)->extent);
 
-	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(RTGUI_WIDGET(textview)), "W", &rect);
+	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(textview), "W", &rect);
 	textview->line_width = width / rtgui_rect_width(rect) + 1;
 	textview->line_page_count = height / (rtgui_rect_height(rect) + 3);
 
@@ -192,14 +192,14 @@ static void _draw_textview(rtgui_textview_t *textview)
 	char* line;
 	rt_ubase_t line_index, item_height;
 
-	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(RTGUI_WIDGET(textview)), "W", &font_rect);
+	rtgui_font_get_metrics(RTGUI_WIDGET_FONT(textview), "W", &font_rect);
 	item_height = rtgui_rect_height(font_rect) + 3;
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(textview));
+	dc = rtgui_dc_begin_drawing(textview);
 	if (dc == RT_NULL) return ;
 
 	/* fill rect */
-	rtgui_widget_get_rect(RTGUI_WIDGET(textview), &rect);
+	rtgui_widget_get_rect(textview, &rect);
 	rtgui_dc_fill_rect(dc, &rect);
 
 	rect.x1 += 3;
@@ -222,7 +222,7 @@ static void _draw_textview(rtgui_textview_t *textview)
 static void _rtgui_textview_constructor(rtgui_textview_t *textview)
 {
 	/* init widget and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(textview), rtgui_textview_event_handler);
+	rtgui_object_set_event_handler(textview, rtgui_textview_event_handler);
 	RTGUI_WIDGET(textview)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
 
 	/* set field */
@@ -246,7 +246,7 @@ DEFINE_CLASS_TYPE(textview, "textview",
 	_rtgui_textview_destructor,
 	sizeof(struct rtgui_textview));
 
-rt_bool_t rtgui_textview_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_textview_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_textview* textview;
 	RTGUI_WIDGET_EVENT_HANDLER_PREPARE
@@ -319,7 +319,7 @@ rtgui_textview_t* rtgui_textview_create(const char* text, const rtgui_rect_t *re
     textview = (struct rtgui_textview*) rtgui_widget_create(RTGUI_TEXTVIEW_TYPE);
     if (textview != RT_NULL)
     {
-		rtgui_widget_set_rect(RTGUI_WIDGET(textview), rect);
+		rtgui_widget_set_rect(textview, rect);
 
 		/* calculate line width and line page count */
 		_calc_width(textview);
@@ -333,7 +333,7 @@ rtgui_textview_t* rtgui_textview_create(const char* text, const rtgui_rect_t *re
 
 void rtgui_textview_destroy(rtgui_textview_t* textview)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(textview));
+	rtgui_widget_destroy(textview);
 }
 
 void rtgui_textview_set_text(rtgui_textview_t* textview, const char* text)
@@ -347,5 +347,5 @@ void rtgui_textview_set_text(rtgui_textview_t* textview, const char* text)
 	_calc_line(textview, text);
 
 	/* update widget */
-	rtgui_widget_update(RTGUI_WIDGET(textview));
+	rtgui_widget_update(textview);
 }

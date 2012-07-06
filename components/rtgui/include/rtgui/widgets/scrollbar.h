@@ -80,7 +80,7 @@ void rtgui_scrollbar_set_orientation(struct rtgui_scrollbar* bar, int orientatio
 void rtgui_scrollbar_set_page_step(struct rtgui_scrollbar* bar, int step);
 void rtgui_scrollbar_set_line_step(struct rtgui_scrollbar* bar, int step);
 
-rt_bool_t rtgui_scrollbar_event_handler(struct rtgui_object* object, struct rtgui_event* event);
+rt_bool_t rtgui_scrollbar_event_handler(void* object, struct rtgui_event* event);
 
 #ifdef __cplusplus
 }

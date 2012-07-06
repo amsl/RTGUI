@@ -43,7 +43,7 @@ static rt_err_t  sdlfb_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 		{
 		struct rt_device_graphic_info *info;
 
-		info = (struct rt_device_rect_info*) args;
+		info = (struct rt_device_graphic_info*) args;
 		info->bits_per_pixel = 16;
 		info->pixel_format = RTGRAPHIC_PIXEL_FORMAT_RGB565P;
 		info->framebuffer = device->screen->pixels;
@@ -119,6 +119,6 @@ void sdlfb_hw_init()
     }
 
 	SDL_WM_SetCaption ("RT-Thread/GUI Simulator", NULL);
-	rt_device_register(&_device, "sdl", RT_DEVICE_FLAG_RDWR);
+	rt_device_register((rt_device_t)&_device, "sdl", RT_DEVICE_FLAG_RDWR);
 }
 

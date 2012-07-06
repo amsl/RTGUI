@@ -17,6 +17,8 @@ DECLARE_CLASS_TYPE(checkbox);
 #define RTGUI_CHECKBOX_STATUS_CHECKED		0
 #define RTGUI_CHECKBOX_STATUS_UNCHECKED		1
 
+typedef void (*rtgui_checkbox_onbutton_t)(struct rtgui_checkbox* object, struct rtgui_event* event);
+
 struct rtgui_checkbox
 {
 	/* inherit from label */
@@ -26,7 +28,7 @@ struct rtgui_checkbox
 	rt_uint8_t status_down;
 
 	/* click button event handler */
-	rtgui_onbutton_func_t on_button;
+	void (*on_button)(struct rtgui_checkbox* button, struct rtgui_event* event);
 };
 typedef struct rtgui_checkbox rtgui_checkbox_t;
 
@@ -36,8 +38,8 @@ void rtgui_checkbox_destroy(rtgui_checkbox_t* checkbox);
 void rtgui_checkbox_set_checked(rtgui_checkbox_t* checkbox, rt_bool_t checked);
 rt_bool_t rtgui_checkbox_get_checked(rtgui_checkbox_t* checkbox);
 
-void rtgui_checkbox_set_onbutton(rtgui_checkbox_t* checkbox, rtgui_onbutton_func_t func);
+void rtgui_checkbox_set_onbutton(rtgui_checkbox_t* checkbox, rtgui_checkbox_onbutton_t func);
 
-rt_bool_t rtgui_checkbox_event_handler(struct rtgui_object* object, struct rtgui_event* event);
+rt_bool_t rtgui_checkbox_event_handler(void* object, struct rtgui_event* event);
 
 #endif

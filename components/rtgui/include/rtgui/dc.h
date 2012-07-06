@@ -70,7 +70,7 @@ struct rtgui_dc* rtgui_dc_buffer_create(int width, int height);
 rt_uint8_t* rtgui_dc_buffer_get_pixel(struct rtgui_dc* dc);
 
 /* begin and end a drawing */
-struct rtgui_dc* rtgui_dc_begin_drawing(rtgui_widget_t* owner);
+struct rtgui_dc* rtgui_dc_begin_drawing(void* wdt);
 void rtgui_dc_end_drawing(struct rtgui_dc* dc);
 
 /* destroy a dc */

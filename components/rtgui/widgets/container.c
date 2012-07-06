@@ -21,7 +21,7 @@
 static void _rtgui_container_constructor(rtgui_container_t *container)
 {
 	/* init container */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(container),
+	rtgui_object_set_event_handler(container,
 		rtgui_container_event_handler);
 
 	rtgui_list_init(&(container->children));
@@ -52,7 +52,7 @@ static void _rtgui_container_update_toplevel(rtgui_container_t* container)
 	struct rtgui_win *window;
 	struct rtgui_list_node* node;
 
-	window = rtgui_widget_get_toplevel(RTGUI_WIDGET(container));
+	window = rtgui_widget_get_toplevel(container);
 
 	rtgui_list_foreach(node, &(container->children))
 	{
@@ -73,8 +73,9 @@ DEFINE_CLASS_TYPE(container, "container",
 	_rtgui_container_destructor,
 	sizeof(struct rtgui_container));
 
-rt_bool_t rtgui_container_dispatch_event(rtgui_container_t *container, rtgui_event_t* event)
+rt_bool_t rtgui_container_dispatch_event(void* wdt, rtgui_event_t* event)
 {
+	rtgui_container_t *container = RTGUI_CONTAINER(wdt);
 	/* handle in child widget */
 	struct rtgui_list_node* node;
 
@@ -91,8 +92,9 @@ rt_bool_t rtgui_container_dispatch_event(rtgui_container_t *container, rtgui_eve
 	return RT_FALSE;
 }
 
-rt_bool_t rtgui_container_dispatch_mouse_event(rtgui_container_t *container, struct rtgui_event_mouse* event)
+rt_bool_t rtgui_container_dispatch_mouse_event(void *wdt, struct rtgui_event_mouse* event)
 {
+	rtgui_container_t *container = RTGUI_CONTAINER(wdt);
 	/* handle in child widget */
 	struct rtgui_list_node* node;
 	struct rtgui_widget *old_focus;
@@ -118,7 +120,7 @@ rt_bool_t rtgui_container_dispatch_mouse_event(rtgui_container_t *container, str
 	return RT_FALSE;
 }
 
-rt_bool_t rtgui_container_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_container_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_container *container;
 	struct rtgui_widget    *widget;
@@ -176,7 +178,7 @@ rt_bool_t rtgui_container_event_handler(struct rtgui_object* object, struct rtgu
 
 	default:
 		/* call parent widget event handler */
-		return rtgui_widget_event_handler(RTGUI_OBJECT(widget), event);
+		return rtgui_widget_event_handler(widget, event);
 	}
 
 	return RT_FALSE;
@@ -194,7 +196,7 @@ rtgui_container_t* rtgui_container_create(void)
 void rtgui_container_destroy(rtgui_container_t* container)
 {
 	rtgui_container_hide(container);
-	rtgui_widget_destroy(RTGUI_WIDGET(container));
+	rtgui_widget_destroy(container);
 }
 
 /*
@@ -202,8 +204,10 @@ void rtgui_container_destroy(rtgui_container_t* container)
  * Note: this function will not change the widget layout
  * the layout is the responsibility of layout widget, such as box.
  */
-void rtgui_container_add_child(rtgui_container_t *container, rtgui_widget_t* child)
+void rtgui_container_add_child(void *cbox, void* wdt)
 {
+	rtgui_container_t *container = RTGUI_CONTAINER(cbox);
+	struct rtgui_widget *child = RTGUI_WIDGET(wdt);
 	RT_ASSERT(container != RT_NULL);
 	RT_ASSERT(child != RT_NULL);
 
@@ -216,7 +220,7 @@ void rtgui_container_add_child(rtgui_container_t *container, rtgui_widget_t* chi
 	if (RTGUI_WIDGET(container)->toplevel != RT_NULL &&
 		RTGUI_IS_TOPLEVEL(RTGUI_WIDGET(container)->toplevel))
 	{
-		child->toplevel = rtgui_widget_get_toplevel(RTGUI_WIDGET(container));
+		child->toplevel = rtgui_widget_get_toplevel(container);
 
 		/* update all child toplevel */
 		if (RTGUI_IS_CONTAINER(child))
@@ -227,8 +231,9 @@ void rtgui_container_add_child(rtgui_container_t *container, rtgui_widget_t* chi
 }
 
 /* remove a child to widget */
-void rtgui_container_remove_child(rtgui_container_t *container, rtgui_widget_t* child)
+void rtgui_container_remove_child(rtgui_container_t *container, void* wdt)
 {
+	struct rtgui_widget *child = RTGUI_WIDGET(wdt);
 	RT_ASSERT(container != RT_NULL);
 	RT_ASSERT(child != RT_NULL);
 
@@ -302,8 +307,8 @@ void rtgui_container_set_box(rtgui_container_t* container, struct rtgui_box* box
 	if (container == RT_NULL || box  == RT_NULL)
         return;
 
-	rtgui_container_add_child(RTGUI_CONTAINER(container), RTGUI_WIDGET(box));
-	rtgui_widget_set_rect(RTGUI_WIDGET(box), &(RTGUI_WIDGET(container)->extent));
+	rtgui_container_add_child(container, box);
+	rtgui_widget_set_rect(box, &(RTGUI_WIDGET(container)->extent));
 }
 #endif
 
@@ -314,7 +319,7 @@ void rtgui_container_hide(rtgui_container_t* container)
 
 	if (RTGUI_WIDGET(container)->parent == RT_NULL)
 	{
-		RTGUI_WIDGET_HIDE(RTGUI_WIDGET(container));
+		RTGUI_WIDGET_HIDE(container);
 		return;
 	}
 }

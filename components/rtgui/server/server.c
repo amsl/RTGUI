@@ -191,8 +191,7 @@ void rtgui_server_handle_kbd(struct rtgui_event_kbd* event)
 #include <windows.h>
 #endif
 
-static rt_bool_t rtgui_server_event_handler(struct rtgui_object *object,
-                                            struct rtgui_event *event)
+static rt_bool_t rtgui_server_event_handler(void *object, struct rtgui_event *event)
 {
     RT_ASSERT(object != RT_NULL);
     RT_ASSERT(event != RT_NULL);
@@ -320,7 +319,7 @@ static void rtgui_server_entry(void* parameter)
     if (rtgui_server_application == RT_NULL)
         return;
 
-    rtgui_object_set_event_handler(RTGUI_OBJECT(rtgui_server_application),
+    rtgui_object_set_event_handler(rtgui_server_application,
                                    rtgui_server_event_handler);
 	/* init mouse and show */
 	rtgui_mouse_init();

@@ -159,7 +159,7 @@ rt_err_t rtgui_topwin_add(struct rtgui_event_win_create* event)
 #else
 		topwin->title = rtgui_wintitle_create((const char*)event->title);
 #endif
-		rtgui_widget_set_rect(RTGUI_WIDGET(topwin->title), &rect);
+		rtgui_widget_set_rect(topwin->title, &rect);
 
 		/* update clip info */
 		rtgui_region_subtract_rect(&(RTGUI_WIDGET(topwin->title)->clip),
@@ -512,23 +512,23 @@ rt_inline void _rtgui_topwin_mark_hidden(struct rtgui_topwin *topwin)
 	topwin->flag &= ~WINTITLE_SHOWN;
 	if (topwin->title != RT_NULL)
 	{
-		RTGUI_WIDGET_HIDE(RTGUI_WIDGET(topwin->title));
+		RTGUI_WIDGET_HIDE(topwin->title);
 	}
-	RTGUI_WIDGET_HIDE(RTGUI_WIDGET(topwin->wid));
+	RTGUI_WIDGET_HIDE(topwin->wid);
 }
 
 rt_inline void _rtgui_topwin_mark_shown(struct rtgui_topwin *topwin)
 {
 	if (!(topwin->flag & WINTITLE_SHOWN)
-		&& RTGUI_WIDGET_IS_HIDE(RTGUI_WIDGET(topwin->wid)))
+		&& RTGUI_WIDGET_IS_HIDE(topwin->wid))
 		return;
 
 	topwin->flag |= WINTITLE_SHOWN;
 	if (topwin->title != RT_NULL)
 	{
-		RTGUI_WIDGET_UNHIDE(RTGUI_WIDGET(topwin->title));
+		RTGUI_WIDGET_UNHIDE(topwin->title);
 	}
-	RTGUI_WIDGET_UNHIDE(RTGUI_WIDGET(topwin->wid));
+	RTGUI_WIDGET_UNHIDE(topwin->wid);
 }
 
 static void _rtgui_topwin_draw_tree(struct rtgui_topwin *topwin, struct rtgui_event_paint *epaint)
@@ -703,7 +703,7 @@ rt_err_t rtgui_topwin_move(struct rtgui_event_win_move* event)
 	if (topwin->title != RT_NULL)
 	{
 		old_rect = RTGUI_WIDGET(topwin->title)->extent;
-		rtgui_widget_move_to_logic(RTGUI_WIDGET(topwin->title), dx, dy);
+		rtgui_widget_move_to_logic(topwin->title, dx, dy);
 	}
 
 	/* move the monitor rect list */

@@ -31,12 +31,12 @@ static const rtgui_menu_item_t items[] =
 };
 static rtgui_menu_t* menu;
 
-static _onmenu(struct rtgui_widget* widget, struct rtgui_event* event)
+static _onmenu(struct rtgui_button* button, struct rtgui_event* event)
 {
 	rtgui_rect_t rect;
 
-	rtgui_widget_get_rect(widget, &rect);
-	rtgui_widget_rect_to_device(widget, &rect);
+	rtgui_widget_get_rect(button, &rect);
+	rtgui_widget_rect_to_device(button, &rect);
 
 	if (menu != RT_NULL)
 		rtgui_menu_pop(menu, rect.x1, rect.y2 + 5);
@@ -61,9 +61,9 @@ rtgui_container_t* demo_view_menu(void)
 	/* 创建一个button控件 */
 	button = rtgui_button_create("Pop Menu");
 	/* 设置button的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
+	rtgui_widget_set_rect(button, &rect);
 	/* container是一个container控件，调用add_child方法添加这个button控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_container_add_child(container, button);
 	rtgui_button_set_onbutton(button, _onmenu);
 
 	menu = rtgui_menu_create("Menu Test", RT_NULL, items, sizeof(items)/sizeof(items[0]));

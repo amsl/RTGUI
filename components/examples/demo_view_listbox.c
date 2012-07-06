@@ -141,12 +141,8 @@ static struct rtgui_listbox_item items[] =
 	{"list #3", RT_NULL},
 };
 
-static void on_items(rtgui_widget_t* widget, struct rtgui_event* event)
+static void on_items(struct rtgui_listbox* box, struct rtgui_event* event)
 {
-	rtgui_listbox_t* box;
-	/* get listbox */
-	box = RTGUI_LISTBOX(widget);
-
 	/* 打印当前的项 */
 	rt_kprintf("current item: %d\n", box->current_item);
 }
@@ -176,16 +172,16 @@ rtgui_container_t* demo_view_listbox(void)
 	/* 创建一个label控件 */
 	label = rtgui_label_create("listbox: ");
 	/* 设置label的位置 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
+	rtgui_widget_set_rect(label, &rect);
 	/* container是一个container控件，调用add_child方法添加这个label控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	rtgui_container_add_child(container, label);
 
 	rect.y1 = rect.y2 + 3;
 	rect.y2 = 250;
 	box = rtgui_listbox_create(items, sizeof(items)/sizeof(struct rtgui_listbox_item), &rect);
 	rtgui_listbox_set_onitem(box, on_items);
 	/* container是一个container控件，调用add_child方法添加这个listbox控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(box));
+	rtgui_container_add_child(container, box);
 
 	return container;
 }

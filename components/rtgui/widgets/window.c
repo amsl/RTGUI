@@ -38,14 +38,14 @@ static void _rtgui_win_constructor(rtgui_win_t *win)
 	win->focused_widget	= RT_NULL;
 
 	/* set window hide */
-	RTGUI_WIDGET_HIDE(RTGUI_WIDGET(win));
+	RTGUI_WIDGET_HIDE(win);
 
 	/* set window style */
 	win->style = RTGUI_WIN_STYLE_DEFAULT;
 
 	win->flag  = RTGUI_WIN_FLAG_INIT;
 
-	rtgui_object_set_event_handler(RTGUI_OBJECT(win), rtgui_win_event_handler);
+	rtgui_object_set_event_handler(win, rtgui_win_event_handler);
 
 	/* init user data */
 	win->user_data = 0;
@@ -149,7 +149,7 @@ rtgui_win_t* rtgui_win_create(struct rtgui_win* parent_window,
 	else
 		win->title = RT_NULL;
 
-	rtgui_widget_set_rect(RTGUI_WIDGET(win), rect);
+	rtgui_widget_set_rect(win, rect);
 	win->style = style;
 
 	if (_rtgui_win_create_in_server(win) == RT_FALSE)
@@ -159,7 +159,7 @@ rtgui_win_t* rtgui_win_create(struct rtgui_win* parent_window,
 	return win;
 
 __on_err:
-	rtgui_widget_destroy(RTGUI_WIDGET(win));
+	rtgui_widget_destroy(win);
 	return RT_NULL;
 }
 
@@ -194,7 +194,7 @@ void rtgui_win_destroy(struct rtgui_win* win)
 		rtgui_win_end_modal(win, RTGUI_MODAL_CANCEL);
 	}
 	else
-		rtgui_widget_destroy(RTGUI_WIDGET(win));
+		rtgui_widget_destroy(win);
 }
 
 static rt_bool_t _rtgui_win_deal_close(struct rtgui_win *win,
@@ -203,7 +203,7 @@ static rt_bool_t _rtgui_win_deal_close(struct rtgui_win *win,
 {
 	if (win->on_close != RT_NULL)
 	{
-		if ((win->on_close(RTGUI_OBJECT(win), event) == RT_FALSE) && !force_close)
+		if ((win->on_close(win, event) == RT_FALSE) && !force_close)
 			return RT_FALSE;
 	}
 
@@ -254,19 +254,19 @@ rt_base_t rtgui_win_show(struct rtgui_win* win, rt_bool_t is_modal)
 	}
 
 	/* set window unhidden before notify the server */
-	RTGUI_WIDGET_UNHIDE(RTGUI_WIDGET(win));
+	RTGUI_WIDGET_UNHIDE(win);
 
 	if (rtgui_server_post_event_sync(RTGUI_EVENT(&eshow),
 									 sizeof(struct rtgui_event_win_show)
 			) != RT_EOK)
 	{
 		/* It could not be shown if a parent window is hidden. */
-		RTGUI_WIDGET_HIDE(RTGUI_WIDGET(win));
+		RTGUI_WIDGET_HIDE(win);
 		return exit_code;
 	}
 
 	if (win->focused_widget == RT_NULL)
-		rtgui_widget_focus(RTGUI_WIDGET(win));
+		rtgui_widget_focus(win);
 
     if (is_modal == RT_TRUE)
     {
@@ -319,7 +319,7 @@ void rtgui_win_hiden(struct rtgui_win* win)
 	RT_ASSERT(win != the_desktop_window);
 #endif
 
-	if (!RTGUI_WIDGET_IS_HIDE(RTGUI_WIDGET(win)) &&
+	if (!RTGUI_WIDGET_IS_HIDE(win) &&
 		win->flag & RTGUI_WIN_FLAG_CONNECTED)
 	{
 		/* send hidden message to server */
@@ -335,7 +335,7 @@ void rtgui_win_hiden(struct rtgui_win* win)
 		}
 
 		/* set window hide and deactivated */
-		RTGUI_WIDGET_HIDE(RTGUI_WIDGET(win));
+		RTGUI_WIDGET_HIDE(win);
 		win->flag &= ~RTGUI_WIN_FLAG_ACTIVATE;
 	}
 }
@@ -368,14 +368,14 @@ void rtgui_win_move(struct rtgui_win* win, int x, int y)
 		return;
 
 	/* move window to logic position */
-	rtgui_widget_move_to_logic(RTGUI_WIDGET(win),
+	rtgui_widget_move_to_logic(win,
 		x - RTGUI_WIDGET(win)->extent.x1,
 		y - RTGUI_WIDGET(win)->extent.y1);
 
 	if (win->flag & RTGUI_WIN_FLAG_CONNECTED)
 	{
 		/* set win hide firstly */
-		RTGUI_WIDGET_HIDE(RTGUI_WIDGET(win));
+		RTGUI_WIDGET_HIDE(win);
 
 		emove.wid	= win;
 		emove.x		= x;
@@ -388,7 +388,7 @@ void rtgui_win_move(struct rtgui_win* win, int x, int y)
 	}
 
 	/* set window visible */
-	RTGUI_WIDGET_UNHIDE(RTGUI_WIDGET(win));
+	RTGUI_WIDGET_UNHIDE(win);
 	return;
 }
 
@@ -399,33 +399,34 @@ static rt_bool_t rtgui_win_ondraw(struct rtgui_win* win)
 	struct rtgui_event_paint event;
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(win));
+	dc = rtgui_dc_begin_drawing(win);
 	if (dc == RT_NULL)
 		return RT_FALSE;
 
 	/* get window rect */
-	rtgui_widget_get_rect(RTGUI_WIDGET(win), &rect);
+	rtgui_widget_get_rect(win, &rect);
 	/* fill area */
 	rtgui_dc_fill_rect(dc, &rect);
 
 	/* paint each widget */
 	RTGUI_EVENT_PAINT_INIT(&event);
 	event.wid = RT_NULL;
-	rtgui_container_dispatch_event(RTGUI_CONTAINER(win),
-								   (rtgui_event_t*)&event);
+	rtgui_container_dispatch_event(win, (rtgui_event_t*)&event);
 
 	rtgui_dc_end_drawing(dc);
 
 	return RT_FALSE;
 }
 
-rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_win_event_handler(void* object, struct rtgui_event* event)
 {
+	struct rtgui_widget *widget;
 	struct rtgui_win* win;
 
 	RT_ASSERT(object != RT_NULL);
 	RT_ASSERT(event != RT_NULL);
 
+	widget = RTGUI_WIDGET(object);
 	win = RTGUI_WIN(object);
 
 	switch (event->type)
@@ -453,7 +454,7 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_even
 	break;
 
 	case RTGUI_EVENT_WIN_ACTIVATE:
-		if (RTGUI_WIDGET_IS_HIDE(RTGUI_WIDGET(win)))
+		if (RTGUI_WIDGET_IS_HIDE(win))
 		{
 			/* activate a hide window */
 			return RT_TRUE;
@@ -461,15 +462,15 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_even
 
 		win->flag |= RTGUI_WIN_FLAG_ACTIVATE;
 #ifndef RTGUI_USING_SMALL_SIZE
-		if (RTGUI_WIDGET(object)->on_draw != RT_NULL)
-			RTGUI_WIDGET(object)->on_draw(object, event);
+		if (widget->on_draw != RT_NULL)
+			widget->on_draw(object, event);
 		else
 #endif
-		rtgui_widget_update(RTGUI_WIDGET(win));
+		rtgui_widget_update(win);
 
 		if (win->on_activate != RT_NULL)
 		{
-			win->on_activate(RTGUI_OBJECT(object), event);
+			win->on_activate(object, event);
 		}
 		break;
 
@@ -490,23 +491,23 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_even
 		{
 			win->flag &= ~RTGUI_WIN_FLAG_ACTIVATE;
 #ifndef RTGUI_USING_SMALL_SIZE
-			if (RTGUI_WIDGET(object)->on_draw != RT_NULL)
-				RTGUI_WIDGET(object)->on_draw(object, event);
+			if (widget->on_draw != RT_NULL)
+				widget->on_draw(widget, event);
 			else
 #endif
-				rtgui_widget_update(RTGUI_WIDGET(win));
+				rtgui_widget_update(win);
 
 			if (win->on_deactivate != RT_NULL)
 			{
-				win->on_deactivate(RTGUI_OBJECT(object), event);
+				win->on_deactivate(object, event);
 			}
 		}
 		break;
 
 	case RTGUI_EVENT_PAINT:
 #ifndef RTGUI_USING_SMALL_SIZE
-		if (RTGUI_WIDGET(object)->on_draw != RT_NULL)
-			RTGUI_WIDGET(object)->on_draw(object, event);
+		if (widget->on_draw != RT_NULL)
+			widget->on_draw(widget, event);
 		else
 #endif
 			rtgui_win_ondraw(win);
@@ -523,13 +524,13 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_even
 			/* clean last mouse event handled widget */
 			win->last_mevent_widget = RT_NULL;
 		}
-		else if (rtgui_container_dispatch_mouse_event(RTGUI_CONTAINER(win),
+		else if (rtgui_container_dispatch_mouse_event(win,
 			(struct rtgui_event_mouse*)event) == RT_FALSE)
 		{
 #ifndef RTGUI_USING_SMALL_SIZE
-			if (RTGUI_WIDGET(object)->on_mouseclick != RT_NULL)
+			if (widget->on_mouseclick != RT_NULL)
 			{
-				return RTGUI_WIDGET(object)->on_mouseclick(object, event);
+				return widget->on_mouseclick(widget, event);
 			}
 #endif
 		}
@@ -569,7 +570,7 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_even
 
 			/* if the focused widget doesn't handle it, I will handle it. */
 			if (res != RT_TRUE && win->on_key != RT_NULL)
-				res = win->on_key(RTGUI_OBJECT(win), event);
+				res = win->on_key(win, event);
 
 			win->flag &= ~RTGUI_WIN_FLAG_HANDLE_KEY;
 			return res;
@@ -579,7 +580,7 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object* object, struct rtgui_even
 			/* in key handling mode(it may reach here in
 			 * win->focused_widget->event_handler call) */
 			if (win->on_key != RT_NULL)
-				return win->on_key(RTGUI_OBJECT(win), event);
+				return win->on_key(win, event);
 		}
 		break;
 
@@ -615,8 +616,8 @@ void rtgui_win_set_box(rtgui_win_t* win, rtgui_box_t* box)
 {
 	if (win == RT_NULL || box == RT_NULL) return;
 
-	rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(box));
-	rtgui_widget_set_rect(RTGUI_WIDGET(box), &(RTGUI_WIDGET(win)->extent));
+	rtgui_container_add_child(win, box);
+	rtgui_widget_set_rect(box, &(RTGUI_WIDGET(win)->extent));
 }
 #endif
 

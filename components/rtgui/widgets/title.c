@@ -19,7 +19,7 @@ static void _rtgui_wintitle_constructor(rtgui_wintitle_t* wintitle)
 {
 	wintitle->title = RT_NULL;
 	RTGUI_WIDGET(wintitle)->flag = RTGUI_WIDGET_FLAG_DEFAULT;
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(wintitle)) = RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_TEXTALIGN(wintitle) = RTGUI_ALIGN_CENTER_VERTICAL;
 }
 
 static void _rtgui_wintitle_deconstructor(rtgui_wintitle_t* wintitle)
@@ -49,7 +49,7 @@ rtgui_wintitle_t* rtgui_wintitle_create(const char* title)
 
 void rtgui_wintitle_destroy(rtgui_wintitle_t* wintitle)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(wintitle));
+	rtgui_widget_destroy(wintitle);
 }
 
 void rtgui_wintitle_set_title(rtgui_wintitle_t* wintitle, const char* title)

@@ -78,6 +78,10 @@ static void rtgui_event_dump(rt_thread_t tid, rtgui_event_t* event)
 
 	if (event->sender != RT_NULL)
 		sender = event->sender->name;
+#ifdef _WIN32
+	else
+		sender = "PCSDL";
+#endif
 
 	rt_kprintf("%s -- %s --> %s ", sender, event_string[event->type], tid->name);
 	switch (event->type)
@@ -221,13 +225,12 @@ static void rtgui_event_dump(rt_thread_t tid, rtgui_event_t* event)
 #define rtgui_event_dump(tid, event)
 #endif
 
-rt_bool_t rtgui_application_event_handler(struct rtgui_object* obj, rtgui_event_t* event);
+rt_bool_t rtgui_application_event_handler(void* obj, rtgui_event_t* event);
 
 static void _rtgui_application_constructor(struct rtgui_application *app)
 {
 	/* set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(app),
-			                       rtgui_application_event_handler);
+	rtgui_object_set_event_handler(app, rtgui_application_event_handler);
 
 	app->name           = RT_NULL;
 	/* set EXITED so we can destroy an application that just created */
@@ -547,7 +550,7 @@ rt_inline rt_bool_t _rtgui_application_dest_handle(
 	}
 }
 
-rt_bool_t rtgui_application_event_handler(struct rtgui_object* object, rtgui_event_t* event)
+rt_bool_t rtgui_application_event_handler(void* object, rtgui_event_t* event)
 {
 	struct rtgui_application* app;
 

@@ -22,7 +22,7 @@ static void open_btn_onbutton(rtgui_widget_t* widget, struct rtgui_event* event)
 
 	/* 获得顶层的workbench */
 	workbench = RTGUI_WORKBENCH(rtgui_widget_get_toplevel(widget));
-	rtgui_widget_get_rect(RTGUI_WIDGET(workbench), &rect);
+	rtgui_widget_get_rect(workbench, &rect);
 
 	/* WIN32平台上和真实设备上的初始路径处理 */
 #ifdef _WIN32
@@ -66,8 +66,8 @@ rtgui_container_t* demo_view_module(rtgui_workbench_t* workbench)
 	rect.x1 += 5; rect.x2 = rect.x1 + 120;
 	rect.y2 = rect.y1 + 20;
 	open_btn = rtgui_button_create("打开应用模块");
-	rtgui_container_add_child(RTGUI_CONTAINER(_view), RTGUI_WIDGET(open_btn));
-	rtgui_widget_set_rect(RTGUI_WIDGET(open_btn), &rect);
+	rtgui_container_add_child(_view, open_btn);
+	rtgui_widget_set_rect(open_btn, &rect);
 	rtgui_button_set_onbutton(open_btn, open_btn_onbutton);
 
 	return _view;

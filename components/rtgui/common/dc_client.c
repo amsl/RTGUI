@@ -45,8 +45,9 @@ static void rtgui_dc_client_get_rect(struct rtgui_dc* dc, rtgui_rect_t* rect);
 #define dc_set_background(c) 	dc->gc.background = c
 #define _int_swap(x, y)			do {x ^= y; y ^= x; x ^= y;} while (0)
 
-struct rtgui_dc* rtgui_dc_begin_drawing(rtgui_widget_t* owner)
+struct rtgui_dc* rtgui_dc_begin_drawing(void* wdt)
 {
+	struct rtgui_widget *owner = RTGUI_WIDGET(wdt);
 	RT_ASSERT(owner != RT_NULL);
 
 	if ((rtgui_region_is_flat(&owner->clip) == RT_EOK) &&

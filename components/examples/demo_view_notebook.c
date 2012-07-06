@@ -41,7 +41,7 @@ rtgui_container_t* demo_view_notebook(void)
 
 	notebook = rtgui_notebook_create(&rect, RTGUI_NOTEBOOK_BOTTOM);
 	/* container是一个container控件，调用add_child方法添加这个notebook控件 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(notebook));
+	rtgui_container_add_child(container, notebook);
 
 	box = rtgui_listbox_create(items, sizeof(items)/sizeof(struct rtgui_listbox_item), &rect);
 	rtgui_notebook_add(notebook, "Tab 1", RTGUI_WIDGET(box));

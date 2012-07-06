@@ -27,8 +27,8 @@ static void _rtgui_slider_constructor(rtgui_slider_t *slider)
 
 	/* init widget and set event handler */
 	RTGUI_WIDGET(slider)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
-	rtgui_widget_set_rect(RTGUI_WIDGET(slider), &rect);
-	rtgui_object_set_event_handler(RTGUI_OBJECT(slider), rtgui_slider_event_handler);
+	rtgui_widget_set_rect(slider, &rect);
+	rtgui_object_set_event_handler(slider, rtgui_slider_event_handler);
 
 	/* set proper of control */
 	slider->min = RTGUI_SLIDER_DEFAULT_MIN;
@@ -88,7 +88,7 @@ static void rtgui_slider_onmouse(struct rtgui_slider* slider, struct rtgui_event
 			sel += slider->min;
 		}
 
-		rtgui_widget_focus(RTGUI_WIDGET(slider));
+		rtgui_widget_focus(slider);
 		rtgui_slider_set_value(slider, sel);
 		if (slider->on_changed != RT_NULL) /* invoke callback function */
 			slider->on_changed(RTGUI_WIDGET(slider), RT_NULL);
@@ -131,14 +131,14 @@ static rt_bool_t rtgui_slider_onkey(struct rtgui_slider* slider, struct rtgui_ev
 	}
 
 	/* update widget */
-	rtgui_widget_update(RTGUI_WIDGET(slider));
+	rtgui_widget_update(slider);
 	if (slider->on_changed != RT_NULL) /* invoke callback function */
 		slider->on_changed(RTGUI_WIDGET(slider), RT_NULL);
 
 	return RT_TRUE;
 }
 
-rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_event *event)
+rt_bool_t rtgui_slider_event_handler(void *object, struct rtgui_event *event)
 {
 	struct rtgui_widget *widget;
 	struct rtgui_slider* slider;
@@ -154,7 +154,7 @@ rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_e
 	case RTGUI_EVENT_PAINT:
 #ifndef RTGUI_USING_SMALL_SIZE
 		if (widget->on_draw != RT_NULL)
-			widget->on_draw(RTGUI_OBJECT(widget), event);
+			widget->on_draw(widget, event);
 		else
 #endif
 		{
@@ -168,7 +168,7 @@ rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_e
 
 #ifndef RTGUI_USING_SMALL_SIZE
 		if (widget->on_key != RT_NULL)
-			widget->on_key(RTGUI_OBJECT(widget), event);
+			widget->on_key(widget, event);
 		else
 #endif
 		{
@@ -181,7 +181,7 @@ rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_e
 
 #ifndef RTGUI_USING_SMALL_SIZE
 		if (widget->on_mouseclick != RT_NULL)
-			widget->on_mouseclick(RTGUI_OBJECT(widget), event);
+			widget->on_mouseclick(widget, event);
 		else
 #endif
 		{
@@ -226,7 +226,7 @@ void rtgui_slider_set_value(struct rtgui_slider* slider, rt_size_t value)
 {
 	RT_ASSERT(slider != RT_NULL);
 
-	if (RTGUI_WIDGET_IS_ENABLE(RTGUI_WIDGET(slider)))
+	if (RTGUI_WIDGET_IS_ENABLE(slider))
 	{
 		if (value < slider->min) value = slider->min;
 		if (value > slider->max) value = slider->max;
@@ -249,14 +249,14 @@ void rtgui_slider_set_orientation(struct rtgui_slider* slider, int orientation)
 	if (slider->orient == RTGUI_HORIZONTAL)
 	{
 		/* HORIZONTAL */
-		rtgui_widget_set_miniheight(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_HEIGHT);
-		rtgui_widget_set_miniwidth(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_WIDTH);
+		rtgui_widget_set_miniheight(slider, RTGUI_SLIDER_DEFAULT_HEIGHT);
+		rtgui_widget_set_miniwidth(slider, RTGUI_SLIDER_DEFAULT_WIDTH);
 	}
 	else
 	{
 		/* VERTICAL */
-		rtgui_widget_set_miniwidth(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_HEIGHT);
-		rtgui_widget_set_miniheight(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_WIDTH);
+		rtgui_widget_set_miniwidth(slider, RTGUI_SLIDER_DEFAULT_HEIGHT);
+		rtgui_widget_set_miniheight(slider, RTGUI_SLIDER_DEFAULT_WIDTH);
 	}
 #endif
 }

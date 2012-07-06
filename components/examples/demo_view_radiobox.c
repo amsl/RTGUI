@@ -45,9 +45,9 @@ rtgui_container_t* demo_view_radiobox(void)
 	/* 设置当前选择的数组是第0项 */
 	rtgui_radiobox_set_selection(radiobox, 0);
 	/* 添加radiobox控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(radiobox));
+	rtgui_container_add_child(container, radiobox);
 	/* 设置radiobox控件的位置信息 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(radiobox), &rect);
+	rtgui_widget_set_rect(radiobox, &rect);
 
 	/* 获得视图的位置信息 */
 	demo_view_get_rect(container, &rect);
@@ -61,9 +61,9 @@ rtgui_container_t* demo_view_radiobox(void)
 	/* 设置当前选择的数组是第0项 */
 	rtgui_radiobox_set_selection(radiobox, 0);
 	/* 添加radiobox控件到视图中 */
-	rtgui_container_add_child(container, RTGUI_WIDGET(radiobox));
+	rtgui_container_add_child(container, radiobox);
 	/* 设置radiobox控件的位置信息 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(radiobox), &rect);
+	rtgui_widget_set_rect(radiobox, &rect);
 
 	return container;
 }

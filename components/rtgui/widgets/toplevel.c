@@ -19,7 +19,7 @@
 static void _rtgui_toplevel_constructor(rtgui_toplevel_t *toplevel)
 {
 	/* set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(toplevel), rtgui_toplevel_event_handler);
+	rtgui_object_set_event_handler(toplevel, rtgui_toplevel_event_handler);
 
 	/* set toplevel to self */
 	if (RTGUI_IS_WINTITLE(toplevel))
@@ -31,7 +31,7 @@ static void _rtgui_toplevel_constructor(rtgui_toplevel_t *toplevel)
 	toplevel->drawing = 0;
 
 	/* hide toplevel default */
-	RTGUI_WIDGET_HIDE(RTGUI_WIDGET(toplevel));
+	RTGUI_WIDGET_HIDE(toplevel);
 }
 
 static void _rtgui_toplevel_destructor(rtgui_toplevel_t* toplevel)
@@ -46,7 +46,7 @@ DEFINE_CLASS_TYPE(toplevel, "toplevel",
 	_rtgui_toplevel_destructor,
 	sizeof(struct rtgui_toplevel));
 
-rt_bool_t rtgui_toplevel_event_handler(struct rtgui_object* object, rtgui_event_t* event)
+rt_bool_t rtgui_toplevel_event_handler(void* object, rtgui_event_t* event)
 {
 	struct rtgui_toplevel* toplevel;
 
@@ -63,7 +63,7 @@ rt_bool_t rtgui_toplevel_event_handler(struct rtgui_object* object, rtgui_event_
 		break;
 
 	case RTGUI_EVENT_COMMAND:
-		if (rtgui_container_dispatch_event(RTGUI_CONTAINER(object), event) != RT_TRUE)
+		if (rtgui_container_dispatch_event(object, event) != RT_TRUE)
 		{
 #ifndef RTGUI_USING_SMALL_SIZE
 			if (RTGUI_WIDGET(object)->on_command != RT_NULL)

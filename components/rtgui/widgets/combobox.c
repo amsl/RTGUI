@@ -10,10 +10,10 @@ static void _rtgui_combobox_constructor(rtgui_combobox_t *box)
 	rtgui_rect_t rect = {0, 0, RTGUI_COMBOBOX_WIDTH, RTGUI_COMBOBOX_HEIGHT};
 
 	/* init widget and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(box), rtgui_combobox_event_handler);
-	rtgui_widget_set_rect(RTGUI_WIDGET(box), &rect);
+	rtgui_object_set_event_handler(box, rtgui_combobox_event_handler);
+	rtgui_widget_set_rect(box, &rect);
 
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(box)) = RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_TEXTALIGN(box) = RTGUI_ALIGN_CENTER_VERTICAL;
 
 	box->pd_pressed = RT_FALSE;
 	box->current_item = 0;
@@ -30,19 +30,15 @@ static void _rtgui_combobox_destructor(rtgui_combobox_t *box)
 	box->pd_win    = RT_NULL;
 }
 
-rt_bool_t rtgui_combobox_pdwin_onitem(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_combobox_pdwin_onitem(struct rtgui_listbox* list, struct rtgui_event* event)
 {
-	struct rtgui_widget *widget;
 	rtgui_win_t* pd_win;
 	rtgui_combobox_t* combo;
-	rtgui_listbox_t* list;
 
-	RT_ASSERT(object != RT_NULL);
+	RT_ASSERT(list != RT_NULL);
 	RT_ASSERT(event != RT_NULL);
 
-	widget = RTGUI_WIDGET(object);
-	list = RTGUI_LISTBOX(widget);
-	pd_win = RTGUI_WIN(rtgui_widget_get_toplevel(widget));
+	pd_win = RTGUI_WIN(rtgui_widget_get_toplevel(list));
 	combo = RTGUI_COMBOBOX(pd_win->user_data);
 	combo->current_item = list->current_item;
 
@@ -50,7 +46,7 @@ rt_bool_t rtgui_combobox_pdwin_onitem(struct rtgui_object* object, struct rtgui_
 		combo->on_selected(RTGUI_OBJECT(combo), RT_NULL);
 
 	rtgui_win_hiden(pd_win);
-	rtgui_widget_update(RTGUI_WIDGET(combo));
+	rtgui_widget_update(combo);
 
 	return RT_FALSE;
 }
@@ -74,7 +70,7 @@ rtgui_combobox_t *rtgui_combobox_create(struct rtgui_listbox_item* items, rt_uin
 	box = (rtgui_combobox_t*)rtgui_widget_create(RTGUI_COMBOBOX_TYPE);
 	box->items_count = count;
 	box->items = items;
-	rtgui_widget_set_rect(RTGUI_WIDGET(box), rect);
+	rtgui_widget_set_rect(box, rect);
 	
 	box->pd_win = RT_NULL;
 
@@ -83,7 +79,7 @@ rtgui_combobox_t *rtgui_combobox_create(struct rtgui_listbox_item* items, rt_uin
 
 void rtgui_combobox_destroy(rtgui_combobox_t* box)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(box));
+	rtgui_widget_destroy(box);
 }
 
 static void rtgui_combobox_ondraw(struct rtgui_combobox* box)
@@ -94,14 +90,14 @@ static void rtgui_combobox_ondraw(struct rtgui_combobox* box)
 	struct rtgui_rect rect, r;
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(box));
+	dc = rtgui_dc_begin_drawing(box);
 	if (dc == RT_NULL) return;
 
-	bc = RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box));
+	bc = RTGUI_WIDGET_BACKGROUND(box);
 
 	/* get widget rect */
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = WHITE;
+	rtgui_widget_get_rect(box, &rect);
+	RTGUI_WIDGET_BACKGROUND(box) = WHITE;
 
 	/* fill widget rect with background color */
 	rtgui_dc_fill_rect(dc, &rect);
@@ -115,7 +111,7 @@ static void rtgui_combobox_ondraw(struct rtgui_combobox* box)
 	}
 
 	/* restore background color */
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(box)) = bc;
+	RTGUI_WIDGET_BACKGROUND(box) = bc;
 
 	/* draw pull down button */
 	rect.x1 = rect.x2 - RTGUI_COMBOBOX_BUTTON_WIDTH;
@@ -149,13 +145,13 @@ static rt_bool_t rtgui_combobox_onmouse_button(struct rtgui_combobox* box, struc
 			event->button & RTGUI_MOUSE_BUTTON_DOWN)
 		{
 			box->pd_pressed = RT_TRUE;
-			rtgui_widget_update(RTGUI_WIDGET(box));
+			rtgui_widget_update(box);
 		}
 		else if (event->button & RTGUI_MOUSE_BUTTON_LEFT &&
 			event->button & RTGUI_MOUSE_BUTTON_UP)
 		{
 			box->pd_pressed = RT_FALSE;
-			rtgui_widget_update(RTGUI_WIDGET(box));
+			rtgui_widget_update(box);
 
 			/* pop pull down window */
 			if (box->pd_win == RT_NULL)
@@ -174,8 +170,8 @@ static rt_bool_t rtgui_combobox_onmouse_button(struct rtgui_combobox* box, struc
 				/* create list box */
 				rtgui_rect_inflate(&rect, -1);
 				list = rtgui_listbox_create(box->items, box->items_count, &rect);
-				rtgui_container_add_child(RTGUI_CONTAINER(box->pd_win), RTGUI_WIDGET(list));
-				rtgui_widget_focus(RTGUI_WIDGET(list));
+				rtgui_container_add_child(box->pd_win, list);
+				rtgui_widget_focus(list);
 
 				rtgui_listbox_set_onitem(list, rtgui_combobox_pdwin_onitem);
 				rtgui_win_set_ondeactivate(box->pd_win, rtgui_combobox_pdwin_ondeactive);
@@ -191,7 +187,7 @@ static rt_bool_t rtgui_combobox_onmouse_button(struct rtgui_combobox* box, struc
 	return RT_FALSE;
 }
 
-rt_bool_t rtgui_combobox_event_handler(struct rtgui_object* object, struct rtgui_event* event)
+rt_bool_t rtgui_combobox_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_combobox *box;
 	RTGUI_WIDGET_EVENT_HANDLER_PREPARE
@@ -203,7 +199,7 @@ rt_bool_t rtgui_combobox_event_handler(struct rtgui_object* object, struct rtgui
 	case RTGUI_EVENT_PAINT:
 #ifndef RTGUI_USING_SMALL_SIZE
 		if (widget->on_draw != RT_NULL)
-			widget->on_draw(RTGUI_OBJECT(widget), event);
+			widget->on_draw(widget, event);
 		else
 #endif
 			rtgui_combobox_ondraw(box);
@@ -254,7 +250,7 @@ static rt_bool_t rtgui_combobox_pulldown_hide(struct rtgui_object* object, struc
 
 	/* clear pull down button state */
 	box->pd_pressed = RT_FALSE;
-	rtgui_widget_update(RTGUI_WIDGET(box));
+	rtgui_widget_update(box);
 
 	return RT_TRUE;
 }

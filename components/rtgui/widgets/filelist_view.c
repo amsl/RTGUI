@@ -235,14 +235,12 @@ static struct rtgui_listbox_item items[] =
 };
 static void rtgui_filelist_view_clear(rtgui_filelist_view_t* view);
 
-static void rtgui_filelist_view_on_folder_item(rtgui_widget_t* widget, struct rtgui_event* event)
+static void rtgui_filelist_view_on_folder_item(rtgui_listbox_t* listbox, struct rtgui_event* event)
 {
 	rtgui_win_t *menu;
-	rtgui_listbox_t *listbox;
 	rtgui_filelist_view_t *view;
 
-	listbox = RTGUI_LISTBOX(widget);
-	menu = RTGUI_WIN(rtgui_widget_get_toplevel(widget));
+	menu = RTGUI_WIN(rtgui_widget_get_toplevel(listbox));
 	view = RTGUI_FILELIST_VIEW(menu->user_data);
 
 	/* hide window */
@@ -295,7 +293,7 @@ static void rtgui_filelist_view_menu_pop(rtgui_widget_t *parent)
 	rtgui_graphic_driver_get_rect(rtgui_graphic_driver_get_default(), &screen);
 	rtgui_rect_moveto_align(&screen, &rect, RTGUI_ALIGN_CENTER_HORIZONTAL | RTGUI_ALIGN_CENTER_VERTICAL);
 
-	menu = rtgui_win_create(RTGUI_TOPLEVEL(rtgui_widget_get_toplevel(parent)),
+	menu = rtgui_win_create(RTGUI_WIN(rtgui_widget_get_toplevel(parent)),
 							"Folder Menu", &rect, RTGUI_WIN_STYLE_DEFAULT);
 	if (menu != RT_NULL)
 	{
@@ -306,9 +304,9 @@ static void rtgui_filelist_view_menu_pop(rtgui_widget_t *parent)
 
 		listbox = rtgui_listbox_create(items, sizeof(items)/sizeof(items[0]), &rect);
 		rtgui_listbox_set_onitem(listbox, rtgui_filelist_view_on_folder_item);
-		rtgui_container_add_child(RTGUI_CONTAINER(menu), RTGUI_WIDGET(listbox));
+		rtgui_container_add_child(menu, listbox);
 		rtgui_win_show(menu, RT_FALSE);
-		rtgui_widget_focus(RTGUI_WIDGET(listbox));
+		rtgui_widget_focus(listbox);
 		rtgui_listbox_set_current_item(listbox, 0);
 	}
 }
@@ -319,8 +317,8 @@ static void _rtgui_filelist_view_constructor(struct rtgui_filelist_view *view)
 	struct rtgui_rect rect = {0, 0, 200, 200};
 
 	/* set default widget rect and set event handler */
-	rtgui_object_set_event_handler(RTGUI_WIDGET(view), rtgui_filelist_view_event_handler);
-	rtgui_widget_set_rect(RTGUI_WIDGET(view), &rect);
+	rtgui_object_set_event_handler(view, rtgui_filelist_view_event_handler);
+	rtgui_widget_set_rect(view, &rect);
 
 	RTGUI_WIDGET(view)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
 
@@ -330,8 +328,8 @@ static void _rtgui_filelist_view_constructor(struct rtgui_filelist_view *view)
 
 	view->current_directory = RT_NULL;
 	view->pattern = RT_NULL;
-	RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(view)) = WHITE;
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(view)) = RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_BACKGROUND(view) = WHITE;
+	RTGUI_WIDGET_TEXTALIGN(view) = RTGUI_ALIGN_CENTER_VERTICAL;
 
 	file_image = rtgui_image_create_from_mem("xpm",
 		(rt_uint8_t*)file_xpm, sizeof(file_xpm), RT_TRUE);
@@ -365,10 +363,10 @@ void rtgui_filelist_view_ondraw(struct rtgui_filelist_view* view)
 	struct rtgui_file_item* item;
 	struct rtgui_rect rect, item_rect, image_rect;
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(view));
+	dc = rtgui_dc_begin_drawing(view);
 	if (dc == RT_NULL) return;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(view), &rect);
+	rtgui_widget_get_rect(view, &rect);
 	rtgui_dc_fill_rect(dc, &rect);
 
 	/* get item base rect */
@@ -430,14 +428,14 @@ void rtgui_filelist_view_update_current(struct rtgui_filelist_view* view, rt_uin
 	if (old_item/view->page_items != view->current_item/view->page_items)
 	{
 		/* it's not a same page, update all */
-		rtgui_widget_update(RTGUI_WIDGET(view));
+		rtgui_widget_update(view);
 		return;
 	}
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(view));
+	dc = rtgui_dc_begin_drawing(view);
 	if (dc == RT_NULL) return;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(view), &rect);
+	rtgui_widget_get_rect(view, &rect);
 
 	/* get old item rect */
 	item_rect = rect;
@@ -533,11 +531,11 @@ static void rtgui_filelist_view_onenturn(struct rtgui_filelist_view* view)
 	}
 }
 
-rt_bool_t rtgui_filelist_view_event_handler(struct rtgui_widget* widget, struct rtgui_event* event)
+rt_bool_t rtgui_filelist_view_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_filelist_view* view = RT_NULL;
 
-	view = RTGUI_FILELIST_VIEW(widget);
+	view = RTGUI_FILELIST_VIEW(object);
 	switch (event->type)
 	{
 	case RTGUI_EVENT_PAINT:
@@ -568,8 +566,8 @@ rt_bool_t rtgui_filelist_view_event_handler(struct rtgui_widget* widget, struct 
 			/* calculate selected item */
 
 			/* get physical extent information */
-			rtgui_widget_get_rect(widget, &rect);
-			rtgui_widget_rect_to_device(widget, &rect);
+			rtgui_widget_get_rect(object, &rect);
+			rtgui_widget_rect_to_device(object, &rect);
 
 			if (rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK)
 			{
@@ -650,7 +648,7 @@ rt_bool_t rtgui_filelist_view_event_handler(struct rtgui_widget* widget, struct 
 	}
 
     /* use view event handler */
-    return rtgui_container_event_handler(widget, event);
+    return rtgui_container_event_handler(object, event);
 }
 
 rtgui_filelist_view_t* rtgui_filelist_view_create(const char* directory,
@@ -675,7 +673,7 @@ rtgui_filelist_view_t* rtgui_filelist_view_create(const char* directory,
 void rtgui_filelist_view_destroy(rtgui_filelist_view_t* view)
 {
     /* destroy view */
-	rtgui_widget_destroy(RTGUI_WIDGET(view));
+	rtgui_widget_destroy(view);
 }
 
 /* clear all file items */
@@ -810,7 +808,7 @@ void rtgui_filelist_view_set_directory(rtgui_filelist_view_t* view, const char* 
 
 __return:
     /* update view */
-    rtgui_widget_update(RTGUI_WIDGET(view));
+    rtgui_widget_update(view);
 }
 
 void rtgui_filelist_view_get_fullpath(rtgui_filelist_view_t* view, char* path, rt_size_t len)

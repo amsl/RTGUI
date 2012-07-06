@@ -21,15 +21,15 @@ static void _rtgui_about_view_constructor(struct rtgui_about_view *view)
 	struct rtgui_rect rect = {0, 0, 200, 200};
 
 	/* set default widget rect and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(view),rtgui_about_view_event_handler);
-	rtgui_widget_set_rect(RTGUI_WIDGET(view), &rect);
+	rtgui_object_set_event_handler(view,rtgui_about_view_event_handler);
+	rtgui_widget_set_rect(view, &rect);
 
 	RTGUI_WIDGET(view)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
 
 	view->logo = RT_NULL;
 	view->description = RT_NULL;
 
-	RTGUI_WIDGET_TEXTALIGN(RTGUI_WIDGET(view)) = RTGUI_ALIGN_CENTER_VERTICAL;
+	RTGUI_WIDGET_TEXTALIGN(view) = RTGUI_ALIGN_CENTER_VERTICAL;
 }
 
 DEFINE_CLASS_TYPE(aboutview, "aboutview", 
@@ -43,10 +43,10 @@ void rtgui_about_view_ondraw(struct rtgui_about_view* view)
 	struct rtgui_rect rect;
 	struct rtgui_dc* dc;
 
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(view));
+	dc = rtgui_dc_begin_drawing(view);
 	if (dc == RT_NULL) return;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(view), &rect);
+	rtgui_widget_get_rect(view, &rect);
 	rtgui_dc_fill_rect(dc, &rect);
 
 	if (view->logo != RT_NULL)
@@ -64,11 +64,11 @@ void rtgui_about_view_ondraw(struct rtgui_about_view* view)
 	rtgui_dc_end_drawing(dc);
 }
 
-rt_bool_t rtgui_about_view_event_handler(struct rtgui_object* widget, struct rtgui_event* event)
+rt_bool_t rtgui_about_view_event_handler(void* object, struct rtgui_event* event)
 {
 	struct rtgui_about_view* view = RT_NULL;
 
-	view = RTGUI_ABOUT_VIEW(widget);
+	view = RTGUI_ABOUT_VIEW(object);
 	switch (event->type)
 	{
 	case RTGUI_EVENT_PAINT:
@@ -77,7 +77,7 @@ rt_bool_t rtgui_about_view_event_handler(struct rtgui_object* widget, struct rtg
 	}
 
     /* use view event handler */
-    return rtgui_container_event_handler(widget, event);
+    return rtgui_container_event_handler(object, event);
 }
 
 rtgui_about_view_t* rtgui_about_view_create(rtgui_image_t *logo, const char* description)
@@ -97,5 +97,5 @@ rtgui_about_view_t* rtgui_about_view_create(rtgui_image_t *logo, const char* des
 void rtgui_about_view_destroy(rtgui_about_view_t* view)
 {
     /* destroy view */
-	rtgui_widget_destroy(RTGUI_WIDGET(view));
+	rtgui_widget_destroy(view);
 }
