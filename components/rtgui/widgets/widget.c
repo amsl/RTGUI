@@ -228,6 +228,38 @@ void rtgui_widget_get_rect(void* wdt, rtgui_rect_t *rect)
 	}
 }
 
+/**
+ * set widget draw style
+ */
+void rtgui_widget_set_border(void* wdt, rt_uint32_t style)
+{
+	struct rtgui_widget *widget = RTGUI_WIDGET(wdt);
+	RT_ASSERT(widget != RT_NULL);
+
+	widget->border_style = style;
+	switch(style)
+	{
+	case RTGUI_BORDER_NONE:
+		widget->border = 0;
+		break;
+	case RTGUI_BORDER_SIMPLE:
+	case RTGUI_BORDER_UP:
+	case RTGUI_BORDER_DOWN:
+		widget->border = 1;
+		break;
+	case RTGUI_BORDER_STATIC:
+	case RTGUI_BORDER_RAISE:
+	case RTGUI_BORDER_SUNKEN:
+	case RTGUI_BORDER_BOX:
+	case RTGUI_BORDER_EXTRA:
+		widget->border = 2;
+		break;
+	default:
+		widget->border = 2;
+		break;
+	}
+}
+
 void rtgui_widget_set_onfocus(void* wdt, rtgui_event_handler_ptr handler)
 {
 	struct rtgui_widget *widget = RTGUI_WIDGET(wdt);

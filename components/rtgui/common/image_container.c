@@ -106,7 +106,7 @@ rt_inline unsigned int primes_closest (unsigned int num)
 }
 
 /* directly hash */
-unsigned int direct_hash (void* v)
+unsigned int direct_hash (const void* v)
 {
 	return (unsigned int)v;
 }

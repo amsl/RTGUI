@@ -38,6 +38,10 @@ extern "C" {
 #define RTGUI_WIDGET_BACKGROUND(w)		((RTGUI_WIDGET(w))->gc.background)
 #define RTGUI_WIDGET_TEXTALIGN(w)		((RTGUI_WIDGET(w))->gc.textalign)
 #define RTGUI_WIDGET_FONT(w)			((RTGUI_WIDGET(w))->gc.font)
+#define RTGUI_WIDGET_PARENT(w)			((RTGUI_WIDGET(w))->parent)
+#define RTGUI_WIDGET_EXTENT(w)			((RTGUI_WIDGET(W))->extent)
+#define RTGUI_WIDGET_BORDER(w)			((RTGUI_WIDGET(w))->border)
+#define RTGUI_WIDGET_BORDER_STYLE(w)	((RTGUI_WIDGET(w))->border_style)
 #define RTGUI_WIDGET_FLAG(w)			((RTGUI_WIDGET(w))->flag)
 
 #define RTGUI_WIDGET_UNHIDE(w)			RTGUI_WIDGET_FLAG(w) &= ~RTGUI_WIDGET_FLAG_HIDE
@@ -103,6 +107,8 @@ struct rtgui_widget
 
 	/* widget align */
 	rt_int32_t align;
+	rt_uint16_t border;
+	rt_uint16_t border_style;
 #endif
 
 	/* the rect clip */
@@ -181,7 +187,8 @@ void rtgui_widget_rect_to_logic(void* wdt, rtgui_rect_t* rect);
 
 /* move widget and its children to a logic point */
 void rtgui_widget_move_to_logic(void* wdt, int dx, int dy);
-
+/* set widget draw style */
+void rtgui_widget_set_border(void* wdt, rt_uint32_t style);
 /* update the clip info of widget */
 void rtgui_widget_update_clip(void* wdt);
 

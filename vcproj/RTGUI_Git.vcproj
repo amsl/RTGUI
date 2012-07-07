@@ -480,6 +480,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\components\rtgui\widgets\groupbox.c"
+							>
+						</File>
+						<File
 							RelativePath=".\..\components\rtgui\widgets\iconbox.c"
 							>
 						</File>
