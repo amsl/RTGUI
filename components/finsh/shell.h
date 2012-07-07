@@ -1,21 +1,7 @@
-/*
- * File      : shell.h
- * This file is part of RT-Thread RTOS
- * COPYRIGHT (C) 2006 - 2011, RT-Thread Development Team
- *
- * The license and distribution terms for this file may be
- * found in the file LICENSE in this distribution or at
- * http://www.rt-thread.org/license/LICENSE
- *
- * Change Logs:
- * Date           Author       Notes
- * 2011-06-02     Bernard      Add finsh_get_prompt function declaration
- */
-
 #ifndef __SHELL_H__
 #define __SHELL_H__
 
-#include <rtthread.h>
+#include "finsh.h"
 
 #define FINSH_USING_HISTORY
 #ifndef FINSH_THREAD_PRIORITY
@@ -48,16 +34,14 @@ enum input_stat
 
 struct finsh_shell
 {
-	struct rt_semaphore rx_sem;
-
 	enum input_stat stat;
 
-	rt_uint8_t echo_mode:1;
-	rt_uint8_t use_history:1;
+	u_char echo_mode:1;
+	u_char use_history:1;
 
 #ifdef FINSH_USING_HISTORY
-	rt_uint8_t current_history;
-	rt_uint16_t history_count;
+	u_char current_history;
+	u_short history_count;
 
 	char cmd_history[FINSH_HISTORY_LINES][FINSH_CMD_SIZE];
 #endif
@@ -65,13 +49,11 @@ struct finsh_shell
 	struct finsh_parser parser;
 
 	char line[FINSH_CMD_SIZE];
-	rt_uint8_t line_position;
-
-	rt_device_t device;
+	u_char line_position;
 };
 
-void finsh_set_echo(rt_uint32_t echo);
-rt_uint32_t finsh_get_echo(void);
+void finsh_set_echo(u_long echo);
+u_long finsh_get_echo(void);
 
 void finsh_set_device(const char* device_name);
 const char* finsh_get_device(void);

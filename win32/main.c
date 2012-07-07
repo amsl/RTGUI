@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
 	rt_mb_system_init();
 	rt_thread_system_init();
 
+	finsh_thread_init();
+
 	// while(!done);
 
 	/* init driver */

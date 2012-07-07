@@ -15,7 +15,6 @@
 
 #include "finsh_var.h"
 
-ALIGN(RT_ALIGN_SIZE)
 u_char finsh_heap[FINSH_HEAP_MAX];
 struct finsh_block_header
 {

@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\..\components\examples;.\..\components\external\libz;.\..\components\external\libpng;.\..\components\external\jpeg;.\..\components\rtgui\include;.\..\win32"
+				AdditionalIncludeDirectories="E:\RTGUI_void\components\finsh;.\..\components\examples;.\..\components\external\libz;.\..\components\external\libpng;.\..\components\external\jpeg;.\..\components\rtgui\include;.\..\win32"
 				PreprocessorDefinitions="WIN32;_DEBUG;"
 				RuntimeLibrary="1"
 				WarningLevel="3"
@@ -60,7 +60,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\..\win32\SDL\lib\SDL.lib .\..\win32\SDL\lib\SDLmain.lib"
+				AdditionalOptions="/NODEFAULTLIB:libcmtd.lib"
+				AdditionalDependencies=".\..\win32\SDL\lib\SDL.lib .\..\win32\SDL\lib\SDLmain.lib msvcrt.lib"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
@@ -919,6 +920,62 @@
 							>
 						</File>
 					</Filter>
+				</Filter>
+				<Filter
+					Name="finsh"
+					>
+					<File
+						RelativePath="..\components\finsh\cmd.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_compiler.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_error.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_heap.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_init.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_node.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_ops.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_parser.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_token.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_var.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\finsh_vm.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\shell.c"
+						>
+					</File>
+					<File
+						RelativePath="..\components\finsh\symbol.c"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter

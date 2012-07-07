@@ -14,7 +14,15 @@
 #ifndef __FINSH_H__
 #define __FINSH_H__
 
-#include <rtthread.h>
+// #include <rtthread.h>
+#define FINSH_USING_SYMTAB
+#define FINSH_USING_DESCRIPTION
+
+//#ifndef SECTION
+//#define SECTION(x)                  __attribute__((section(x)))
+//#endif
+#pragma section("FSymTab$f",read)
+#pragma section("VSymTab",read)
 
 /* -- the beginning of option -- */
 #define FINSH_NAME_MAX          16      /* max length of identifier */
@@ -30,8 +38,8 @@
 #define HEAP_ALIGNMENT          4       /* heap alignment */
 
 #define FINSH_GET16(x)    (*(x)) | (*((x)+1) << 8)
-#define FINSH_GET32(x)    (rt_uint32_t)(*(x)) | ((rt_uint32_t)*((x)+1) << 8) | \
-    ((rt_uint32_t)*((x)+2) << 16) | ((rt_uint32_t)*((x)+3) << 24)
+#define FINSH_GET32(x)    (u_long)(*(x)) | ((u_long)*((x)+1) << 8) | \
+    ((u_long)*((x)+2) << 16) | ((u_long)*((x)+3) << 24)
 
 #define FINSH_SET16(x, v)           \
     do                              \
@@ -43,10 +51,10 @@
 #define FINSH_SET32(x, v)                                       \
     do                                                          \
     {                                                           \
-        *(x)     = (rt_uint32_t)(v)  & 0x000000ff;              \
-        (*((x)+1)) = ((rt_uint32_t)(v) >> 8) & 0x000000ff;      \
-        (*((x)+2)) = ((rt_uint32_t)(v) >> 16) & 0x000000ff;     \
-        (*((x)+3)) = ((rt_uint32_t)(v) >> 24);                  \
+        *(x)     = (u_long)(v)  & 0x000000ff;              \
+        (*((x)+1)) = ((u_long)(v) >> 8) & 0x000000ff;      \
+        (*((x)+2)) = ((u_long)(v) >> 16) & 0x000000ff;     \
+        (*((x)+3)) = ((u_long)(v) >> 24);                  \
     } while ( 0 )
 
 /* -- the end of option -- */
@@ -60,22 +68,17 @@ typedef unsigned short u_short;
 typedef unsigned long  u_long;
 
 #if !defined(__CC_ARM) && !defined(__IAR_SYSTEMS_ICC__)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef unsigned int size_t;
 
-#ifndef NULL
-#define NULL RT_NULL
-#endif
-
-#define memset	rt_memset
-#define strlen	rt_strlen
-#define strncpy	rt_strncpy
-#define strncmp	rt_strncmp
-
 int strcmp (const char *s1, const char *s2);
-char *strdup(const char *s);
+// char *strdup(const char *s);
 
-int isalpha( int ch );
-int atoi(const char* s);
+// int isalpha( int ch );
+// int atoi(const char* s);
 #else
 /* use libc of armcc */
 #include <ctype.h>
@@ -166,7 +169,7 @@ struct finsh_sysvar* finsh_sysvar_lookup(const char* name);
 		#define FINSH_FUNCTION_EXPORT(name, desc)					 \
 		const char __fsym_##name##_name[] = #name;					 \
 		const char __fsym_##name##_desc[] = #desc;					 \
-		const struct finsh_syscall __fsym_##name SECTION("FSymTab")= \
+		__declspec(allocate("FSymTab$f")) const struct finsh_syscall __fsym_##name = \
 		{							\
 			__fsym_##name##_name,	\
 			__fsym_##name##_desc,	\
@@ -185,7 +188,7 @@ struct finsh_sysvar* finsh_sysvar_lookup(const char* name);
 		#define FINSH_FUNCTION_EXPORT_ALIAS(name, alias, desc)		\
 		const char __fsym_##name##_name[] = #alias;					 \
 		const char __fsym_##name##_desc[] = #desc;					 \
-		const struct finsh_syscall __fsym_##name SECTION("FSymTab")= \
+		__declspec(allocate("FSymTab$f")) const struct finsh_syscall __fsym_##name = \
 		{							\
 			__fsym_##name##_name,	\
 			__fsym_##name##_desc,	\
@@ -204,7 +207,7 @@ struct finsh_sysvar* finsh_sysvar_lookup(const char* name);
 		#define FINSH_VAR_EXPORT(name, type, desc)					\
 		const char __vsym_##name##_name[] = #name;					\
 		const char __vsym_##name##_desc[] = #desc;					\
-		const struct finsh_sysvar __vsym_##name SECTION("VSymTab")=	\
+		__declspec(allocate("VSymTab")) const struct finsh_sysvar __vsym_##name = \
 		{							\
 			__vsym_##name##_name,	\
 			__vsym_##name##_desc,	\
@@ -331,6 +334,7 @@ int finsh_reset(struct finsh_parser* parser);
 #ifdef RT_USING_DEVICE
 void finsh_set_device(const char* device_name);
 #endif
+void finsh_run(void);
 
 /* run finsh parser to generate abstract synatx tree */
 void finsh_parser_run (struct finsh_parser* parser, const unsigned char* string);
