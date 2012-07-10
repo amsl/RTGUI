@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="E:\RTGUI_void\components\finsh;.\..\components\examples;.\..\components\external\libz;.\..\components\external\libpng;.\..\components\external\jpeg;.\..\components\rtgui\include;.\..\win32"
+				AdditionalIncludeDirectories=".\..\components\finsh;.\..\components\examples;.\..\components\external\libz;.\..\components\external\libpng;.\..\components\external\jpeg;.\..\components\rtgui\include;.\..\win32"
 				PreprocessorDefinitions="WIN32;_DEBUG;"
 				RuntimeLibrary="1"
 				WarningLevel="3"
@@ -477,10 +477,6 @@
 						</File>
 						<File
 							RelativePath=".\..\components\rtgui\widgets\filelist_view.c"
-							>
-						</File>
-						<File
-							RelativePath="..\components\rtgui\widgets\groupbox.c"
 							>
 						</File>
 						<File

@@ -614,6 +614,11 @@ void rtgui_image_bmp_header_cfg(struct rtgui_image_bmp_header *bhr, rt_int32_t w
 	bhr->biYPelsPerMeter = 0;
 	bhr->biClrUsed = 0;
 	bhr->biClrImportant = 0;
+	if (bhr->biBitCount == 16 && bhr->biCompression == BI_BITFIELDS)
+	{
+		bhr->bfSize += 12; /* add color mask length. */
+		bhr->bfOffBits += 12; /* add color mask length. */
+	}
 #if (0) /* track log */
 	rt_kprintf("bfSize=%d\n",bhr->bfSize);
 	rt_kprintf("bfOffBits=%d\n",bhr->bfOffBits);

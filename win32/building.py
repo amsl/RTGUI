@@ -117,7 +117,7 @@ def PrepareBuilding(env, root_directory):
     return objs
 
 def GetDepend(depend):
-    no_support = ['RT_USING_FINSH', 'RT_USING_FTK', 'RT_USING_LUA', 'RT_USING_CAIRO']
+    no_support = ['RT_USING_FTK', 'RT_USING_LUA', 'RT_USING_CAIRO']
     if depend == 'RT_USING_FTK' or depend == ['RT_USING_FTK']:
         return False
     
