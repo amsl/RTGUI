@@ -1,1 +1,0 @@
-Because in the IDE can contain only a main function, all please embarking main function of need.
