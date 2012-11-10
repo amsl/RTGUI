@@ -54,7 +54,7 @@ rtgui_container_t *demo_view(const char *title)
 	button = rtgui_button_create(container, "下一个", RC_W(rect)-105, RC_H(rect)-35, 100, 25);
 	/* 设置onbutton动作到demo_view_next函数 */
 	rtgui_button_set_onbutton(button, demo_view_next);
-//rt_kprintf("button = %08X, %s\n", button, RTGUI_LABEL(button)->text);//DEBUG
+
 	/* 创建"上一个"按钮 */
 	button = rtgui_button_create(container, "上一个", 5, RC_H(rect)-35, 100, 25);
 	/* 设置onbutton动作到demo_view_prev函数 */

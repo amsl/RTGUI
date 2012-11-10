@@ -640,6 +640,7 @@ void rtgui_listbox_add_item(rtgui_listbox_t* box,rtgui_listbox_item_t* item, rt_
 		/* adjust scrollbar value */
 
 		rtgui_listbox_adjust_scrollbar(box);
+		rt_kprintf("box is %s\n",RTGUI_WIDGET_IS_HIDE(box)?"show":"hide");
 		if(!RTGUI_WIDGET_IS_HIDE(box) && update)
 		{
 			rtgui_listbox_ondraw(box);
@@ -764,21 +765,6 @@ void rtgui_listbox_del_item(rtgui_listbox_t* box, rt_int16_t item_num)
 			RTGUI_WIDGET_HIDE(box->scrollbar);
 		}
 		rtgui_widget_update_clip(RTGUI_WIDGET(box));
-		/*if(external_clip_size > 0)
-		{
-			rt_int32_t i;
-			rtgui_rect_t *rect = external_clip_rect;
-			for(i=0; i<external_clip_size; i++)
-			{
-				if(rtgui_rect_is_intersect(rect, &RTGUI_WIDGET_EXTENT(box)) == RT_EOK)
-				{
-					rtgui_toplevel_update_clip(panel);
-					rtgui_toplevel_redraw(&RTGUI_WIDGET_EXTENT(box));
-					break;
-				}
-				rect++;
-			}
-		}*/
 	}
 
 	if(item_num >= box->first_item && item_num <= (box->first_item+box->item_per_page))
