@@ -43,7 +43,6 @@ static void rtgui_dc_client_get_rect(struct rtgui_dc *dc, rtgui_rect_t *rect);
 #define hw_driver               (rtgui_graphic_driver_get_default())
 #define dc_set_foreground(c)    dc->gc.foreground = c
 #define dc_set_background(c)    dc->gc.background = c
-#define _int_swap(x, y)         do {x ^= y; y ^= x; x ^= y;} while (0)
 
 struct rtgui_dc *rtgui_dc_begin_drawing(rtgui_widget_t *owner)
 {

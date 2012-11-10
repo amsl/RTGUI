@@ -56,10 +56,10 @@ rt_bool_t demo_bitmap_showbox(struct rtgui_object* object, struct rtgui_event* e
 		/* 在绘制边框后, 再将rect缩小填充背景, 可以降低闪烁现象 */
 		rtgui_dc_draw_border(dc, &rect, RTGUI_WIDGET_BORDER_STYLE(widget));
 		rtgui_rect_inflate(&rect, -RTGUI_WIDGET_BORDER(widget));
-		w = rtgui_rect_width(bmpdt.lastrect);
-		h = rtgui_rect_height(bmpdt.lastrect);
-		if(w > rtgui_rect_width(rect)) w = rtgui_rect_width(rect);
-		if(h > rtgui_rect_height(rect)) h = rtgui_rect_height(rect);
+		w = RC_W(bmpdt.lastrect);
+		h = RC_H(bmpdt.lastrect);
+		if(w > RC_W(rect)) w = RC_W(rect);
+		if(h > RC_H(rect)) h = RC_H(rect);
 		
 		/* fill container with background */
 		/*
@@ -98,14 +98,14 @@ rt_bool_t demo_bitmap_showbox(struct rtgui_object* object, struct rtgui_event* e
 			rtgui_image_blit(image, dc, &rect);
 			bmpdt.lastrect.x1 = bmpdt.lastrect.y1 = RTGUI_WIDGET_BORDER(bmpdt.showbox);
 
-			if(image->w > rtgui_rect_width(rect))
-				value = rtgui_rect_width(rect);
+			if(image->w > RC_W(rect))
+				value = RC_W(rect);
 			else
 				value = image->w;
 			bmpdt.lastrect.x2 = bmpdt.lastrect.x1 + value;
 
-			if(image->h > rtgui_rect_height(rect))
-				value = rtgui_rect_height(rect);
+			if(image->h > RC_H(rect))
+				value = RC_H(rect);
 			else
 				value = image->h;
 			bmpdt.lastrect.y2 = bmpdt.lastrect.y1 + value;
@@ -231,64 +231,31 @@ rtgui_container_t *demo_view_bmp(void)
 	/* 创建用于演示本代码的容器控件 */
 	container = demo_view("Bmp File:");
 
-	demo_view_get_rect(container, &rect);
-	rect.x1 += 85;
-	rect.x2 -= 5;
-	rect.y1 -= 42;
-	rect.y2 = rect.y1 + 20;
-	box = rtgui_textbox_create("", RTGUI_TEXTBOX_SINGLE);
-	rtgui_widget_set_rect(RTGUI_WIDGET(box), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(box));
+	rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+	box = rtgui_textbox_create(container, " ", 85, 5, RC_W(rect)-90, 20, RTGUI_TEXTBOX_SINGLE);
 	bmpdt.box = box;
+
 	/* create a button "open" */
-	demo_view_get_rect(container, &rect);
-	rect.x1 += 5;
-	rect.x2 = rect.x1 + 60;
-	rect.y1 -= 10;
-	rect.y2 = rect.y1 + 24;
-	button = rtgui_button_create("open");
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "open", 5, 35, 60, 24);
 	rtgui_button_set_onbutton(button, demo_bitmap_open);
 
 	/* create a button "zoom in" */
-	demo_view_get_rect(container, &rect);
-	rect.x1 += 85;
-	rect.x2 = rect.x1 + 70;
-	rect.y1 -= 10;
-	rect.y2 = rect.y1 + 24;
-	button = rtgui_button_create("zoom in");
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "zoom in", 85, 35, 70, 24);
 	rtgui_button_set_onbutton(button, demo_image_zoom_in);
 
 	/* create a button "zoom out" */
-	demo_view_get_rect(container, &rect);
-	rect.x1 += 165;
-	rect.x2 = rect.x1 + 70;
-	rect.y1 -= 10;
-	rect.y2 = rect.y1 + 24;
-	button = rtgui_button_create("zoom out");
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "zoom out", 165, 35, 70, 24);
 	rtgui_button_set_onbutton(button, demo_image_zoom_out);
 
 	/* create a button "rotate" */
-	demo_view_get_rect(container, &rect);
-	rect.x1 += 245;
-	rect.x2 = rect.x1 + 70;
-	rect.y1 -= 10;
-	rect.y2 = rect.y1 + 24;
-	button = rtgui_button_create("rotate");
-	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "rotate", 245, 35, 70, 24);
 	rtgui_button_set_onbutton(button, demo_image_rotate);
 
 	/* create a container "showbox" */
-	demo_view_get_rect(container, &rect);
+	rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
 	rect.x1 += 5;
 	rect.x2 -= 5;
-	rect.y1 += 20;
+	rect.y1 += 22;
 	rect.y2 -= 0;
 	showbox = rtgui_container_create();
 	rtgui_widget_set_rect(RTGUI_WIDGET(showbox), &rect);

@@ -176,12 +176,12 @@ static void _calc_width(rtgui_textview_t *textview)
     rtgui_rect_t rect;
     rt_uint16_t width, height;
 
-    width = rtgui_rect_width(RTGUI_WIDGET(textview)->extent) - 6;
-    height = rtgui_rect_height(RTGUI_WIDGET(textview)->extent);
+    width = RC_W(RTGUI_WIDGET(textview)->extent) - 6;
+    height = RC_H(RTGUI_WIDGET(textview)->extent);
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(textview), "W", &rect);
-    textview->line_width = width / rtgui_rect_width(rect) + 1;
-    textview->line_page_count = height / (rtgui_rect_height(rect) + 3);
+    textview->line_width = width / RC_W(rect) + 1;
+    textview->line_page_count = height / (RC_H(rect) + 3);
 
     /* set minimal value */
     if (textview->line_page_count == 0) textview->line_page_count = 1;
@@ -195,7 +195,7 @@ static void _draw_textview(rtgui_textview_t *textview)
     rt_ubase_t line_index, item_height;
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(textview), "W", &font_rect);
-    item_height = rtgui_rect_height(font_rect) + 3;
+    item_height = RC_H(font_rect) + 3;
 
     dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(textview));
     if (dc == RT_NULL) return ;

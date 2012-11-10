@@ -779,3 +779,17 @@ void rtgui_widget_dump(rtgui_widget_t *widget)
     // rtgui_region_dump(&(widget->clip));
 }
 #endif
+
+void rtgui_widget_set_userdata(rtgui_widget_t *widget, rt_uint32_t data)
+{
+	RT_ASSERT(widget != RT_NULL);
+	widget->user_data = data;
+}
+RTM_EXPORT(rtgui_widget_set_userdata);
+
+rt_uint32_t rtgui_widget_get_userdata(rtgui_widget_t *widget)
+{
+	RT_ASSERT(widget != RT_NULL);
+	return widget->user_data;
+}
+RTM_EXPORT(rtgui_widget_get_userdata);

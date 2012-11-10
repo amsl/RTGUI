@@ -1,9 +1,10 @@
 #include <rtgui/rtgui.h>
 #include <rtgui/rtgui_system.h>
 #include <rtgui/rtgui_app.h>
-
+#include <rtgui/widgets/button.h>
 #include <rtgui/widgets/window.h>
 #include <rtgui/widgets/notebook.h>
+#include <rtgui/widgets/rttab.h>
 
 struct rtgui_notebook *the_notebook;
 
@@ -23,6 +24,8 @@ static rt_bool_t demo_handle_key(struct rtgui_object *object, struct rtgui_event
             demo_view_prev(RT_NULL, RT_NULL);
             return RT_TRUE;
         }
+		else
+			rtgui_container_event_handler(object, event);
     }
     return RT_TRUE;
 }
@@ -32,6 +35,7 @@ static void application_entry(void *parameter)
 {
     struct rtgui_app *app;
     struct rtgui_rect rect;
+	rtgui_button_t *button;
 
     app = rtgui_app_create(rt_thread_self(), "gui_demo");
     if (app == RT_NULL)
@@ -50,18 +54,18 @@ static void application_entry(void *parameter)
 
     rtgui_win_set_onkey(main_win, demo_handle_key);
 
-    /* create a no title notebook that we can switch demo on it easily. */
-    the_notebook = rtgui_notebook_create(&rect, RTGUI_NOTEBOOK_NOTAB);
-    if (the_notebook == RT_NULL)
-    {
-        rtgui_win_destroy(main_win);
-        rtgui_app_destroy(app);
-        return;
-    }
+	/* create a no title notebook that we can switch demo on it easily. */
+	the_notebook = rtgui_notebook_create(&rect, RTGUI_NOTEBOOK_NOTAB);
+	if (the_notebook == RT_NULL)
+	{
+		rtgui_win_destroy(main_win);
+		rtgui_app_destroy(app);
+		return;
+	}
 
-    rtgui_container_add_child(RTGUI_CONTAINER(main_win), RTGUI_WIDGET(the_notebook));
-
-    //demo_view_box();
+	rtgui_container_add_child(RTGUI_CONTAINER(main_win), RTGUI_WIDGET(the_notebook));
+	
+	//demo_view_box();
 
     /* 初始化各个例子的视图 */
     demo_view_benchmark();

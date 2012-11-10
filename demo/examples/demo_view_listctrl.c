@@ -239,26 +239,12 @@ rtgui_container_t *demo_view_listctrl(void)
                                                 (const rt_uint8_t *)image_xpm, sizeof(image_xpm), RT_TRUE);
     items[1].image = item_icon;
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("List Control: ");
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	label = rtgui_label_create(container, "List Control: ", 5, 50, 120, 20);
 
-    rect.y1 = rect.y2 + 3;
-    rect.y2 = 250;
-    box = rtgui_listctrl_create((rt_uint32_t)items, sizeof(items) / sizeof(items[0]), &rect,
-                                _rtgui_listctrl_item_draw);
+	rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+    box = rtgui_listctrl_create(container, (rt_uint32_t)items, sizeof(items) / sizeof(items[0]), 
+								5, 75, RC_W(rect)-10, 250, _rtgui_listctrl_item_draw);
     rtgui_listctrl_set_onitem(box, on_items);
-    /* container是一个container控件，调用add_child方法添加这个listctrl控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(box));
 
     return container;
 }

@@ -79,13 +79,13 @@ static void rtgui_box_layout_vertical(struct rtgui_box *box, struct rtgui_rect *
     /* calculate the height for each spaces */
     if (space_count != 0)
     {
-        space_height = (rtgui_rect_height(*extent) - total_height - (box->border_size << 1)) / space_count;
+        space_height = (RC_H(*extent) - total_height - (box->border_size << 1)) / space_count;
     }
 
     /* init (x, y) and box width */
     next_x = extent->x1 + box->border_size;
     next_y = extent->y1 + box->border_size;
-    box_width = rtgui_rect_width(*extent) - (box->border_size << 1);
+    box_width = RC_W(*extent) - (box->border_size << 1);
 
     /* layout each widget */
     rtgui_list_foreach(node, &(box->container->children))
@@ -114,7 +114,7 @@ static void rtgui_box_layout_vertical(struct rtgui_box *box, struct rtgui_rect *
             /* center */
             rt_uint32_t mid;
 
-            mid = box_width - rtgui_rect_width(*rect);
+            mid = box_width - RC_W(*rect);
             mid = mid / 2;
 
             rect->x1 = next_x + mid;
@@ -123,7 +123,7 @@ static void rtgui_box_layout_vertical(struct rtgui_box *box, struct rtgui_rect *
         else if (widget->align & RTGUI_ALIGN_RIGHT)
         {
             /* right */
-            rect->x1 = next_x + box_width - rtgui_rect_width(*rect);
+            rect->x1 = next_x + box_width - RC_W(*rect);
             rect->x2 = next_x + box_width;
         }
 
@@ -172,13 +172,13 @@ static void rtgui_box_layout_horizontal(struct rtgui_box *box, struct rtgui_rect
     if (space_count != 0)
     {
         /* calculate the height for each spaces */
-        space_width = (rtgui_rect_width(*extent) - total_width) / space_count;
+        space_width = (RC_W(*extent) - total_width) / space_count;
     }
 
     /* init (x, y) and box height */
     next_x = extent->x1 + box->border_size;
     next_y = extent->y1 + box->border_size;
-    box_height = rtgui_rect_height(*extent) - (box->border_size << 1);
+    box_height = RC_H(*extent) - (box->border_size << 1);
 
     /* layout each widget */
     rtgui_list_foreach(node, &(box->container->children))
@@ -207,7 +207,7 @@ static void rtgui_box_layout_horizontal(struct rtgui_box *box, struct rtgui_rect
             /* center */
             rt_uint32_t mid;
 
-            mid = box_height - rtgui_rect_height(*rect);
+            mid = box_height - RC_H(*rect);
             mid = mid / 2;
 
             rect->y1 = next_y + mid;
@@ -216,7 +216,7 @@ static void rtgui_box_layout_horizontal(struct rtgui_box *box, struct rtgui_rect
         else if (widget->align & RTGUI_ALIGN_RIGHT)
         {
             /* right */
-            rect->y1 = next_y + box_height - rtgui_rect_height(*rect);
+            rect->y1 = next_y + box_height - RC_H(*rect);
             rect->y2 = next_y + box_height;
         }
 

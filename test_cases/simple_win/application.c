@@ -39,14 +39,7 @@ void create_wins(struct rtgui_app *app, void *parameter)
 
 	rtgui_win_set_onclose(win1, on_window_close);
 
-	rect.x1 += 20;
-	rect.x2 -= 5;
-	rect.y1 += 5;
-	rect.y2 = rect.y1 + 20;
-
-	label = rtgui_label_create("window in modal mode");
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-	rtgui_container_add_child(RTGUI_CONTAINER(win1), RTGUI_WIDGET(label));
+	label = rtgui_label_create(RTGUI_CONTAINER(win1), "window in modal mode", 20, 5, 100, 20);
 
 	rtgui_win_show(win1, RT_TRUE);
 
@@ -72,14 +65,7 @@ void create_wins(struct rtgui_app *app, void *parameter)
 
 	rtgui_win_set_onclose(win3, on_window_close);
 
-	rect.x1 += 20;
-	rect.x2 -= 5;
-	rect.y1 += 5;
-	rect.y2 = rect.y1 + 20;
-
-	label = rtgui_label_create("window in modal mode");
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-	rtgui_container_add_child(RTGUI_CONTAINER(win3), RTGUI_WIDGET(label));
+	rtgui_label_create(RTGUI_CONTAINER(win3),"window in modal mode", 20, 5, 100, 20);
 
 	rect.x1 = 20;
 	rect.y1 = 180;

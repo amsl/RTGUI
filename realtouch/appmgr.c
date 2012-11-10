@@ -89,8 +89,10 @@ void app_mgr_win_init(void)
 		block_panel_get_client_extent(block, &box_rect);
 		// rtgui_widget_get_extent(RTGUI_WIDGET(block), &box_rect);
 		// rtgui_rect_inflate(&box_rect, -15);
-		box = rtgui_listbox_create(items, sizeof(items)/sizeof(struct rtgui_listbox_item), &box_rect);
-		rtgui_container_add_child(RTGUI_CONTAINER(block), RTGUI_WIDGET(box));
+		box = rtgui_listbox_create(RTGUI_CONTAINER(block), 0,0,RC_W(box_rect),RC_H(box_rect),RTGUI_BORDER_NONE);
+		rtgui_listbox_set_items(box, items, sizeof(items) / sizeof(struct rtgui_listbox_item));
+		//box = rtgui_listbox_create(items, sizeof(items)/sizeof(struct rtgui_listbox_item), &box_rect);
+		//rtgui_container_add_child(RTGUI_CONTAINER(block), RTGUI_WIDGET(box));
 	}
 	angle_y += notebook->tab_h;
 

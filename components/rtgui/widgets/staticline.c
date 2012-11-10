@@ -44,14 +44,34 @@ rt_bool_t rtgui_staticline_event_handler(struct rtgui_object *object, struct rtg
 }
 RTM_EXPORT(rtgui_staticline_event_handler);
 
-rtgui_staticline_t *rtgui_staticline_create(int orientation)
+rtgui_staticline_t *rtgui_staticline_create(rtgui_container_t *container, int left, int top, int w, int len, int orientation)
 {
     rtgui_staticline_t *staticline;
+
+	RT_ASSERT(container != RT_NULL);
 
     staticline = (struct rtgui_staticline *) rtgui_widget_create(RTGUI_STATICLINE_TYPE);
     if (staticline != RT_NULL)
     {
-        rtgui_staticline_set_orientation(staticline, orientation);
+        rtgui_rect_t rect;
+
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rtgui_staticline_set_orientation(staticline, orientation);
+		if(orientation == RTGUI_HORIZONTAL)
+		{
+			rect.x2 = rect.x1 + len;
+			rect.y2 = rect.y1 + w;
+		}
+		else
+		{
+			rect.x2 = rect.x1 + w;
+			rect.y2 = rect.y1 + len;
+		}
+		rtgui_widget_set_rect(RTGUI_WIDGET(staticline), &rect);
+		rtgui_container_add_child(container, RTGUI_WIDGET(staticline));
     }
 
     return staticline;

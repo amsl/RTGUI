@@ -141,6 +141,35 @@ int rtgui_font_get_string_width(struct rtgui_font *font, const char *text)
     return rect.x2 - rect.x1;
 }
 
+int rtgui_font_get_width(struct rtgui_font* font)
+{
+	rtgui_rect_t rect;
+	char *text = "H";
+	/* get metrics */
+	rtgui_font_get_string_rect(font, text, &rect);
+
+	return rect.x2 - rect.x1;
+}
+
+int rtgui_font_get_height(struct rtgui_font* font)
+{
+	rtgui_rect_t rect;
+	char *text = "H";
+	/* get metrics */
+	rtgui_font_get_string_rect(font, text, &rect);
+
+	return rect.y2 - rect.y1;
+}
+
+void rtgui_font_get_string_rect(struct rtgui_font *font, const char *text, rtgui_rect_t *rect)
+{
+	RT_ASSERT(font != RT_NULL);
+	if(font->engine != RT_NULL && font->engine->font_get_metrics != RT_NULL)
+		font->engine->font_get_metrics(font, text, rect);
+	else /* no font engine found, set rect to zero */
+		rt_memset(rect, 0, sizeof(rtgui_rect_t));
+}
+
 void rtgui_font_get_metrics(struct rtgui_font *font, const char *text, rtgui_rect_t *rect)
 {
     RT_ASSERT(font != RT_NULL);

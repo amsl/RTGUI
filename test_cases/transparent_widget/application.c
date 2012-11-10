@@ -50,24 +50,17 @@ static void app_lcd(void *parameter)
     }
     RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(win_main)) = green;
 
-    rect1.x1 = rect1.y1 = 50;
-    rect1.x2 -= 50;
-    rect1.y2 -= 50;
-    lb = rtgui_label_create("I am a transparent label!!!!!!!!!");
-    rtgui_widget_set_rect(RTGUI_WIDGET(lb), &rect1);
+    lb = rtgui_label_create(RTGUI_CONTAINER(win_main), "I am a transparent label!!!!!!!!!", 50, 50, 100, 20);
     RTGUI_WIDGET_FLAG(RTGUI_WIDGET(lb)) |= RTGUI_WIDGET_FLAG_TRANSPARENT;
 
-    rect1.x1 += 20;
-    rect1.y1 += 20;
 	notebook = rtgui_notebook_create(&rect1, 0);
     /* create lable in main container */
-    btn = rtgui_button_create("Here I am.");
+    btn = rtgui_button_create(RTGUI_CONTAINER(win_main), "Here I am.", 170, 70, 100, 20);
     rtgui_notebook_add(notebook, "btn A", RTGUI_WIDGET(btn));
     rtgui_button_set_onbutton(btn, remove_myself);
-    btn = rtgui_button_create("There I am.");
+    btn = rtgui_button_create(RTGUI_CONTAINER(win_main), "There I am.", 170, 100, 100, 20);
     rtgui_notebook_add(notebook, "btn B", RTGUI_WIDGET(btn));
 
-    rtgui_container_add_child(RTGUI_CONTAINER(win_main), RTGUI_WIDGET(lb));
 	rtgui_container_add_child(RTGUI_CONTAINER(win_main), RTGUI_WIDGET(notebook));
 
     rtgui_win_show(win_main, RT_FALSE);

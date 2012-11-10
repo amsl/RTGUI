@@ -44,7 +44,7 @@ DEFINE_CLASS_TYPE(listctrl, "listctrl",
 static void _rtgui_listctrl_get_rect(struct rtgui_listctrl *ctrl, rtgui_rect_t *rect)
 {
     rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), rect);
-    if (ctrl->items_count > rtgui_rect_height(*rect) / ctrl->item_height)
+    if (ctrl->items_count > RC_H(*rect) / ctrl->item_height)
     {
         rect->x2 = rect->x2 - 8;
     }
@@ -53,7 +53,7 @@ static void _rtgui_listctrl_get_rect(struct rtgui_listctrl *ctrl, rtgui_rect_t *
 static void _rtgui_listctrl_get_scrollbar_rect(struct rtgui_listctrl *ctrl, rtgui_rect_t *rect)
 {
     rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), rect);
-    if (ctrl->items_count > rtgui_rect_height(*rect) / ctrl->item_height)
+    if (ctrl->items_count > RC_H(*rect) / ctrl->item_height)
     {
         rect->x1 = rect->x2 - 8;
     }
@@ -75,7 +75,7 @@ static void _rtgui_listctrl_scrollbar_ondraw(struct rtgui_listctrl *ctrl, struct
 
     rtgui_dc_fill_rect(dc, &rect);
 
-    height = rtgui_rect_height(rect);
+    height = RC_H(rect);
     height = height / ((ctrl->items_count + (ctrl->page_items - 1)) / ctrl->page_items);
     y1 = (ctrl->current_item / ctrl->page_items) * height;
 
@@ -93,7 +93,7 @@ static void _rtgui_listctrl_scrollbar_onmouse(struct rtgui_listctrl *ctrl, struc
 
     /* get scrollbar rect */
     _rtgui_listctrl_get_scrollbar_rect(ctrl, &rect);
-    height = rtgui_rect_height(rect);
+    height = RC_H(rect);
     height = height / ((ctrl->items_count + (ctrl->page_items - 1)) / ctrl->page_items);
     y1 = (ctrl->current_item / ctrl->page_items) * height;
 
@@ -374,20 +374,32 @@ rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object *object, struct rtgui
 }
 RTM_EXPORT(rtgui_listctrl_event_handler);
 
-rtgui_listctrl_t *rtgui_listctrl_create(rt_uint32_t items, rt_uint16_t count, rtgui_rect_t *rect,
+rtgui_listctrl_t *rtgui_listctrl_create(rtgui_container_t *container, rt_uint32_t items, rt_uint16_t count, 
+										int left, int top, int w, int h,
                                         rtgui_onitem_draw_t ondraw)
 {
     struct rtgui_listctrl *ctrl = RT_NULL;
+	
+	RT_ASSERT(container != RT_NULL);
 
     ctrl = (struct rtgui_listctrl *) rtgui_widget_create(RTGUI_LISTCTRL_TYPE);
     if (ctrl != RT_NULL)
     {
+		rtgui_rect_t rect;
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1 + w;
+		rect.y2 = rect.y1 + h;
+		rtgui_widget_set_rect(RTGUI_WIDGET(ctrl), &rect);
+
         ctrl->items = items;
         ctrl->items_count = count;
         ctrl->on_item_draw = ondraw;
-
-        ctrl->page_items = rtgui_rect_height(*rect) / (2 + ctrl->item_height);
-        rtgui_widget_set_rect(RTGUI_WIDGET(ctrl), rect);
+        ctrl->page_items = RC_H(rect) / (2 + ctrl->item_height);
+        
+		rtgui_container_add_child(container, RTGUI_WIDGET(ctrl));
     }
 
     return ctrl;
@@ -418,7 +430,7 @@ void rtgui_listctrl_set_items(rtgui_listctrl_t *ctrl, rt_uint32_t items, rt_uint
     ctrl->current_item = 0;
 
     rtgui_widget_get_rect(RTGUI_WIDGET(ctrl), &rect);
-    ctrl->page_items = rtgui_rect_height(rect) / (2 + ctrl->item_height);
+    ctrl->page_items = RC_H(rect) / (2 + ctrl->item_height);
 
     rtgui_widget_update(RTGUI_WIDGET(ctrl));
 }
@@ -451,7 +463,7 @@ void rtgui_listctrl_set_itemheight(struct rtgui_listctrl *ctrl, int height)
     if (height <= 0) return;
 
     ctrl->item_height = height;
-    ctrl->page_items = rtgui_rect_height(RTGUI_WIDGET(ctrl)->extent) / (2 + ctrl->item_height);
+    ctrl->page_items = RC_H(RTGUI_WIDGET(ctrl)->extent) / (2 + ctrl->item_height);
 }
 RTM_EXPORT(rtgui_listctrl_set_itemheight);
 

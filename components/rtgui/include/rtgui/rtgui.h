@@ -52,7 +52,8 @@ struct rtgui_rect
 typedef struct rtgui_rect rtgui_rect_t;
 #define rtgui_rect_width(r)     ((r).x2 - (r).x1)
 #define rtgui_rect_height(r)    ((r).y2 - (r).y1)
-
+#define RC_W(r)					((r).x2 - (r).x1)
+#define RC_H(r)					((r).y2 - (r).y1)
 typedef unsigned long rtgui_color_t;
 
 /**

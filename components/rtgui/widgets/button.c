@@ -199,9 +199,10 @@ rt_bool_t rtgui_button_event_handler(struct rtgui_object *object, struct rtgui_e
 }
 RTM_EXPORT(rtgui_button_event_handler);
 
-rtgui_button_t *rtgui_button_create(const char *text)
+rtgui_button_t *rtgui_button_create(rtgui_container_t *container, const char *text, int left, int top, int w, int h)
 {
     struct rtgui_button *btn;
+	RT_ASSERT(container != RT_NULL);
 
     btn = (struct rtgui_button *) rtgui_widget_create(RTGUI_BUTTON_TYPE);
     if (btn != RT_NULL)
@@ -214,17 +215,27 @@ rtgui_button_t *rtgui_button_create(const char *text)
         rect.y2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
         rtgui_widget_set_rect(RTGUI_WIDGET(btn), &rect);
         rtgui_label_set_text(RTGUI_LABEL(btn), text);
+
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1 + w;
+		rect.y2 = rect.y1 + h;
+		rtgui_widget_set_rect(RTGUI_WIDGET(btn), &rect);
+
+		rtgui_container_add_child(container, RTGUI_WIDGET(btn));
     }
 
     return btn;
 }
 RTM_EXPORT(rtgui_button_create);
 
-rtgui_button_t *rtgui_pushbutton_create(const char *text)
+rtgui_button_t *rtgui_pushbutton_create(rtgui_container_t *container, const char *text, int left, int top, int w, int h)
 {
     rtgui_button_t *btn;
 
-    btn = rtgui_button_create(text);
+    btn = rtgui_button_create(container, text, left, top, w, h);
     if (btn != RT_NULL) btn->flag |= RTGUI_BUTTON_TYPE_PUSH;
 
     return btn;

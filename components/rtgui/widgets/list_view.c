@@ -55,8 +55,8 @@ static void rtgui_list_view_onicondraw(struct rtgui_list_view *view, struct rtgu
     rtgui_widget_get_rect(RTGUI_WIDGET(view), &rect);
     item_index = (view->current_item / view->page_items) * view->page_items;
 
-    item_width = (rtgui_rect_width(rect) - 2 * LIST_MARGIN) / view->col_items;
-    item_height = (rtgui_rect_height(rect) - 4) / view->row_items;
+    item_width = (RC_W(rect) - 2 * LIST_MARGIN) / view->col_items;
+    item_height = (RC_H(rect) - 4) / view->row_items;
     image = view->items[0].image;
 
     for (r = 0; r < view->row_items; r ++)
@@ -122,8 +122,8 @@ static void rtgui_list_view_update_icon(struct rtgui_list_view *view, rt_int16_t
 
     rtgui_widget_get_rect(RTGUI_WIDGET(view), &rect);
 
-    item_width = (rtgui_rect_width(rect) - 2 * LIST_MARGIN) / view->col_items;
-    item_height = (rtgui_rect_height(rect) - 4) / view->row_items;
+    item_width = (RC_W(rect) - 2 * LIST_MARGIN) / view->col_items;
+    item_height = (RC_H(rect) - 4) / view->row_items;
     image = view->items[0].image;
 
     /* update old item */
@@ -390,8 +390,8 @@ static rt_bool_t rtgui_list_view_onmouse(struct rtgui_list_view *view, struct rt
             rt_uint16_t item_height, item_width;
             rt_ubase_t current_page;
 
-            item_width = (rtgui_rect_width(rect) - 2 * LIST_MARGIN) / view->col_items;
-            item_height = (rtgui_rect_height(rect) - 4) / view->row_items;
+            item_width = (RC_W(rect) - 2 * LIST_MARGIN) / view->col_items;
+            item_height = (RC_H(rect) - 4) / view->row_items;
             x = emouse->x - rect.x1;
             y = emouse->y - rect.y1;
 
@@ -604,8 +604,8 @@ static void rtgui_list_view_calc(struct rtgui_list_view *view)
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(view), "HHHHHH", &rect);
 
-    text_height = rtgui_rect_height(rect);
-    text_width = rtgui_rect_width(rect);
+    text_height = RC_H(rect);
+    text_width = RC_W(rect);
 
     rtgui_widget_get_rect(RTGUI_WIDGET(view), &rect);
 
@@ -615,8 +615,8 @@ static void rtgui_list_view_calc(struct rtgui_list_view *view)
     if (item_width > item_height) item_height = item_width;
     else item_width = item_height;
 
-    view->row_items = (rtgui_rect_height(rect) - 2 * LIST_MARGIN) / item_height;
-    view->col_items = (rtgui_rect_width(rect) - 2 * LIST_MARGIN) / item_width;
+    view->row_items = (RC_H(rect) - 2 * LIST_MARGIN) / item_height;
+    view->col_items = (RC_W(rect) - 2 * LIST_MARGIN) / item_width;
     view->page_items = view->row_items * view->col_items;
 }
 
@@ -635,7 +635,7 @@ rtgui_list_view_t *rtgui_list_view_create(const struct rtgui_list_item *items, r
         rtgui_widget_set_rect(RTGUI_WIDGET(view), rect);
 
         if (flag == RTGUI_LIST_VIEW_LIST)
-            view->page_items = rtgui_rect_height(*rect) / (2 + rtgui_theme_get_selected_height());
+            view->page_items = RC_H(*rect) / (2 + rtgui_theme_get_selected_height());
         else if ((flag == RTGUI_LIST_VIEW_ICON) && (count > 0))
         {
             rtgui_list_view_calc(view);

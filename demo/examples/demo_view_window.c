@@ -47,10 +47,8 @@ static void create_normal_win(void)
     /* 添加一个文本标签 */
     rt_sprintf(normal_window_label_text,
                "第 %d 次显示", normal_window_show_count);
-    normal_window_label = rtgui_label_create(normal_window_label_text);
-    rtgui_widget_set_rect(RTGUI_WIDGET(normal_window_label), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(normal_window),
-                              RTGUI_WIDGET(normal_window_label));
+	normal_window_label = rtgui_label_create(RTGUI_CONTAINER(normal_window), 
+								normal_window_label_text, 5, 5, 120, 20);
 
     rtgui_win_set_onclose(normal_window,
                           normal_window_onclose);
@@ -131,14 +129,7 @@ static void demo_autowin_onbutton(struct rtgui_object *object, rtgui_event_t *ev
 
     cnt = 5;
     rt_sprintf(label_text, "closed then %d second!", cnt);
-    label = rtgui_label_create(label_text);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 20;
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(autowin),
-                              RTGUI_WIDGET(label));
+	label = rtgui_label_create(RTGUI_CONTAINER(autowin), label_text, 5, 5, 120, 20);
 
     /* 设置关闭窗口时的动作 */
     rtgui_win_set_onclose(autowin, auto_window_close);
@@ -169,9 +160,7 @@ static void demo_modalwin_onbutton(struct rtgui_object *object, rtgui_event_t *e
     rect.y1 += 5;
     rect.y2 = rect.y1 + 20;
 
-    label = rtgui_label_create("这是一个模式窗口");
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(label));
+	label = rtgui_label_create(RTGUI_CONTAINER(win), "这是一个模式窗口", 20, 5, 120, 20);
 
     /* 模态显示窗口 */
     rtgui_win_show(win, RT_TRUE);
@@ -197,7 +186,7 @@ static void demo_ntitlewin_onbutton(struct rtgui_object *object, rtgui_event_t *
     rtgui_win_t *win;
     rtgui_label_t *label;
     rtgui_button_t *button;
-    rtgui_rect_t widget_rect, rect = {0, 0, 150, 80};
+    rtgui_rect_t rect = {0, 0, 150, 80};
 
     rtgui_rect_moveto(&rect, delta_x, delta_y);
     delta_x += 20;
@@ -211,26 +200,11 @@ static void demo_ntitlewin_onbutton(struct rtgui_object *object, rtgui_event_t *
     RTGUI_WIDGET_BACKGROUND(win) = white;
 
     /* 创建一个文本标签 */
-    label = rtgui_label_create("无边框窗口");
-    rtgui_font_get_metrics(RTGUI_WIDGET_FONT(label), "无边框窗口", &widget_rect);
-    rtgui_rect_moveto_align(&rect, &widget_rect, RTGUI_ALIGN_CENTER_HORIZONTAL);
-    widget_rect.y1 += 20;
-    widget_rect.y2 += 20;
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &widget_rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(label));
+	label = rtgui_label_create(RTGUI_CONTAINER(win), "无边框窗口", (rtgui_rect_width(rect)-100)/2, 20, 100, 20);
     RTGUI_WIDGET_BACKGROUND(label) = white;
 
     /* 创建一个关闭按钮 */
-    widget_rect.x1 = 0;
-    widget_rect.y1 = 0;
-    widget_rect.x2 = 40;
-    widget_rect.y2 = 20;
-    rtgui_rect_moveto_align(&rect, &widget_rect, RTGUI_ALIGN_CENTER_HORIZONTAL);
-    widget_rect.y1 += 40;
-    widget_rect.y2 += 40;
-    button = rtgui_button_create("关闭");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &widget_rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(button));
+	button = rtgui_button_create(RTGUI_CONTAINER(win), "关闭", 5, 25, 40, 20);
     rtgui_button_set_onbutton(button, demo_close_ntitle_window);
 
     rtgui_win_show(win, RT_FALSE);
@@ -238,7 +212,6 @@ static void demo_ntitlewin_onbutton(struct rtgui_object *object, rtgui_event_t *
 
 rtgui_container_t *demo_view_window(void)
 {
-    rtgui_rect_t  rect;
     rtgui_container_t *container;
     rtgui_button_t *button;
 
@@ -247,51 +220,19 @@ rtgui_container_t *demo_view_window(void)
 
     create_normal_win();
 
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 20;
-    /* 创建按钮用于显示正常窗口 */
-    button = rtgui_button_create("Normal Win");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(container), RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "Normal Win", 5, 50, 100, 20);
     /* 设置onbutton为demo_win_onbutton函数 */
     rtgui_button_set_onbutton(button, demo_normal_window_onbutton);
 
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 5 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建按钮用于显示一个自动关闭的窗口 */
-    button = rtgui_button_create("Auto Win");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(container), RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "Auto Win", 5, 75, 100, 20);
     /* 设置onbutton为demo_autowin_onbutton函数 */
     rtgui_button_set_onbutton(button, demo_autowin_onbutton);
 
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 5 + 25 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建按钮用于触发一个模式窗口 */
-    button = rtgui_button_create("Modal Win");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(container), RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "Modal Win", 5, 100, 100, 20);
     /* 设置onbutton为demo_modalwin_onbutton函数 */
     rtgui_button_set_onbutton(button, demo_modalwin_onbutton);
 
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 5 + 25 + 25 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建按钮用于触发一个不包含标题的窗口 */
-    button = rtgui_button_create("NoTitle Win");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    rtgui_container_add_child(RTGUI_CONTAINER(container), RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "Normal Win", 5, 125, 100, 20);
     /* 设置onbutton为demo_ntitlewin_onbutton函数 */
     rtgui_button_set_onbutton(button, demo_ntitlewin_onbutton);
 

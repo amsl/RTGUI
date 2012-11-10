@@ -43,7 +43,7 @@ rt_bool_t ttf_event_handler(struct rtgui_object *object, rtgui_event_t *event)
             return RT_FALSE;
 
         /* 获得demo container允许绘图的区域 */
-        demo_view_get_rect(RTGUI_CONTAINER(widget), &rect);
+        rtgui_widget_get_rect(RTGUI_CONTAINER(widget), &rect);
 
         saved = RTGUI_WIDGET_FONT(widget);
 

@@ -3,6 +3,7 @@
 
 #include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 /*
  * the static line widget
@@ -25,7 +26,7 @@ struct rtgui_staticline
 };
 typedef struct rtgui_staticline rtgui_staticline_t;
 
-rtgui_staticline_t *rtgui_staticline_create(int orientation);
+rtgui_staticline_t *rtgui_staticline_create(rtgui_container_t *container, int left, int top, int w, int len, int orientation);
 void rtgui_staticline_destroy(rtgui_staticline_t *staticline);
 
 rt_bool_t rtgui_staticline_event_handler(struct rtgui_object *object, struct rtgui_event *event);

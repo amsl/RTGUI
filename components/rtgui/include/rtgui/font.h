@@ -109,7 +109,13 @@ void rtgui_font_derefer(struct rtgui_font *font);
 /* draw a text */
 void rtgui_font_draw(struct rtgui_font *font, struct rtgui_dc *dc, const char *text, rt_ubase_t len, struct rtgui_rect *rect);
 int  rtgui_font_get_string_width(struct rtgui_font *font, const char *text);
+int rtgui_font_get_width(struct rtgui_font* font);
+int rtgui_font_get_height(struct rtgui_font* font);
+void rtgui_font_get_string_rect(struct rtgui_font *font, const char *text, rtgui_rect_t *rect);
 void rtgui_font_get_metrics(struct rtgui_font *font, const char *text, struct rtgui_rect *rect);
+
+#define FONT_W(font)	rtgui_font_get_width(font)
+#define FONT_H(font)	rtgui_font_get_height(font)
 
 /* used by stract font */
 #define FONT_BMP_DATA_BEGIN

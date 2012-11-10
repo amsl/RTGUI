@@ -67,13 +67,13 @@ static void rtgui_slider_onmouse(struct rtgui_slider *slider, struct rtgui_event
         {
             x = event->y - RTGUI_WIDGET(slider)->extent.y1;
             x -= x0;
-            xsize = rtgui_rect_height(RTGUI_WIDGET(slider)->extent) - 2 * x0;
+            xsize = RC_H(RTGUI_WIDGET(slider)->extent) - 2 * x0;
         }
         else
         {
             x = event->x - RTGUI_WIDGET(slider)->extent.x1;
             x -= x0;
-            xsize = rtgui_rect_width(RTGUI_WIDGET(slider)->extent) - 2 * x0;
+            xsize = RC_W(RTGUI_WIDGET(slider)->extent) - 2 * x0;
         }
 
         if (x <= 0)
@@ -196,13 +196,15 @@ rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_e
 }
 RTM_EXPORT(rtgui_slider_event_handler);
 
-struct rtgui_slider *rtgui_slider_create(rt_size_t min, rt_size_t max, int orient)
+struct rtgui_slider *rtgui_slider_create(rtgui_container_t *container, rt_size_t min, rt_size_t max, 
+						int left, int top, int w, int h, int orient)
 {
     struct rtgui_slider *slider;
 
     slider = (struct rtgui_slider *) rtgui_widget_create(RTGUI_SLIDER_TYPE);
     if (slider != RT_NULL)
     {
+		rtgui_rect_t rect;
         /* set proper of control */
         slider->min = min;
         slider->max = max;
@@ -210,8 +212,17 @@ struct rtgui_slider *rtgui_slider_create(rt_size_t min, rt_size_t max, int orien
 
         slider->ticks = 10;
         slider->thumb_width = 8;
+		rtgui_slider_set_orientation(slider, orient);
 
-        rtgui_slider_set_orientation(slider, orient);
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1 + w;
+		rect.y2 = rect.y1 + h;
+		rtgui_widget_set_rect(RTGUI_WIDGET(slider), &rect);
+        
+		rtgui_container_add_child(container, RTGUI_WIDGET(slider));
     }
 
     return slider;

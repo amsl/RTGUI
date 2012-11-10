@@ -59,23 +59,27 @@ rt_bool_t rtgui_label_event_handler(struct rtgui_object *object, struct rtgui_ev
 }
 RTM_EXPORT(rtgui_label_event_handler);
 
-rtgui_label_t *rtgui_label_create(const char *text)
+rtgui_label_t *rtgui_label_create(rtgui_container_t *container, const char *text, int left, int top, int w, int h)
 {
     struct rtgui_label *label;
+	
+	RT_ASSERT(container != RT_NULL);
 
     label = (struct rtgui_label *) rtgui_widget_create(RTGUI_LABEL_TYPE);
     if (label != RT_NULL)
     {
         rtgui_rect_t rect;
 
-        /* set default rect */
-        rtgui_font_get_metrics(rtgui_font_default(), text, &rect);
-        rect.x2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
-        rect.y2 += (RTGUI_BORDER_DEFAULT_WIDTH << 1);
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1 + w;
+		rect.y2 = rect.y1 + h;
         rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-
         /* set text */
         label->text = (char *)rt_strdup((const char *)text);
+		rtgui_container_add_child(container, RTGUI_WIDGET(label));
     }
 
     return label;

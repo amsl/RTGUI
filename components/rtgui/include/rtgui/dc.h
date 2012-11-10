@@ -19,6 +19,8 @@
 #include <rtgui/driver.h>
 #include <rtgui/widgets/widget.h>
 
+#define _int_swap(x, y)		do {x ^= y; y ^= x; x ^= y; } while(0)
+
 enum rtgui_dc_type
 {
     RTGUI_DC_HW,

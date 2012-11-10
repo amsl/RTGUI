@@ -535,21 +535,21 @@ static void rtgui_image_bmp_blit(struct rtgui_image *image, struct rtgui_dc *dc,
         }
 
         /* the minimum rect */
-        if (image->w < rtgui_rect_width(*dst_rect))
+        if (image->w < RC_W(*dst_rect))
         {
             w = image->w;
         }
         else
         {
-            w = rtgui_rect_width(*dst_rect);
+            w = RC_W(*dst_rect);
         }
-        if (image->h < rtgui_rect_height(*dst_rect))
+        if (image->h < RC_H(*dst_rect))
         {
             h = image->h;
         }
         else
         {
-            h = rtgui_rect_height(*dst_rect);
+            h = RC_H(*dst_rect);
         }
 
         if (!bmp->is_loaded)
@@ -568,9 +568,9 @@ static void rtgui_image_bmp_blit(struct rtgui_image *image, struct rtgui_dc *dc,
             }
             /* the image is upside down. So we need to start from middle if the
              * image is higher than the dst_rect. */
-            if (image->h > rtgui_rect_height(*dst_rect))
+            if (image->h > RC_H(*dst_rect))
             {
-                int hdelta = image->h - rtgui_rect_height(*dst_rect);
+                int hdelta = image->h - RC_H(*dst_rect);
                 if (rtgui_filerw_seek(bmp->filerw, hdelta * (bmp->pitch + bmp->pad) * (1 << bmp->scale),
                                       RTGUI_FILE_SEEK_CUR) < 0)
                 {

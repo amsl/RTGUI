@@ -16,6 +16,7 @@
 
 #include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(label);
 
@@ -38,7 +39,7 @@ struct rtgui_label
 };
 typedef struct rtgui_label rtgui_label_t;
 
-rtgui_label_t *rtgui_label_create(const char *text);
+rtgui_label_t *rtgui_label_create(rtgui_container_t *container, const char *text, int left, int top, int w, int h);
 void rtgui_label_destroy(rtgui_label_t *label);
 
 rt_bool_t rtgui_label_event_handler(struct rtgui_object *object, struct rtgui_event *event);

@@ -28,7 +28,7 @@ void timeout(struct rtgui_timer *timer, void *parameter)
         return ;
 
     /* 获得demo container允许绘图的区域，主要用于判断边界 */
-    demo_view_get_rect(RTGUI_CONTAINER(widget), &rect);
+    rtgui_widget_get_rect(widget, &rect);
     rect.y2 -= 5;
 
     /* 判断是否是第一次绘图 */
@@ -95,7 +95,7 @@ rt_bool_t animation_event_handler(struct rtgui_object *object, rtgui_event_t *ev
             return RT_FALSE;
 
         /* 获得demo container允许绘图的区域 */
-        demo_view_get_rect(RTGUI_CONTAINER(widget), &rect);
+        rtgui_widget_get_rect(widget, &rect);
 
         /* 擦除所有 */
         rtgui_dc_fill_rect(dc, &rect);

@@ -2164,8 +2164,8 @@ void rtgui_rect_moveto_align(rtgui_rect_t *rect, rtgui_rect_t *to, int align)
     dh = 0;
 
     /* get delta width and height */
-    dw = rtgui_rect_width(*rect) - rtgui_rect_width(*to);
-    dh = rtgui_rect_height(*rect) - rtgui_rect_height(*to);
+    dw = RC_W(*rect) - RC_W(*to);
+    dh = RC_H(*rect) - RC_H(*to);
     if (dw < 0) dw = 0;
     if (dh < 0) dh = 0;
 

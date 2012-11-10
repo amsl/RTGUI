@@ -63,8 +63,8 @@ void _rtgui_edit_constructor(struct rtgui_edit *edit)
     edit->bzsize = 16;
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(edit), "H", &font_rect);
-    edit->font_width = rtgui_rect_width(font_rect);
-    edit->font_height = rtgui_rect_height(font_rect);
+    edit->font_width = RC_W(font_rect);
+    edit->font_height = RC_H(font_rect);
 
     edit->dbl_buf = rtgui_dc_buffer_create(edit->font_width * 2 + 1, edit->font_height + 1);
 
@@ -125,7 +125,7 @@ void rtgui_edit_adjust_scroll(rtgui_scrollbar_t *bar)
             {
                 if (edit->max_rows > edit->row_per_page)
                 {
-                    RTGUI_WIDGET_SHOW(edit->hscroll);
+                    RTGUI_WIDGET_UNHIDE(edit->hscroll);
                     rtgui_scrollbar_set_line_step(edit->hscroll, 1);
                     rtgui_scrollbar_set_page_step(edit->hscroll, edit->row_per_page);
                     rtgui_scrollbar_set_range(edit->hscroll, edit->max_rows);
@@ -137,8 +137,8 @@ void rtgui_edit_adjust_scroll(rtgui_scrollbar_t *bar)
             else
             {
                 _left = RTGUI_WIDGET_BORDER(edit);
-                _top = rtgui_rect_height(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
-                _len = rtgui_rect_width(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
+                _top = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
+                _len = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
 
                 if (!RTGUI_WIDGET_IS_HIDE(edit->vscroll))
                     _len -= _width;
@@ -150,9 +150,9 @@ void rtgui_edit_adjust_scroll(rtgui_scrollbar_t *bar)
         }
         else if (bar->orient == RTGUI_VERTICAL)
         {
-            _left = rtgui_rect_width(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
+            _left = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
             _top = RTGUI_WIDGET_BORDER(edit);
-            _len = rtgui_rect_height(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
+            _len = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
 
             if (!RTGUI_WIDGET_IS_HIDE(edit->hscroll))
                 _len -= _width;
@@ -206,15 +206,15 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
             /* create horizontal scrollbar */
             rt_uint32_t _left, _top, _width = RTGUI_DEFAULT_SB_WIDTH, _len;
             _left = RTGUI_WIDGET_BORDER(edit);
-            _top = rtgui_rect_height(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
-            _len = rtgui_rect_width(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
+            _top = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
+            _len = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
             if (edit->max_rows > edit->row_per_page) _len -= _width;
 
             edit->hscroll = rtgui_scrollbar_create(edit, _left, _top, _width, _len, RTGUI_HORIZONTAL);
 
             if (edit->hscroll != RT_NULL)
             {
-                edit->hscroll->widget_link = (pvoid)edit;
+                edit->hscroll->widget_link = (rtgui_widget_t*)edit;
                 edit->hscroll->on_scroll = rtgui_edit_hscroll_handle;
                 RTGUI_WIDGET_HIDE(edit->hscroll);
             }
@@ -223,16 +223,16 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
         {
             /* create vertical scrollbar */
             rt_uint32_t _left, _top, _width = RTGUI_DEFAULT_SB_WIDTH, _len;
-            _left = rtgui_rect_width(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
+            _left = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
             _top = RTGUI_WIDGET_BORDER(edit);
-            _len = rtgui_rect_height(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
+            _len = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
             if (edit->max_cols > edit->col_per_page) _len -= _width;
 
             edit->vscroll = rtgui_scrollbar_create(edit, _left, _top, _width, _len, RTGUI_VERTICAL);
 
             if (edit->vscroll != RT_NULL)
             {
-                edit->vscroll->widget_link = (pvoid)edit;
+                edit->vscroll->widget_link = (rtgui_widget_t*)edit;
                 edit->vscroll->on_scroll = rtgui_edit_vscroll_handle;
                 RTGUI_WIDGET_HIDE(edit->vscroll);
             }
@@ -464,7 +464,7 @@ static void rtgui_edit_init_caret(struct rtgui_edit *edit, rtgui_point_t visual)
     rtgui_widget_rect_to_device(RTGUI_WIDGET(edit), &rect);
 
     if (edit->caret == RT_NULL)
-        edit->caret = (rtgui_color_t *)rtgui_malloc(rtgui_rect_width(rect) * rtgui_rect_height(rect) * sizeof(rtgui_color_t));
+        edit->caret = (rtgui_color_t *)rtgui_malloc(RC_W(rect) * RC_H(rect) * sizeof(rtgui_color_t));
     rtgui_timer_stop(edit->caret_timer);
 
     for (x = rect.x1; x < rect.x2; x++)
@@ -1620,11 +1620,11 @@ void rtgui_edit_ondraw(struct rtgui_edit *edit)
 #ifdef RTGUI_EDIT_USING_SCROLL
     if (edit->vscroll && !RTGUI_WIDGET_IS_HIDE(edit->vscroll))
     {
-        rect.x2 = rect.x2 - rtgui_rect_width(edit->vscroll->parent.extent);
+        rect.x2 = rect.x2 - RC_W(edit->vscroll->parent.extent);
     }
     if (edit->hscroll && !RTGUI_WIDGET_IS_HIDE(edit->hscroll))
     {
-        rect.y2 = rect.y2 - rtgui_rect_height(edit->hscroll->parent.extent);
+        rect.y2 = rect.y2 - RC_H(edit->hscroll->parent.extent);
     }
 #endif
     r = rect;
@@ -1754,7 +1754,7 @@ void rtgui_edit_set_text(struct rtgui_edit *edit, const char *text)
     {
         if (edit->max_cols > edit->col_per_page)
         {
-            RTGUI_WIDGET_SHOW(edit->hscroll);
+            RTGUI_WIDGET_UNHIDE(edit->hscroll);
             rtgui_scrollbar_set_line_step(edit->hscroll, 1);
             rtgui_scrollbar_set_page_step(edit->hscroll, edit->col_per_page);
             rtgui_scrollbar_set_range(edit->hscroll, edit->max_cols);
@@ -1769,7 +1769,7 @@ void rtgui_edit_set_text(struct rtgui_edit *edit, const char *text)
     {
         if (edit->max_rows > edit->row_per_page)
         {
-            RTGUI_WIDGET_SHOW(edit->vscroll);
+            RTGUI_WIDGET_UNHIDE(edit->vscroll);
             rtgui_scrollbar_set_line_step(edit->vscroll, 1);
             rtgui_scrollbar_set_page_step(edit->vscroll, edit->row_per_page);
             rtgui_scrollbar_set_range(edit->vscroll, edit->max_rows);

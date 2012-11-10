@@ -65,7 +65,7 @@ struct rtgui_scrollbar
 	rt_int16_t count;
 
 	rtgui_widget_t *widget_link;/* be connected widget */
-	rt_bool_t (*on_scroll) (rtgui_object_t *obj, rtgui_event_t* event);
+	rt_bool_t (*on_scroll) (rtgui_object_t *object, rtgui_event_t* event);
 };
 typedef struct rtgui_scrollbar rtgui_scrollbar_t;
 

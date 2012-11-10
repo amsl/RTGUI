@@ -55,14 +55,7 @@ rt_bool_t show_modal_info(struct rtgui_widget *object, struct rtgui_event *event
 						   &rect,
 						   RTGUI_WIN_STYLE_DEFAULT);
 
-	rect.x1 += 20;
-	rect.x2 -= 5;
-	rect.y1 += 5;
-	rect.y2 = rect.y1 + 20;
-
-	label = rtgui_label_create("modal mode info");
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-	rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(label));
+	label = rtgui_label_create(RTGUI_CONTAINER(win), "modal mode info", 20, 5, 100, 20);
 
 	rtgui_win_show(win, RT_TRUE);
 
@@ -95,55 +88,17 @@ rt_bool_t window_focus(void)
 	/* 获得视图的位置信息 */
 	rtgui_widget_get_rect(RTGUI_WIDGET(main_win), &rect);
 	rtgui_widget_rect_to_device(RTGUI_WIDGET(main_win), &rect);
-	rect.x1 += 10;
-	rect.x2 -= 5;
-	rect.y2 = rect.y1 + 20;
 
 	/* 创建标题用的标签 */
-	label = rtgui_label_create("主窗口");
-	/* 设置标签位置信息 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-	/* 添加标签到视图中 */
-	rtgui_container_add_child(RTGUI_CONTAINER(main_win),
-			RTGUI_WIDGET(label));
-
-	/* 获得视图的位置信息 */
-	rtgui_widget_get_rect(RTGUI_WIDGET(main_win), &rect);
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(main_win), &rect);
-	rect.x1 += 10;
-	rect.y2 -= 10;
-	rect.y1 = rect.y2 - 25;
-	rect.x2 = rect.x1 + 50;
+	label = rtgui_label_create(RTGUI_CONTAINER(main_win), "主窗口", 10, 20, 100, 20);
 
 	/* 创建"启动"按钮 */
-	start_btn = rtgui_button_create("按钮1");
-	/* 设置按钮的位置信息 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(start_btn), &rect);
-
+	start_btn = rtgui_button_create(RTGUI_CONTAINER(main_win), "按钮1", 10, 50, 50, 25);
 	rtgui_button_set_onbutton(start_btn, show_modal_info);
 
-	/* 添加按钮到视图中 */
-	rtgui_container_add_child(RTGUI_CONTAINER(main_win),
-			RTGUI_WIDGET(start_btn));
-
-	/* 添加停止按钮*/
-	rtgui_widget_get_rect(RTGUI_WIDGET(main_win), &rect);
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(main_win), &rect);
-	rect.x2 -= 10;
-	rect.y2 -= 10;
-	rect.x1 = rect.x2 - 50;
-	rect.y1 = rect.y2 - 25;
-
 	/* 创建"停止"按钮 */
-	stop_btn = rtgui_button_create("按钮2");
-	/* 设置按钮的位置信息 */
-	rtgui_widget_set_rect(RTGUI_WIDGET(stop_btn), &rect);
-
+	stop_btn = rtgui_button_create(RTGUI_CONTAINER(main_win), "按钮2", 10, 50, 50, 25);
 	rtgui_button_set_onbutton(stop_btn, echo_btn_pressed);
-
-	/* 添加按钮到视图中 */
-	rtgui_container_add_child(RTGUI_CONTAINER(main_win),
-			RTGUI_WIDGET(stop_btn));
 
 	/*创建一个绘图Windows控件*/
 	rtgui_widget_get_rect(RTGUI_WIDGET(main_win), &rect);

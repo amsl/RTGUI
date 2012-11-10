@@ -16,6 +16,7 @@
 
 #include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(slider);
 /** Gets the type of a slider */
@@ -39,7 +40,8 @@ struct rtgui_slider
 };
 typedef struct rtgui_slider rtgui_slider_t;
 
-struct rtgui_slider *rtgui_slider_create(rt_size_t min, rt_size_t max, int orient);
+struct rtgui_slider *rtgui_slider_create(rtgui_container_t *container, rt_size_t min, rt_size_t max, 
+	int left, int top, int w, int h, int orient);
 void rtgui_slider_destroy(struct rtgui_slider *slider);
 
 rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_event *event);

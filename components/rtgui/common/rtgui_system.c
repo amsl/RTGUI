@@ -317,7 +317,7 @@ FINSH_FUNCTION_EXPORT(list_guimem, display memory information);
 /************************************************************************/
 
 #ifdef _WIN32
-#define RTGUI_EVENT_DEBUG
+//#define RTGUI_EVENT_DEBUG //close it temp
 #endif
 
 #ifdef RTGUI_EVENT_DEBUG

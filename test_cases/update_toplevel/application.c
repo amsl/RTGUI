@@ -41,7 +41,7 @@ static void app_lcd(void *parameter)
 	notebook = rtgui_notebook_create(&rect1, 0);
 
     /* create lable in main container */
-    btn = rtgui_button_create("Here I am.");
+    btn = rtgui_button_create(RTGUI_CONTAINER(win_main), "Here I am.", 10, 20, 100, 20);
     rtgui_notebook_add(notebook, "a btn", RTGUI_WIDGET(btn));
 
 	rtgui_container_add_child(RTGUI_CONTAINER(win_main), RTGUI_WIDGET(notebook));

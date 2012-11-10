@@ -15,53 +15,76 @@
 #ifndef __RTGUI_LISTBOX_H__
 #define __RTGUI_LISTBOX_H__
 
-#include <rtgui/rtgui.h>
 #include <rtgui/image.h>
-#include <rtgui/rtgui_system.h>
-#include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/scrollbar.h>
+#include <rtgui/widgets/container.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct rtgui_listbox_item
 {
     char *name;
-    rtgui_image_t *image;
+	rtgui_image_t *image;
 };
+
+typedef struct rtgui_listbox_item	rtgui_listbox_item_t;
 
 DECLARE_CLASS_TYPE(listbox);
 /** Gets the type of a list box */
-#define RTGUI_LISTBOX_TYPE      (RTGUI_TYPE(listbox))
-/** Casts the object to a filelist */
-#define RTGUI_LISTBOX(obj)      (RTGUI_OBJECT_CAST((obj), RTGUI_LISTBOX_TYPE, rtgui_listbox_t))
-/** Checks if the object is a filelist box */
-#define RTGUI_IS_LISTBOX(obj)   (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_LISTBOX_TYPE))
+#define RTGUI_LISTBOX_TYPE		(RTGUI_TYPE(listbox))
+/** Casts the object to a list box */
+#define RTGUI_LISTBOX(obj)		(RTGUI_OBJECT_CAST((obj), RTGUI_LISTBOX_TYPE, rtgui_listbox_t))
+/** Checks if the object is a list box */
+#define RTGUI_IS_LISTBOX(obj)	(RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_LISTBOX_TYPE))
+
+typedef struct rtgui_listbox rtgui_listbox_t;
 
 struct rtgui_listbox
 {
-    struct rtgui_widget parent;
+	rtgui_container_t parent;
 
-    /* widget private data */
-    /* listbox item */
-    const struct rtgui_listbox_item *items;
+	/* widget private data */
+	rt_int16_t  		item_count;	    /* total number of items */
+	rt_int16_t  		item_per_page;  /* the number of item in a page */
+	rt_int16_t			item_size;		/* item size */
+    rt_int16_t  		first_item;     /* first item */
+	rt_int16_t  		now_item;       /* now item */
+	rt_int16_t  		old_item;       /* old item */
+	rtgui_color_t		select_fc;		/* select fc color */
+	rtgui_color_t		select_bc;	    /* select bc color */
 
-    /* item event handler */
-    rtgui_event_handler_ptr on_item;
-
-    /* total number of items */
-    rt_uint16_t items_count;
-    /* the number of item in a page */
-    rt_uint16_t page_items;
-    /* current item */
-    rt_int16_t current_item;
+	rt_bool_t			vindex;			/* display index */
+	rtgui_widget_t 		*widget_link;	/* link widget */
+	rtgui_scrollbar_t  	*scrollbar;
+    rtgui_listbox_item_t *items;	    /* items array */
+	
+	/* item event handler */
+	rt_bool_t (*on_item)(rtgui_object_t *object, rtgui_event_t* event);
+	rt_bool_t (*updown) (rtgui_object_t *object, rtgui_event_t* event);
 };
-typedef struct rtgui_listbox rtgui_listbox_t;
 
-rtgui_listbox_t *rtgui_listbox_create(const struct rtgui_listbox_item *items, rt_uint16_t count,
-                                      rtgui_rect_t *rect);
-void rtgui_listbox_destroy(rtgui_listbox_t *box);
+rtgui_listbox_t* rtgui_listbox_create(rtgui_container_t *container, int left,int top,int w,int h,rt_uint32_t style);
+void rtgui_listbox_destroy(rtgui_listbox_t* box);
 
-rt_bool_t rtgui_listbox_event_handler(struct rtgui_object *object, struct rtgui_event *event);
-void rtgui_listbox_set_onitem(rtgui_listbox_t *box, rtgui_event_handler_ptr func);
-void rtgui_listbox_set_items(rtgui_listbox_t *box, struct rtgui_listbox_item *items, rt_uint16_t count);
+void rtgui_listbox_update(rtgui_listbox_t* box);
+rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* event);
+void rtgui_listbox_set_onitem(rtgui_listbox_t* box, rtgui_event_handler_ptr func);
+void rtgui_listbox_set_updown(rtgui_listbox_t* box, rtgui_event_handler_ptr func);
+void rtgui_listbox_set_items(rtgui_listbox_t* box, const rtgui_listbox_item_t* items, rt_int16_t count);
+void rtgui_listbox_update_current(rtgui_listbox_t* box, rt_int16_t loc);
 void rtgui_listbox_set_current_item(rtgui_listbox_t *box, int index);
+void rtgui_listbox_add_item(rtgui_listbox_t* box, rtgui_listbox_item_t* item, rt_bool_t update);
+void rtgui_listbox_insert_item(rtgui_listbox_t* box, rtgui_listbox_item_t* item, rt_int16_t item_num);
+void rtgui_listbox_del_item(rtgui_listbox_t* box, rt_int16_t item_num);
+rt_uint32_t rtgui_listbox_get_count(rtgui_listbox_t* box);
+void rtgui_listbox_clear_items(rtgui_listbox_t* box);
+rt_bool_t rtgui_listbox_unfocus(rtgui_object_t* object, rtgui_event_t* event);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

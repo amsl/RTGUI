@@ -84,7 +84,7 @@ static void _rtgui_plot_curve_onpaint(
     rtgui_plot_curve_dtype *x_data, *y_data;
 
     rtgui_dc_get_rect(dc, &rect);
-    height = rtgui_rect_height(rect);
+    height = RC_H(rect);
 
     old_color = RTGUI_DC_FC(dc);
     RTGUI_DC_FC(dc) = curve->color;
@@ -191,8 +191,8 @@ static void _rtgui_plot_update_scale(struct rtgui_plot *plot)
                     rtgui_mv_view_foreach_in_model(RTGUI_MV_VIEW(plot), &iter));
     }
 
-    plot->scale_x = (max_x - min_x + rtgui_rect_width(rect)) / rtgui_rect_width(rect);
-    plot->scale_y = (max_y - min_y + rtgui_rect_height(rect)) / rtgui_rect_height(rect);
+    plot->scale_x = (max_x - min_x + RC_W(rect)) / RC_W(rect);
+    plot->scale_y = (max_y - min_y + RC_H(rect)) / RC_H(rect);
 }
 
 rt_bool_t rtgui_plot_ondraw(struct rtgui_plot *plot, struct rtgui_event *event)

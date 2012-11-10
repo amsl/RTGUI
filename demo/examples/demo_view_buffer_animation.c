@@ -28,7 +28,7 @@ static void timeout(struct rtgui_timer *timer, void *parameter)
         return ;
 
     /* 获得demo view允许绘图的区域，主要用于判断边界 */
-    demo_view_get_logic_rect(RTGUI_CONTAINER(widget), &rect);
+    rtgui_widget_get_rect(widget, &rect);
     rect.y2 -= 5;
 
     /* 判断是否是第一次绘图 */
@@ -93,7 +93,7 @@ static rt_bool_t animation_event_handler(struct rtgui_object *object, rtgui_even
             return RT_FALSE;
 
         /* 获得demo view允许绘图的区域 */
-        demo_view_get_logic_rect(RTGUI_CONTAINER(widget), &rect);
+        rtgui_widget_get_rect(widget, &rect);
 
         /* 绘图 */
         rect = text_rect;
@@ -136,12 +136,12 @@ struct rtgui_container *demo_view_buffer_animation(void)
         rtgui_rect_t rect;
 
         rect.x1 = 0;
-        rect.x2 = rtgui_rect_width(text_rect) + 2;
+        rect.x2 = RC_W(text_rect) + 2;
         rect.y1 = 0;
-        rect.y2 = rtgui_rect_height(text_rect) + 2;
+        rect.y2 = RC_H(text_rect) + 2;
 
         /* 创建 DC Buffer，长 50，宽 50 */
-        dc_buffer = rtgui_dc_buffer_create(rtgui_rect_width(rect), rtgui_rect_height(rect));
+        dc_buffer = rtgui_dc_buffer_create(RC_W(rect), RC_H(rect));
         RTGUI_DC_FC(dc_buffer) = RTGUI_WIDGET_BACKGROUND(container);
         rtgui_dc_fill_rect(dc_buffer, &rect);
         RTGUI_DC_FC(dc_buffer) = black;

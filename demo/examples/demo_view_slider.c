@@ -12,38 +12,14 @@ rtgui_container_t *demo_view_slider(void)
 
     /* create a demo container */
     container = demo_view("Slider View");
+	rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
 
     /* get demo container rect */
-    demo_view_get_rect(container, &rect);
-    label = rtgui_label_create("horizontal slider:");
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 18;
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    rect.y1 += 20;
-    rect.y2 = rect.y1 + 18;
-    slider = rtgui_slider_create(0, 100, RTGUI_HORIZONTAL);
-    rtgui_container_add_child(container, RTGUI_WIDGET(slider));
-    rtgui_widget_set_rect(RTGUI_WIDGET(slider), &rect);
+	label = rtgui_label_create(container, "horizontal slider:", 5, 50, 100, 18);
+    slider = rtgui_slider_create(container, 0, 100, 5, 70, RC_W(rect)-10, 18, RTGUI_HORIZONTAL);
 
     /* get demo container rect */
-    demo_view_get_rect(container, &rect);
-    label = rtgui_label_create("vertical slider:");
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 50;
-    rect.y2 = rect.y1 + 18;
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    rect.x1 += 110;
-    rect.x2 = rect.x1 + 20;
-    rect.y1 += 18 + 5;
-    rect.y2 = rect.y1 + 150;
-    slider = rtgui_slider_create(0, 100, RTGUI_VERTICAL);
-    rtgui_container_add_child(container, RTGUI_WIDGET(slider));
-    rtgui_widget_set_rect(RTGUI_WIDGET(slider), &rect);
-
+	label = rtgui_label_create(container, "vertical slider:", 5, 95, 100, 18);
+    slider = rtgui_slider_create(container, 0, 100, 110, 120, 18, 150, RTGUI_VERTICAL);
     return container;
 }

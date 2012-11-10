@@ -49,25 +49,14 @@ static rt_bool_t _onmenu(struct rtgui_object *object, struct rtgui_event *event)
 /* 创建用于演示menu控件的视图 */
 rtgui_container_t *demo_view_menu(void)
 {
-    rtgui_rect_t rect;
     rtgui_container_t *container;
     rtgui_button_t *button;
 
     /* 先创建一个演示用的视图 */
     container = demo_view("MENU View");
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 20;
     /* 创建一个button控件 */
-    button = rtgui_button_create("Pop Menu");
-    /* 设置button的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    /* container是一个container控件，调用add_child方法添加这个button控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	button = rtgui_button_create(container, "Pop Menu", 5, 50, 100, 20);
     rtgui_button_set_onbutton(button, _onmenu);
 
     menu = rtgui_menu_create("Menu Test", RT_NULL, items, sizeof(items) / sizeof(items[0]));

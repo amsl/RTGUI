@@ -261,10 +261,10 @@ static void rtgui_image_png_blit(struct rtgui_image *image, struct rtgui_dc *dc,
 
     png = (struct rtgui_image_png *) image->data;
 
-    if (image->w < rtgui_rect_width(*rect)) w = image->w;
-    else w = rtgui_rect_width(*rect);
-    if (image->h < rtgui_rect_height(*rect)) h = image->h;
-    else h = rtgui_rect_height(*rect);
+    if (image->w < RC_W(*rect)) w = image->w;
+    else w = RC_W(*rect);
+    if (image->h < RC_H(*rect)) h = image->h;
+    else h = RC_H(*rect);
 
     fg_maxsample = (1 << png->info_ptr->bit_depth) - 1;
 

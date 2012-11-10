@@ -4,6 +4,7 @@
 #include <rtgui/rtgui.h>
 #include <rtgui/image.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(notebook);
 /** Gets the type of a notebook */

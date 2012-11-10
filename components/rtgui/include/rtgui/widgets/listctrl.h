@@ -19,6 +19,7 @@
 #include <rtgui/image.h>
 #include <rtgui/rtgui_system.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(listctrl);
 /** Gets the type of a listctrl */
@@ -52,8 +53,8 @@ typedef struct rtgui_listctrl rtgui_listctrl_t;
 
 typedef void (*rtgui_onitem_draw_t)(struct rtgui_listctrl *list, struct rtgui_dc *dc, rtgui_rect_t *rect, rt_uint16_t index);
 
-rtgui_listctrl_t *rtgui_listctrl_create(rt_uint32_t items, rt_uint16_t count,
-                                        rtgui_rect_t *rect, rtgui_onitem_draw_t ondraw);
+rtgui_listctrl_t *rtgui_listctrl_create(rtgui_container_t *container, rt_uint32_t items, rt_uint16_t count,
+                                        int left, int top, int w, int h, rtgui_onitem_draw_t ondraw);
 void rtgui_listctrl_destroy(rtgui_listctrl_t *ctrl);
 
 rt_bool_t rtgui_listctrl_event_handler(struct rtgui_object *object, struct rtgui_event *event);

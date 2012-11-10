@@ -378,70 +378,6 @@ void rtgui_theme_draw_iconbox(rtgui_iconbox_t *iconbox)
     rtgui_dc_end_drawing(dc);
 }
 
-static const rt_uint8_t checked_byte[7] = {0x02, 0x06, 0x8E, 0xDC, 0xF8, 0x70, 0x20};
-void rtgui_theme_draw_checkbox(struct rtgui_checkbox *checkbox)
-{
-    struct rtgui_dc *dc;
-    struct rtgui_rect rect, box_rect;
-    rtgui_color_t bc, fc;
-
-    fc = RTGUI_WIDGET_FOREGROUND(checkbox);
-    bc = RTGUI_WIDGET_BACKGROUND(checkbox);
-
-    /* begin drawing */
-    dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(checkbox));
-    if (dc == RT_NULL) return;
-
-    /* get rect */
-    rtgui_widget_get_rect(RTGUI_WIDGET(checkbox), &rect);
-
-    /* fill rect */
-    rtgui_dc_fill_rect(dc, &rect);
-
-    if (RTGUI_WIDGET_IS_FOCUSED(checkbox))
-    {
-        RTGUI_WIDGET_FOREGROUND(checkbox) = black;
-
-        /* draw focused border */
-        rtgui_rect_inflate(&rect, -1);
-        rtgui_dc_draw_focus_rect(dc, &rect);
-
-        rtgui_rect_inflate(&rect, 1);
-    }
-
-    /* draw check box */
-    box_rect.x1 = 0;
-    box_rect.y1 = 0;
-    box_rect.x2 = CHECK_BOX_W;
-    box_rect.y2 = CHECK_BOX_H;
-    rtgui_rect_moveto_align(&rect, &box_rect, RTGUI_ALIGN_CENTER_VERTICAL);
-    box_rect.x1 += 2;
-    box_rect.x2 += 2;
-
-    rtgui_dc_draw_border(dc, &box_rect, RTGUI_BORDER_BOX);
-    rtgui_rect_inflate(&box_rect, -1);
-    RTGUI_WIDGET_BACKGROUND(checkbox) = RTGUI_RGB(247, 247, 246);
-    rtgui_dc_fill_rect(dc, &box_rect);
-    if (checkbox->status_down == RTGUI_CHECKBOX_STATUS_CHECKED)
-    {
-        RTGUI_WIDGET_FOREGROUND(checkbox) = RTGUI_RGB(33, 161, 33);
-        rtgui_dc_draw_byte(dc, box_rect.x1 + 2, box_rect.y1 + 2, 7, checked_byte);
-    }
-
-    /* restore saved color */
-    RTGUI_WIDGET_BACKGROUND(checkbox) = bc;
-    RTGUI_WIDGET_FOREGROUND(checkbox) = fc;
-
-    /* draw text */
-    rect.x1 += rtgui_rect_height(rect) - 4 + 5;
-    rtgui_dc_draw_text(dc, rtgui_label_get_text(RTGUI_LABEL(checkbox)), &rect);
-
-    /* end drawing */
-    rtgui_dc_end_drawing(dc);
-
-    return;
-}
-
 static const rt_uint8_t radio_unchecked_byte[] =
 {
     0x0f, 0x00, 0x30, 0xc0, 0x40, 0x20,
@@ -476,7 +412,7 @@ void rtgui_theme_draw_radiobutton(struct rtgui_radiobox *radiobox, rt_uint16_t i
     else
     {
         rtgui_font_get_metrics(RTGUI_DC_FONT(dc), "H", &item_rect);
-        bord_size = rtgui_rect_height(item_rect);
+        bord_size = RC_H(item_rect);
     }
 
     item_rect = rect;
@@ -567,7 +503,7 @@ void rtgui_theme_draw_radiobox(struct rtgui_radiobox *radiobox)
     else
     {
         rtgui_font_get_metrics(RTGUI_DC_FONT(dc), "H", &item_rect);
-        bord_size = rtgui_rect_height(item_rect);
+        bord_size = RC_H(item_rect);
     }
 
     /* draw box */
@@ -814,7 +750,7 @@ void rtgui_theme_draw_progressbar(struct rtgui_progressbar *bar)
     if (bar->orient == RTGUI_VERTICAL)
     {
         /* Vertical bar grows from bottom to top */
-        int dy = (rtgui_rect_height(rect) * left) / max;
+        int dy = (RC_H(rect) * left) / max;
         rect.y1 += dy;
         rtgui_dc_fill_rect(dc, &rect);
 
@@ -826,7 +762,7 @@ void rtgui_theme_draw_progressbar(struct rtgui_progressbar *bar)
     else
     {
         /* Horizontal bar grows from left to right */
-        int dx = (rtgui_rect_width(rect) * left) / max;
+        int dx = (RC_W(rect) * left) / max;
         rect.x2 -= dx;
         rtgui_dc_fill_rect(dc, &rect);
 

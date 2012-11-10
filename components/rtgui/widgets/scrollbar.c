@@ -47,9 +47,9 @@ rt_uint32_t _rtgui_scrollbar_get_length(rtgui_scrollbar_t *bar)
 	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
 
 	if(bar->orient & RTGUI_VERTICAL)
-		result = rtgui_rect_height(rect) - 2*rtgui_rect_width(rect) - bar->thumb_len;
+		result = RC_H(rect) - 2*RC_W(rect) - bar->thumb_len;
 	else
-		result = rtgui_rect_width(rect) - 2*rtgui_rect_height(rect) - bar->thumb_len;
+		result = RC_W(rect) - 2*RC_H(rect) - bar->thumb_len;
 
 	return result;
 }
@@ -140,7 +140,7 @@ void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar)
 	bc = RTGUI_DC_BC(dc);
 	/* begin drawing */
 	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
-	RTGUI_DC_BC(dc) = white;
+	RTGUI_DC_BC(dc) = RTGUI_RGB(225, 228, 220);
 	rtgui_dc_fill_rect(dc,&rect);
 	RTGUI_DC_BC(dc) = bc;
 
@@ -158,7 +158,7 @@ void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar)
 		arrow_rect.x1 = 0; arrow_rect.y1 = 0;
 		arrow_rect.x2 = 7; arrow_rect.y2 = 4;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, rtgui_rect_height(arrow_rect), _up_arrow);
+		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _up_arrow);
 
 		/* draw thumb */
 		rtgui_scrollbar_get_thumb_rect(bar, &thum_rect);
@@ -179,7 +179,7 @@ void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar)
 		arrow_rect.x2 = 7;
 		arrow_rect.y2 = 4;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, rtgui_rect_height(arrow_rect), _down_arrow);
+		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _down_arrow);
 	}
 	else
 	{
@@ -196,7 +196,7 @@ void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar)
 		arrow_rect.x2 = 4;
 		arrow_rect.y2 = 7;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, rtgui_rect_height(arrow_rect), _left_arrow);
+		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _left_arrow);
 
 		/* draw thumb */
 		if(RTGUI_WIDGET_IS_ENABLE(bar))
@@ -219,7 +219,7 @@ void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar)
 		arrow_rect.x2 = 4;
 		arrow_rect.y2 = 7;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, rtgui_rect_height(arrow_rect), _right_arrow);
+		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _right_arrow);
 
 	}
 
@@ -236,13 +236,13 @@ void rtgui_scrollbar_get_thumb_rect(rtgui_scrollbar_t *bar, rtgui_rect_t *erect)
 		/* vertical scroll bar */
 		erect->x1 = rect.x1;
 		erect->x2 = rect.x2;
-		erect->y1 = rect.y1 + rtgui_rect_width(rect) + get_scrollbar_pos(bar);
+		erect->y1 = rect.y1 + RC_W(rect) + get_scrollbar_pos(bar);
 		erect->y2 = erect->y1 + bar->thumb_len;
 	}
 	else
 	{
 		/* horizontal scroll bar */
-		erect->x1 = rect.x1 + rtgui_rect_height(rect) + get_scrollbar_pos(bar);
+		erect->x1 = rect.x1 + RC_H(rect) + get_scrollbar_pos(bar);
 		erect->x2 = erect->x1 + bar->thumb_len;
 		erect->y1 = rect.y1;
 		erect->y2 = rect.y2;
@@ -272,7 +272,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		btn_rect.x1 = rect.x1;
 		btn_rect.x2 = rect.x2;
 		btn_rect.y1 = rect.y1;
-		btn_rect.y2 = rect.y1 + rtgui_rect_width(rect);
+		btn_rect.y2 = rect.y1 + RC_W(rect);
 
 		if(rtgui_rect_contains_point(&btn_rect, mouse->x, mouse->y) == RT_EOK)
 		{
@@ -317,8 +317,8 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		{
 			/* click on space without thumb */
 			/* get bar rect */
-			bar_rect.y1 = rect.y1 + rtgui_rect_width(rect);
-			bar_rect.y2 = rect.y2 - rtgui_rect_width(rect);
+			bar_rect.y1 = rect.y1 + RC_W(rect);
+			bar_rect.y2 = rect.y2 - RC_W(rect);
 			if(rtgui_rect_contains_point(&bar_rect, mouse->x, mouse->y) == RT_EOK)
 			{
 				if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
@@ -344,7 +344,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		/* get down arrow button rect */
 		bar_rect.x1 = rect.x1;
 		bar_rect.x2 = rect.x2;
-		btn_rect.y1 = rect.y2 - rtgui_rect_width(rect);
+		btn_rect.y1 = rect.y2 - RC_W(rect);
 		btn_rect.y2 = rect.y2;
 		if(rtgui_rect_contains_point(&btn_rect, mouse->x, mouse->y) == RT_EOK)
 		{
@@ -369,7 +369,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 	{
 		/* get left arrow button rect */
 		btn_rect.x1 = rect.x1;
-		btn_rect.x2 = rect.x1 + rtgui_rect_height(rect);
+		btn_rect.x2 = rect.x1 + RC_H(rect);
 		btn_rect.y1 = rect.y1;
 		btn_rect.y2 = rect.y2;
 		if(rtgui_rect_contains_point(&btn_rect, mouse->x, mouse->y) == RT_EOK)
@@ -411,8 +411,8 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		else
 		{
 			/* get bar rect */
-			bar_rect.x1 = rect.x1 + rtgui_rect_height(rect);
-			bar_rect.x2 = rect.x2 - rtgui_rect_height(rect);
+			bar_rect.x1 = rect.x1 + RC_H(rect);
+			bar_rect.x2 = rect.x2 - RC_H(rect);
 			bar_rect.y1 = rect.y1;
 			bar_rect.y2 = rect.y2;
 			if(rtgui_rect_contains_point(&bar_rect, mouse->x, mouse->y) == RT_EOK)
@@ -441,7 +441,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 			}
 		}
 		/* get right arrow button rect */
-		btn_rect.x1 = rect.x2 - rtgui_rect_height(rect);
+		btn_rect.x1 = rect.x2 - RC_H(rect);
 		btn_rect.x2 = rect.x2;
 		bar_rect.y1 = rect.y1;
 		bar_rect.y2 = rect.y2;
@@ -483,7 +483,7 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 	float tmppos;
 	rt_uint32_t pos;
 	struct rtgui_event_mouse *mouse = (struct rtgui_event_mouse*)event;
-rt_kprintf("sbar mouse motion.\n");
+
 	tmppos = _rtgui_scrollbar_get_length(bar);
 	tmppos /= bar->count;
 	pos = (rt_uint32_t)tmppos;
@@ -681,9 +681,9 @@ rt_uint32_t get_sbar_active_len(rtgui_scrollbar_t *bar)
 	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
 
 	if(bar->orient & RTGUI_VERTICAL)
-		return rtgui_rect_height(rect) - 2*rtgui_rect_width(rect);
+		return RC_H(rect) - 2*RC_W(rect);
 	else
-		return rtgui_rect_width(rect) - 2*rtgui_rect_height(rect);
+		return RC_W(rect) - 2*RC_H(rect);
 }
 
 void rtgui_scrollbar_set_thumbbar_len(rtgui_scrollbar_t* bar)

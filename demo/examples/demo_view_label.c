@@ -18,86 +18,35 @@ rtgui_container_t *demo_view_label(void)
     container = demo_view("Label View");
 
     /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("Red Left");
+    rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+
+	label = rtgui_label_create(container, "Red Left", 5, 50, RC_W(rect)-10, 20);
     /* 设置label控件上的文本对齐方式为：左对齐 */
     RTGUI_WIDGET_TEXTALIGN(label) = RTGUI_ALIGN_LEFT;
     /* 设置label控件的前景色为红色 */
     RTGUI_WIDGET_FOREGROUND(label) = red;
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("Blue Right");
+	label = rtgui_label_create(container, "Blue Right", 5, 75, RC_W(rect)-10, 20);
     /* 设置label控件上的文本对齐方式为：右对齐 */
     RTGUI_WIDGET_TEXTALIGN(label) = RTGUI_ALIGN_RIGHT;
     /* 设置label控件的前景色为蓝色 */
     RTGUI_WIDGET_FOREGROUND(label) = blue;
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5 + 25 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("Green Center");
+	label = rtgui_label_create(container, "Green Center", 5, 100, RC_W(rect)-10, 20);
     /* 设置label控件的前景色为绿色 */
     RTGUI_WIDGET_FOREGROUND(label) = green;
     /* 设置label控件上的文本对齐方式为：右对齐 */
     RTGUI_WIDGET_TEXTALIGN(label) = RTGUI_ALIGN_CENTER_HORIZONTAL;
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5 + 25 + 25 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("12 font");
+	label = rtgui_label_create(container, "12 font", 5, 125, RC_W(rect)-10, 20);
     /* 设置字体为12点阵的asc字体 */
     font = rtgui_font_refer("asc", 12);
     RTGUI_WIDGET_FONT(label) = font;
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.y1 += 5 + 25 + 25 + 25 + 25;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("16 font");
+	label = rtgui_label_create(container, "16 font", 5, 150, RC_W(rect)-10, 20);
     /* 设置字体为16点阵的asc字体 */
     font = rtgui_font_refer("asc", 16);
     RTGUI_WIDGET_FONT(label) = font;
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
 
     return container;
 }

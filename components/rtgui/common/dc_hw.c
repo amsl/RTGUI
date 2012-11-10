@@ -22,8 +22,6 @@
 #include <rtgui/widgets/window.h>
 #include <rtgui/widgets/title.h>
 
-#define _int_swap(x, y)         do {x ^= y; y ^= x; x ^= y;} while (0)
-
 static void rtgui_dc_hw_draw_point(struct rtgui_dc *dc, int x, int y);
 static void rtgui_dc_hw_draw_color_point(struct rtgui_dc *dc, int x, int y, rtgui_color_t color);
 static void rtgui_dc_hw_draw_hline(struct rtgui_dc *dc, int x1, int x2, int y);

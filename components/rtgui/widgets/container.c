@@ -15,6 +15,7 @@
 #include <rtgui/dc.h>
 #include <rtgui/rtgui_system.h>
 #include <rtgui/rtgui_app.h>
+#include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/container.h>
 #include <rtgui/widgets/window.h>
 
@@ -54,7 +55,7 @@ rt_bool_t rtgui_container_dispatch_event(rtgui_container_t *container, rtgui_eve
     {
         struct rtgui_widget *w;
         w = rtgui_list_entry(node, struct rtgui_widget, sibling);
-
+		
         if (RTGUI_OBJECT(w)->event_handler &&
                 RTGUI_OBJECT(w)->event_handler(RTGUI_OBJECT(w), event) == RT_TRUE)
             return RT_TRUE;
@@ -95,6 +96,7 @@ rt_bool_t rtgui_container_dispatch_mouse_event(rtgui_container_t *container, str
     {
         struct rtgui_widget *w;
         w = rtgui_list_entry(node, struct rtgui_widget, sibling);
+		
         if (rtgui_rect_contains_point(&(w->extent),
                                       event->x, event->y) == RT_EOK)
         {
@@ -144,9 +146,6 @@ rt_bool_t rtgui_container_event_handler(struct rtgui_object *object, struct rtgu
     }
     break;
 
-    case RTGUI_EVENT_KBD:
-        break;
-
     case RTGUI_EVENT_MOUSE_BUTTON:
     case RTGUI_EVENT_MOUSE_MOTION:
         /* handle in child widget */
@@ -161,6 +160,9 @@ rt_bool_t rtgui_container_event_handler(struct rtgui_object *object, struct rtgu
         rtgui_widget_onhide(RTGUI_OBJECT(container), event);
         rtgui_container_dispatch_event(container, event);
         break;
+
+	case RTGUI_EVENT_KBD:
+		return rtgui_widget_event_handler(RTGUI_OBJECT(widget), event);
     case RTGUI_EVENT_COMMAND:
     case RTGUI_EVENT_RESIZE:
         rtgui_container_dispatch_event(container, event);

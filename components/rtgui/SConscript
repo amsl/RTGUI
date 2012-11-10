@@ -72,6 +72,9 @@ widgets/edit.c
 widgets/mv_view.c
 widgets/plot.c
 widgets/plot_curve.c
+widgets/rttab.c
+widgets/view.c
+widgets/spin.c
 """)
 
 if GetDepend('RTGUI_USING_FONT_COMPACT'):

@@ -4,6 +4,7 @@
 #include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/label.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(checkbox);
 
@@ -30,7 +31,7 @@ struct rtgui_checkbox
 };
 typedef struct rtgui_checkbox rtgui_checkbox_t;
 
-rtgui_checkbox_t *rtgui_checkbox_create(const char *text, rt_bool_t checked);
+rtgui_checkbox_t *rtgui_checkbox_create(rtgui_container_t *container, const char *text, rt_bool_t checked, int left, int top);
 void rtgui_checkbox_destroy(rtgui_checkbox_t *checkbox);
 
 void rtgui_checkbox_set_checked(rtgui_checkbox_t *checkbox, rt_bool_t checked);

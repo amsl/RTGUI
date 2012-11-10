@@ -15,10 +15,10 @@ void app1_entry(void* parameter)
 		struct rtgui_box *box;
 
 		box = rtgui_box_create(RTGUI_VERTICAL, 10);
-		label = rtgui_label_create("Hello World");
+		label = rtgui_label_create(RTGUI_CONTAINER(win), "Hello World", 10, 10, 120, 20);
 		win = rtgui_mainwin_create(RT_NULL, "MainWin", RTGUI_WIN_STYLE_MAINWIN);
 		rtgui_container_set_box(RTGUI_CONTAINER(win), box);
-		rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(label));
+		//rtgui_container_add_child(RTGUI_CONTAINER(win), RTGUI_WIDGET(label));
 		rtgui_container_layout(RTGUI_CONTAINER(win));
 		
 		rtgui_win_show(win, RT_TRUE);

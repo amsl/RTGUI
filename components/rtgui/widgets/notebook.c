@@ -593,16 +593,18 @@ rt_bool_t rtgui_notebook_event_handler(struct rtgui_object *object, struct rtgui
     case RTGUI_EVENT_MOUSE_BUTTON:
         _rtgui_notebook_onmouse(notebook, (struct rtgui_event_mouse *)event);
         break;
-    case RTGUI_EVENT_SHOW:
-        /* show myself */
-        rtgui_widget_onshow(object, event);
-        /* show the tab widget */
-        return _rtgui_notebook_current_widget_handle(notebook, event);
-    case RTGUI_EVENT_HIDE:
-        /* hide myself */
-        rtgui_widget_onhide(object, event);
-        /* hide the tab widget */
-        return _rtgui_notebook_current_widget_handle(notebook, event);
+	case RTGUI_EVENT_SHOW:
+		/* show myself */
+		rtgui_widget_onshow(object, event);
+		/* show the tab widget */
+		return _rtgui_notebook_current_widget_handle(notebook, event);
+		break;
+	case RTGUI_EVENT_HIDE:
+		/* hide myself */
+		rtgui_widget_onhide(object, event);
+		/* hide the tab widget */
+		return _rtgui_notebook_current_widget_handle(notebook, event);
+		break;
     case RTGUI_EVENT_KBD:
         return _rtgui_notebook_current_widget_handle(notebook, event);
     case RTGUI_EVENT_UPDATE_TOPLVL:

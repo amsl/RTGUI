@@ -53,7 +53,7 @@ static void _rtgui_textbox_constructor(rtgui_textbox_t *box)
     box->text = RT_NULL;
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(box), "H", &rect);
-    box->font_width = rtgui_rect_width(rect);
+    box->font_width = RC_W(rect);
     box->on_enter = RT_NULL;
     box->dis_length = 0;
 }
@@ -93,8 +93,8 @@ static void rtgui_textbox_get_caret_rect(rtgui_textbox_t *box, rtgui_rect_t *rec
     rtgui_widget_get_rect(RTGUI_WIDGET(box), rect);
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(box), "H", &item_rect);
-    font_h = rtgui_rect_height(item_rect);
-    box_h = rtgui_rect_height(*rect);
+    font_h = RC_H(item_rect);
+    box_h = RC_H(*rect);
 
     rect->x1 += position * box->font_width + 2;
     rect->x2 = rect->x1 + 2;
@@ -119,7 +119,7 @@ static void rtgui_textbox_init_caret(rtgui_textbox_t *box, rt_uint16_t position)
     rtgui_widget_rect_to_device(RTGUI_WIDGET(box), &rect);
 
     if (box->caret == RT_NULL)
-        box->caret = rtgui_malloc(rtgui_rect_width(rect) * rtgui_rect_height(rect) * sizeof(rtgui_color_t));
+        box->caret = rtgui_malloc(RC_W(rect) * RC_H(rect) * sizeof(rtgui_color_t));
 
     for (x = rect.x1; x < rect.x2; x++)
     {
@@ -251,7 +251,7 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
         if (box->font_width == 0)
             return RT_FALSE;
 
-        box->dis_length = (rtgui_rect_width(rect) - 5) / box->font_width;
+        box->dis_length = (RC_W(rect) - 5) / box->font_width;
     }
 
     length = rt_strlen(box->text);
@@ -458,16 +458,27 @@ static rt_bool_t rtgui_textbox_onunfocus(struct rtgui_object *widget, rtgui_even
     return RT_TRUE;
 }
 
-rtgui_textbox_t *rtgui_textbox_create(const char *text, rt_uint32_t flag)
+rtgui_textbox_t *rtgui_textbox_create(rtgui_container_t *container, const char *text, 
+									  int left, int top, int w, int h, rt_uint32_t flag)
 {
     rtgui_textbox_t *box;
 
     box = (struct rtgui_textbox *)rtgui_widget_create(RTGUI_TEXTBOX_TYPE);
     if (box != RT_NULL)
     {
+		rtgui_rect_t rect;
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1 + w;
+		rect.y2 = rect.y1 + h;
+		rtgui_widget_set_rect(RTGUI_WIDGET(box), &rect);
+
         /* allocate default line buffer */
         rtgui_textbox_set_value(box, text);
         box->flag = flag;
+		rtgui_container_add_child(container, RTGUI_WIDGET(box));
     }
 
     return box;

@@ -50,7 +50,7 @@ rt_bool_t instrument_panel_event_handler(struct rtgui_object *object, rtgui_even
             return RT_FALSE;
 
         /* 获得demo container允许绘图的区域 */
-        demo_view_get_rect(RTGUI_CONTAINER(widget), &rect);
+        rtgui_widget_get_rect(widget, &rect);
 
         RTGUI_DC_TEXTALIGN(dc) = RTGUI_ALIGN_BOTTOM | RTGUI_ALIGN_CENTER_HORIZONTAL;
         /* 显示GUI的版本信息 */

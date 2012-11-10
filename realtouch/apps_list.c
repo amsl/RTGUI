@@ -238,12 +238,12 @@ struct rtgui_panel* apps_list_create(struct rtgui_panel* panel)
 	/* create application list */
 	rtgui_rect_inflate(&rect, -15);
 
-	app_list = rtgui_listctrl_create((rt_uint32_t)app_items, app_count, &rect, _app_info_draw);
+	app_list = rtgui_listctrl_create(RTGUI_CONTAINER(panel), (rt_uint32_t)app_items, app_count, 15,15,RC_W(rect)-30,RC_H(rect)-30, _app_info_draw);
 	rtgui_listctrl_set_itemheight(app_list, app_default_icon->h + 2);
 	rtgui_listctrl_set_onitem(app_list, _handle_app_activate);
 	rtgui_object_set_event_handler(RTGUI_OBJECT(app_list), apps_listctrl_event_handler);
 
-	rtgui_container_add_child(RTGUI_CONTAINER(panel), RTGUI_WIDGET(app_list));
+	//rtgui_container_add_child(RTGUI_CONTAINER(panel), RTGUI_WIDGET(app_list));
 
 	return RTGUI_PANEL(panel);
 }

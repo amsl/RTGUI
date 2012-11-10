@@ -219,9 +219,9 @@ struct rtgui_menu *rtgui_menu_create(const char *title, struct rtgui_menu *paren
         rtgui_widget_set_rect(RTGUI_WIDGET(menu), &rect);
         rtgui_rect_inflate(&rect, -1);
         /* create menu item list */
-        menu->items_list = rtgui_listctrl_create((rt_uint32_t)items, count, &rect, _rtgui_menu_item_ondraw);
+        menu->items_list = rtgui_listctrl_create(RTGUI_CONTAINER(menu), (rt_uint32_t)items, count, 
+			0, 0, 100, 100, _rtgui_menu_item_ondraw);
         RTGUI_WIDGET_BACKGROUND(menu->items_list) = rtgui_theme_default_bc();
-        rtgui_container_add_child(RTGUI_CONTAINER(menu), RTGUI_WIDGET(menu->items_list));
         rtgui_listctrl_set_onitem(menu->items_list, _rtgui_menu_onitem);
     }
 

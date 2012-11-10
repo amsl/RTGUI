@@ -59,41 +59,16 @@ static rt_bool_t progressbar_event_handler(struct rtgui_object *object, rtgui_ev
 rtgui_container_t *demo_view_progressbar(void)
 {
     rtgui_container_t *container;
-    rtgui_rect_t rect;
-    rtgui_label_t *label;
 
     /* create a demo container */
     container = demo_view("ProgressBar View");
 
     /* get demo container rect */
-    demo_view_get_rect(container, &rect);
-    label = rtgui_label_create("水平进度条:");
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 18;
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    rect.y1 += 20;
-    rect.y2 = rect.y1 + 18;
-    hbar = rtgui_progressbar_create(RTGUI_HORIZONTAL, 100, &rect);
-    rtgui_container_add_child(container, RTGUI_WIDGET(hbar));
+	rtgui_label_create(container, "水平进度条:", 5, 50, 120, 20);
+    hbar = rtgui_progressbar_create(container, RTGUI_HORIZONTAL, 100, 5, 75, 150, 18);
 
-    /* get demo container rect */
-    demo_view_get_rect(container, &rect);
-    label = rtgui_label_create("垂直进度条:");
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 45;
-    rect.y2 = rect.y1 + 18;
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    rect.x1 += 110;
-    rect.x2 = rect.x1 + 20;
-    rect.y1 += 18 + 5;
-    rect.y2 = rect.y1 + 150;
-    vbar = rtgui_progressbar_create(RTGUI_VERTICAL, 100, &rect);
-    rtgui_container_add_child(container, RTGUI_WIDGET(vbar));
+	rtgui_label_create(container, "垂直进度条:", 5, 100, 120, 20);
+    vbar = rtgui_progressbar_create(container, RTGUI_VERTICAL, 100, 20, 125, 18, 150);
 
     bar_timer = rtgui_timer_create(50, RT_TIMER_FLAG_PERIODIC,
                                    progressbar_timeout, RT_NULL);

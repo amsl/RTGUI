@@ -88,11 +88,12 @@ rt_bool_t rtgui_iconbox_event_handler(struct rtgui_object *object, struct rtgui_
     return RT_FALSE;
 }
 
-struct rtgui_iconbox *rtgui_iconbox_create(struct rtgui_image *image,
+struct rtgui_iconbox *rtgui_iconbox_create(rtgui_container_t *container, struct rtgui_image *image,
         const char *text,
         int position)
 {
     struct rtgui_iconbox *iconbox;
+	RT_ASSERT(container != RT_NULL);
 
     iconbox = (struct rtgui_iconbox *)rtgui_widget_create(RTGUI_ICONBOX_TYPE);
     if (iconbox != RT_NULL)
@@ -130,6 +131,8 @@ struct rtgui_iconbox *rtgui_iconbox_create(struct rtgui_image *image,
         iconbox->image = image;
         iconbox->text = (char *)rt_strdup((const char *)text);
         iconbox->text_position = position;
+
+		rtgui_container_add_child(container, RTGUI_WIDGET(iconbox));
     }
 
     return iconbox;

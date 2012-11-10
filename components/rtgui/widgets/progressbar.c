@@ -45,19 +45,27 @@ rt_bool_t rtgui_progressbar_event_handler(struct rtgui_object *object,
     return RT_FALSE;
 }
 
-struct rtgui_progressbar *rtgui_progressbar_create(int orientation, int range,
-        rtgui_rect_t *r)
+struct rtgui_progressbar *rtgui_progressbar_create(rtgui_container_t *container, int orientation, int range,
+        int left, int top, int w, int h)
 {
     struct rtgui_progressbar *bar;
 
     bar = (struct rtgui_progressbar *) rtgui_widget_create(RTGUI_PROGRESSBAR_TYPE);
     if (bar != RT_NULL)
     {
-        if (r != RT_NULL)
-            rtgui_widget_set_rect(RTGUI_WIDGET(bar), r);
+		rtgui_rect_t rect;
+		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+        rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1 + w;
+		rect.y2 = rect.y1 + h;
+		rtgui_widget_set_rect(RTGUI_WIDGET(bar), &rect);
 
         bar->orient = orientation;
         bar->range = range;
+
+		rtgui_container_add_child(container, RTGUI_WIDGET(bar));
     }
 
     return bar;

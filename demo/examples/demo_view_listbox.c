@@ -5,6 +5,7 @@
  */
 #include "demo_view.h"
 #include <rtgui/widgets/label.h>
+#include <rtgui/widgets/button.h>
 #include <rtgui/widgets/listbox.h>
 
 static rtgui_image_t *item_icon = RT_NULL;
@@ -141,6 +142,10 @@ static struct rtgui_listbox_item items[] =
     {"list #1", RT_NULL},
     {"list #2", RT_NULL},
     {"list #3", RT_NULL},
+	{"list #4", RT_NULL},
+	{"list #5", RT_NULL},
+	{"list #6", RT_NULL},
+	{"list #7", RT_NULL},
 };
 
 static rt_bool_t on_items(struct rtgui_object *object, struct rtgui_event *event)
@@ -150,18 +155,44 @@ static rt_bool_t on_items(struct rtgui_object *object, struct rtgui_event *event
     box = RTGUI_LISTBOX(object);
 
     /* 打印当前的项 */
-    rt_kprintf("current item: %d\n", box->current_item);
+    rt_kprintf("current item: %d\n", box->now_item);
 
     return RT_TRUE;
 }
 
-/* 创建用于演示label控件的视图 */
+void demo_listbox_add(struct rtgui_object *object, struct rtgui_event *event)
+{
+	rtgui_listbox_t *box;
+	rtgui_listbox_item_t item={"Be added", RT_NULL};
+	
+	box = (rtgui_listbox_t*)rtgui_widget_get_userdata(RTGUI_WIDGET(object));
+	rtgui_listbox_add_item(box, &item, 1);
+}
+
+void demo_listbox_delete(struct rtgui_object *object, struct rtgui_event *event)
+{
+	rtgui_listbox_t *box;
+
+	box = (rtgui_listbox_t*)rtgui_widget_get_userdata(RTGUI_WIDGET(object));
+	rtgui_listbox_del_item(box, box->now_item);
+}
+
+void demo_listbox_insert(struct rtgui_object *object, struct rtgui_event *event)
+{
+	rtgui_listbox_t *box;
+	rtgui_listbox_item_t item={"Be inserted", RT_NULL};
+
+	box = (rtgui_listbox_t*)rtgui_widget_get_userdata(RTGUI_WIDGET(object));
+	rtgui_listbox_insert_item(box, &item, box->now_item);
+}
+
+/* 创建用于演示listbox控件的视图 */
 rtgui_container_t *demo_view_listbox(void)
 {
-    rtgui_rect_t rect;
     rtgui_container_t *container;
     rtgui_label_t *label;
     rtgui_listbox_t *box;
+	rtgui_button_t *button;
 
     /* 先创建一个演示用的视图 */
     container = demo_view("ListBox Demo");
@@ -171,25 +202,23 @@ rtgui_container_t *demo_view_listbox(void)
                                                 (const rt_uint8_t *)image_xpm, sizeof(image_xpm), RT_TRUE);
     items[1].image = item_icon;
 
-    /* 获得视图的位置信息 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 5;
-    rect.x2 -= 5;
-    rect.y1 += 5;
-    rect.y2 = rect.y1 + 20;
-    /* 创建一个label控件 */
-    label = rtgui_label_create("listbox: ");
-    /* 设置label的位置 */
-    rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-    /* container是一个container控件，调用add_child方法添加这个label控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(label));
+	label = rtgui_label_create(container, "listbox: ", 5, 50, 120, 20);
 
-    rect.y1 = rect.y2 + 3;
-    rect.y2 = 250;
-    box = rtgui_listbox_create(items, sizeof(items) / sizeof(struct rtgui_listbox_item), &rect);
+	box = rtgui_listbox_create(container, 10, 75, 200, 200, RTGUI_BORDER_SUNKEN);
+	rtgui_listbox_set_items(box, items, sizeof(items) / sizeof(struct rtgui_listbox_item));
     rtgui_listbox_set_onitem(box, on_items);
-    /* container是一个container控件，调用add_child方法添加这个listbox控件 */
-    rtgui_container_add_child(container, RTGUI_WIDGET(box));
+
+	button = rtgui_button_create(container, "Add", 10, 280, 60, 25);
+	rtgui_button_set_onbutton(button, demo_listbox_add);
+	rtgui_widget_set_userdata(RTGUI_WIDGET(button), (rt_uint32_t)box);
+
+	button = rtgui_button_create(container, "Delete", 80, 280, 60, 25);
+	rtgui_button_set_onbutton(button, demo_listbox_delete);
+	rtgui_widget_set_userdata(RTGUI_WIDGET(button), (rt_uint32_t)box);
+
+	button = rtgui_button_create(container, "Insert", 150, 280, 60, 25);
+	rtgui_button_set_onbutton(button, demo_listbox_insert);
+	rtgui_widget_set_userdata(RTGUI_WIDGET(button), (rt_uint32_t)box);
 
     return container;
 }

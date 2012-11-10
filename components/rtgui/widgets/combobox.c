@@ -43,7 +43,7 @@ rt_bool_t rtgui_combobox_pdwin_onitem(struct rtgui_object *object, struct rtgui_
     list = RTGUI_LISTBOX(widget);
     pd_win = RTGUI_WIN(rtgui_widget_get_toplevel(widget));
     combo = RTGUI_COMBOBOX(pd_win->user_data);
-    combo->current_item = list->current_item;
+    combo->current_item = list->now_item;
 
     if (combo->on_selected != RT_NULL)
         combo->on_selected(RTGUI_OBJECT(combo), RT_NULL);
@@ -176,7 +176,9 @@ static rt_bool_t rtgui_combobox_onmouse_button(struct rtgui_combobox *box, struc
 
                 /* create list box */
                 rtgui_rect_inflate(&rect, -1);
-                list = rtgui_listbox_create(box->items, box->items_count, &rect);
+				list = rtgui_listbox_create(RTGUI_CONTAINER(box->pd_win), 1,1,
+							RC_W(rect), RC_H(rect), RTGUI_BORDER_NONE);
+				rtgui_listbox_set_items(list, box->items, box->items_count);
                 rtgui_container_add_child(RTGUI_CONTAINER(box->pd_win), RTGUI_WIDGET(list));
                 rtgui_widget_focus(RTGUI_WIDGET(list));
 

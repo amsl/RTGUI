@@ -66,7 +66,7 @@ struct rtgui_container* demo_plot(void)
     rtgui_widget_get_rect(RTGUI_WIDGET(cnt), &rect);
     rtgui_widget_set_rect(RTGUI_WIDGET(plot), &rect);
     rtgui_plot_set_base(plot,
-            -rtgui_rect_width(rect)/3, rtgui_rect_height(rect)/2);
+            -RC_W(rect)/3, RC_H(rect)/2);
 
     rtgui_container_add_child(cnt, RTGUI_WIDGET(plot));
 

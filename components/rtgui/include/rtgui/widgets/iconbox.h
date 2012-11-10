@@ -17,6 +17,7 @@
 #include <rtgui/rtgui.h>
 #include <rtgui/image.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(iconbox);
 /** Gets the type of a iconbox */
@@ -45,7 +46,7 @@ struct rtgui_iconbox
 };
 typedef struct rtgui_iconbox rtgui_iconbox_t;
 
-struct rtgui_iconbox *rtgui_iconbox_create(struct rtgui_image *image, const char *text, int position);
+struct rtgui_iconbox *rtgui_iconbox_create(rtgui_container_t *container, struct rtgui_image *image, const char *text, int position);
 void rtgui_iconbox_destroy(struct rtgui_iconbox *iconbox);
 
 rt_bool_t rtgui_iconbox_event_handler(struct rtgui_object *object, struct rtgui_event *event);

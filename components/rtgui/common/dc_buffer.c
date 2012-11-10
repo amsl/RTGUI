@@ -249,15 +249,15 @@ static void rtgui_dc_buffer_blit(struct rtgui_dc *self, struct rtgui_point *dc_p
         rtgui_blit_line_func blit_line;
 
         /* calculate correct width and height */
-        if (rtgui_rect_width(*rect) > (dc->width - dc_point->x))
+        if (RC_W(*rect) > (dc->width - dc_point->x))
             rect_width = dc->width - dc_point->x;
         else
-            rect_width = rtgui_rect_width(*rect);
+            rect_width = RC_W(*rect);
 
-        if (rtgui_rect_height(*rect) > (dc->height - dc_point->y))
+        if (RC_H(*rect) > (dc->height - dc_point->y))
             rect_height = dc->height - dc_point->y;
         else
-            rect_height = rtgui_rect_height(*rect);
+            rect_height = RC_H(*rect);
 
         /* prepare pixel line */
         pixels = dc->pixel + dc_point->y * dc->pitch + dc_point->x * sizeof(rtgui_color_t);

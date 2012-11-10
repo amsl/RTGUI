@@ -62,13 +62,7 @@ rtgui_container_t *demo_view_module(rtgui_workbench_t *workbench)
     _view = demo_view(workbench, "应用模块演示");
 
     /* 添加一个按钮 */
-    demo_view_get_rect(_view, &rect);
-    rect.x1 += 5;
-    rect.x2 = rect.x1 + 120;
-    rect.y2 = rect.y1 + 20;
-    open_btn = rtgui_button_create("打开应用模块");
-    rtgui_container_add_child(RTGUI_CONTAINER(_view), RTGUI_WIDGET(open_btn));
-    rtgui_widget_set_rect(RTGUI_WIDGET(open_btn), &rect);
+	button = rtgui_button_create(RTGUI_CONTAINER(_view), "打开应用模块", 5, 50, 120, 20);
     rtgui_button_set_onbutton(open_btn, open_btn_onbutton);
 
     return _view;

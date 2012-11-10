@@ -3,6 +3,7 @@
 
 #include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 
 DECLARE_CLASS_TYPE(radiobox);
 /** Gets the type of a radiobox */
