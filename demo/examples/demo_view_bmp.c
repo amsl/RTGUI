@@ -252,11 +252,11 @@ rtgui_container_t *demo_view_bmp(void)
 	rtgui_button_set_onbutton(button, demo_image_rotate);
 
 	/* create a container "showbox" */
-	rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+	demo_view_get_rect(container, &rect);
 	rect.x1 += 5;
 	rect.x2 -= 5;
 	rect.y1 += 22;
-	rect.y2 -= 0;
+	rect.y2 -= 5;
 	showbox = rtgui_container_create();
 	rtgui_widget_set_rect(RTGUI_WIDGET(showbox), &rect);
 	rtgui_container_add_child(container, RTGUI_WIDGET(showbox));

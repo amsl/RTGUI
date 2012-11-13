@@ -477,6 +477,7 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 		{
 			rtgui_listbox_onmouse(box, (struct rtgui_event_mouse*)event);
 		}
+		rtgui_container_event_handler(RTGUI_OBJECT(box), event);
 		break;
 
 	case RTGUI_EVENT_KBD:
