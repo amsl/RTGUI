@@ -83,7 +83,6 @@ void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, int step);
 void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, int step);
 
 rt_bool_t rtgui_scrollbar_event_handler(rtgui_object_t *obj, rtgui_event_t* event);
-void rtgui_scrollbar_hide(rtgui_scrollbar_t* bar);
 
 #ifdef __cplusplus
 }

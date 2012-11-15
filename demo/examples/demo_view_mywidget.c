@@ -17,7 +17,7 @@ rtgui_container_t *demo_view_mywidget(void)
     container = demo_view("MyWidget View");
 
     /* 获得视图的位置信息 */
-    rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+    demo_view_get_rect(container, &rect);
     rect.x1 += 5;
     rect.x2 = rect.y1 + 80;
     rect.y1 += 5;
@@ -28,7 +28,7 @@ rtgui_container_t *demo_view_mywidget(void)
     rtgui_container_add_child(container, RTGUI_WIDGET(mywidget));
 
     /* 获得视图的位置信息 */
-    rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+    demo_view_get_rect(container, &rect);
     rect.x1 += 25;
     rect.x2 = rect.y1 + 40;
     rect.y1 += 5 + 100;

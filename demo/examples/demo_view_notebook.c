@@ -37,7 +37,7 @@ rtgui_container_t *demo_view_notebook(void)
     container = demo_view("Notebook View");
 
     /* 获得视图的位置信息 */
-    rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
+    demo_view_get_rect(container, &rect);
 
     notebook = rtgui_notebook_create(&rect, RTGUI_NOTEBOOK_BOTTOM);
     /* container是一个container控件，调用add_child方法添加这个notebook控件 */

@@ -40,7 +40,6 @@ static void _rtgui_listbox_constructor(rtgui_listbox_t *box)
 
 	box->items = RT_NULL;
 	box->scrollbar = RT_NULL;
-	box->vindex = 0;
 	box->on_item = RT_NULL;
 	box->updown = RT_NULL;
 }
@@ -132,16 +131,15 @@ void rtgui_listbox_set_items(rtgui_listbox_t* box, const rtgui_listbox_item_t* i
 	{
 		if(box->item_count > box->item_per_page)
 		{
-			RTGUI_WIDGET_UNHIDE(box->scrollbar);
+			rtgui_widget_onshow(RTGUI_OBJECT(box->scrollbar), RT_NULL);
 			rtgui_scrollbar_set_line_step(box->scrollbar, 1);
 			rtgui_scrollbar_set_page_step(box->scrollbar, box->item_per_page);
 			rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
 		}
 		else
 		{
-			RTGUI_WIDGET_HIDE(box->scrollbar);
+			rtgui_widget_onhide(RTGUI_OBJECT(box->scrollbar), RT_NULL);
 		}
-		rtgui_widget_update_clip(RTGUI_WIDGET(box));
 	}
 
 }
@@ -241,10 +239,7 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 				item_rect.x1 += item->image->w + 2;
 			}
 			
-			if(box->vindex)
-				rt_sprintf(buf, "%d.%s", first+i+1, item->name);
-			else
-				rt_sprintf(buf, "%s", item->name);
+			rt_sprintf(buf, "%s", item->name);
 			
 			/* draw text */
 			if(first + i == box->now_item && RTGUI_WIDGET_IS_FOCUSED(box))
@@ -333,10 +328,7 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 			item_rect.x1 += item->image->w + 2;
 		}
 		
-		if(box->vindex)
-			rt_sprintf(buf, "%d.%s", box->old_item + 1, item->name);
-		else
-			rt_sprintf(buf, "%s", item->name);
+		rt_sprintf(buf, "%s", item->name);
 		
 		rtgui_dc_draw_text(dc, buf, &item_rect);
 	}
@@ -380,10 +372,7 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 		item_rect.x1 += (item->image->w + 2);
 	}
 	
-	if(box->vindex)
-		rt_sprintf(buf, "%d.%s", box->now_item + 1, item->name);
-	else
-		rt_sprintf(buf, "%s", item->name);
+	rt_sprintf(buf, "%s", item->name);
 		
 	if(RTGUI_WIDGET_IS_FOCUSED(box))
 	{
@@ -407,10 +396,13 @@ static void rtgui_listbox_onmouse(rtgui_listbox_t* box, struct rtgui_event_mouse
 
 	/* get physical extent information */
 	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
+	rtgui_widget_rect_to_device(RTGUI_WIDGET(box), &rect);
 	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
-		rect.x2 -= RC_W(box->scrollbar->parent.extent);
+	{
+		rect.x2 -= RC_W(box->scrollbar->parent.extent) + RTGUI_WIDGET_BORDER(box);
+	}
 
-	if((rtgui_region_contains_point(&RTGUI_WIDGET(box)->clip, emouse->x, emouse->y,&rect) == RT_EOK))
+	if((rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK))
 	{
 		rt_uint16_t i;
 		/* set focus */
@@ -477,7 +469,10 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 		{
 			rtgui_listbox_onmouse(box, (struct rtgui_event_mouse*)event);
 		}
-		rtgui_container_event_handler(RTGUI_OBJECT(box), event);
+		if(!RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+		{
+			rtgui_scrollbar_event_handler(RTGUI_OBJECT(box->scrollbar), event);
+		}
 		break;
 
 	case RTGUI_EVENT_KBD:
@@ -596,17 +591,15 @@ void rtgui_listbox_adjust_scrollbar(rtgui_listbox_t* box)
 		{
 			if(box->item_count > box->item_per_page)
 			{
-				RTGUI_WIDGET_UNHIDE(box->scrollbar);
+				rtgui_widget_onshow(RTGUI_OBJECT(box->scrollbar), RT_NULL);
 				rtgui_scrollbar_set_line_step(box->scrollbar, 1);
 				rtgui_scrollbar_set_page_step(box->scrollbar, box->item_per_page);
 				rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
 			}
 			else
 			{
-				RTGUI_WIDGET_HIDE(box->scrollbar);
+				rtgui_widget_onhide(RTGUI_OBJECT(box->scrollbar), RT_NULL);
 			}
-
-			rtgui_widget_update_clip(RTGUI_WIDGET(box));
 		}
 		else
 		{
@@ -641,7 +634,6 @@ void rtgui_listbox_add_item(rtgui_listbox_t* box,rtgui_listbox_item_t* item, rt_
 		/* adjust scrollbar value */
 
 		rtgui_listbox_adjust_scrollbar(box);
-		rt_kprintf("box is %s\n",RTGUI_WIDGET_IS_HIDE(box)?"show":"hide");
 		if(!RTGUI_WIDGET_IS_HIDE(box) && update)
 		{
 			rtgui_listbox_ondraw(box);
@@ -756,16 +748,15 @@ void rtgui_listbox_del_item(rtgui_listbox_t* box, rt_int16_t item_num)
 	{
 		if(box->item_count > box->item_per_page)
 		{
-			RTGUI_WIDGET_UNHIDE(box->scrollbar);
+			rtgui_widget_onshow(RTGUI_OBJECT(box->scrollbar), RT_NULL);
 			rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
 			/* set new location at scrollbar */
 			rtgui_scrollbar_set_value(box->scrollbar, box->first_item);
 		}
 		else
 		{
-			RTGUI_WIDGET_HIDE(box->scrollbar);
+			rtgui_widget_onhide(RTGUI_OBJECT(box->scrollbar), RT_NULL);
 		}
-		rtgui_widget_update_clip(RTGUI_WIDGET(box));
 	}
 
 	if(item_num >= box->first_item && item_num <= (box->first_item+box->item_per_page))
@@ -878,7 +869,7 @@ static rt_bool_t rtgui_listbox_sbar_handle(rtgui_object_t* object, rtgui_event_t
 	
 	/* adjust first display row when dragging */
 	if(box->first_item == box->scrollbar->value) return RT_FALSE;
-	
+
 	box->first_item = box->scrollbar->value;
 	rtgui_listbox_ondraw(box);
 

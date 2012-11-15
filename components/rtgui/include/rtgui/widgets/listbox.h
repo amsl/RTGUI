@@ -55,7 +55,6 @@ struct rtgui_listbox
 	rtgui_color_t		select_fc;		/* select fc color */
 	rtgui_color_t		select_bc;	    /* select bc color */
 
-	rt_bool_t			vindex;			/* display index */
 	rtgui_widget_t 		*widget_link;	/* link widget */
 	rtgui_scrollbar_t  	*scrollbar;
     rtgui_listbox_item_t *items;	    /* items array */

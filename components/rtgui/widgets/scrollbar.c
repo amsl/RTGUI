@@ -22,7 +22,7 @@ static void _rtgui_scrollbar_constructor(rtgui_scrollbar_t *bar)
 
 	bar->status = 0;
 	bar->value = 0;
-
+	bar->count = 0;
 	bar->thumb_w = 16;
 	bar->thumb_len = 16;
 
@@ -258,12 +258,16 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 	struct rtgui_event_mouse *mouse = (struct rtgui_event_mouse*)event;
 
 	RT_ASSERT(bar != RT_NULL);
-
-	/* get value */
-	pos = get_scrollbar_pos(bar);
+	if(RTGUI_WIDGET_IS_HIDE(bar)) return;
 
 	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
 	rtgui_widget_rect_to_device(RTGUI_WIDGET(bar),&rect);
+
+	if(rtgui_rect_contains_point(&rect, mouse->x, mouse->y) != RT_EOK)
+		return;
+
+	/* get value */
+	pos = get_scrollbar_pos(bar);
 
 	if(bar->orient == RTGUI_VERTICAL)
 	{
@@ -554,7 +558,7 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 	else
 	{
 		if(bar->status & SBS_HORZTHUMB)
-		{rt_kprintf("HORZTHUMB, move event\n");
+		{
 			if((mouse->x-sbar_mouse_move_size.x) > 5)
 			{
 				bar->status |= SBS_RIGHTTHUMB;
@@ -763,28 +767,4 @@ void rtgui_scrollbar_set_onscroll(rtgui_scrollbar_t* bar, rtgui_event_handler_pt
 	if(bar == RT_NULL || handler == RT_NULL) return;
 
 	bar->on_scroll = handler;
-}
-
-void rtgui_scrollbar_hide(rtgui_scrollbar_t* bar)
-{
-	rtgui_rect_t rect;
-	struct rtgui_dc* dc;
-
-	RT_ASSERT(bar != RT_NULL);
-
-	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(bar));
-	if(dc == RT_NULL)return;
-
-	RTGUI_WIDGET_HIDE(bar);
-
-	/* begin drawing */
-	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
-	if((RTGUI_WIDGET(bar))->parent != RT_NULL)
-		RTGUI_DC_BC(dc) = RTGUI_WIDGET_BACKGROUND(RTGUI_WIDGET(bar)->parent);
-	else
-		RTGUI_DC_BC(dc) = RTGUI_RGB(225, 228, 220);
-	rtgui_dc_fill_rect(dc,&rect);
-
-	rtgui_dc_end_drawing(dc);
 }

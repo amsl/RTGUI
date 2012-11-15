@@ -414,13 +414,12 @@ rt_bool_t rtgui_rttab_switchto_next(rtgui_rttab_t* tab)
 
 		item = &(tab->tags[tab->now_tag]);
 		/* hide old item */
-		RTGUI_WIDGET_HIDE(item->tag);
-
+		rtgui_widget_onhide(RTGUI_OBJECT(item->tag), RT_NULL);
 		tab->now_tag = tab->now_tag + 1;
 		item = &(tab->tags[tab->now_tag]);
-		RTGUI_WIDGET_UNHIDE(item->tag);
+		rtgui_widget_onshow(RTGUI_OBJECT(item->tag), RT_NULL);
 		top = (rtgui_widget_t*)rtgui_widget_get_toplevel(RTGUI_WIDGET(tab));
-		rtgui_widget_update_clip(top);
+		//rtgui_widget_update_clip(top);
 		rtgui_widget_update(RTGUI_WIDGET(tab));
 		return RT_TRUE;
 	}
@@ -439,11 +438,10 @@ rt_bool_t rtgui_rttab_switchto_prev(rtgui_rttab_t* tab)
 
 		item = &(tab->tags[tab->now_tag]);
 		/* hide old item */
-		RTGUI_WIDGET_HIDE(item->tag);
-
+		rtgui_widget_onhide(RTGUI_OBJECT(item->tag), RT_NULL);
 		tab->now_tag = tab->now_tag - 1;
 		item = &(tab->tags[tab->now_tag]);
-		RTGUI_WIDGET_UNHIDE(item->tag);
+		rtgui_widget_onshow(RTGUI_OBJECT(item->tag), RT_NULL);
 		top = (rtgui_widget_t*)rtgui_widget_get_toplevel(RTGUI_WIDGET(tab));
 		rtgui_widget_update_clip(top);
 		rtgui_widget_update(RTGUI_WIDGET(tab));
@@ -500,13 +498,12 @@ static void rtgui_rttab_onmouse(rtgui_rttab_t* tab, struct rtgui_event_mouse* em
 						rtgui_widget_t* top;
 						item = &(tab->tags[tab->now_tag]);
 						/* hide old item */
-						RTGUI_WIDGET_HIDE(item->tag);
-
+						rtgui_widget_onhide(RTGUI_OBJECT(item->tag), RT_NULL);
 						tab->now_tag = i;
 						item = &(tab->tags[tab->now_tag]);
-						RTGUI_WIDGET_UNHIDE(item->tag);
+						rtgui_widget_onshow(RTGUI_OBJECT(item->tag), RT_NULL);
 						top = (rtgui_widget_t*)rtgui_widget_get_toplevel(RTGUI_WIDGET(tab));
-						rtgui_widget_update_clip(top);
+						//rtgui_widget_update_clip(top);
 						rtgui_widget_update(RTGUI_WIDGET(tab));
 					}
 				}
@@ -582,11 +579,11 @@ static rt_bool_t rtgui_rttab_spin_onclick(rtgui_object_t *object, rtgui_event_t*
 		item = &(tab->tags[i]);
 		if(!RTGUI_WIDGET_IS_HIDE(item->tag))
 		{
-			RTGUI_WIDGET_HIDE(item->tag);
+			rtgui_widget_onhide(RTGUI_OBJECT(item->tag), RT_NULL);
 			item = &(tab->tags[tab->now_tag]);
-			RTGUI_WIDGET_UNHIDE(item->tag);
+			rtgui_widget_onshow(RTGUI_OBJECT(item->tag), RT_NULL);
 			top = (rtgui_widget_t*)rtgui_widget_get_toplevel(RTGUI_WIDGET(tab));
-			rtgui_widget_update_clip(top);
+			//rtgui_widget_update_clip(top);
 			rtgui_widget_update(RTGUI_WIDGET(tab));
 		}
 	}
