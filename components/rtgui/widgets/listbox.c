@@ -194,7 +194,7 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 
 	/* get first loc */
 	first = box->first_item;
-	for(i = 0; i < box->item_per_page; i ++)
+	for(i = 0; i <= box->item_per_page; i ++)
 	{
 		char buf[32];
 		rtgui_color_t bc;
@@ -260,8 +260,8 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 		/* move to next item position */
 		item_rect.y1 += (box->item_size + 2);
 		item_rect.y2 += (box->item_size + 2);
-		if (item_rect.y2 > rect.y2)
-			item_rect.y2 = rect.y2;
+		if (item_rect.y2 > rect.y2-RTGUI_WIDGET_BORDER(box))
+			item_rect.y2 = rect.y2-RTGUI_WIDGET_BORDER(box);
 	}
 
 	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
@@ -397,9 +397,10 @@ static void rtgui_listbox_onmouse(rtgui_listbox_t* box, struct rtgui_event_mouse
 	/* get physical extent information */
 	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
 	rtgui_widget_rect_to_device(RTGUI_WIDGET(box), &rect);
+	rtgui_rect_inflate(&rect, -RTGUI_WIDGET_BORDER(box));
 	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
 	{
-		rect.x2 -= RC_W(box->scrollbar->parent.extent) + RTGUI_WIDGET_BORDER(box);
+		rect.x2 -= RC_W(box->scrollbar->parent.extent);
 	}
 
 	if((rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK))
