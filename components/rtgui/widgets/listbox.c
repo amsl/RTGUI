@@ -859,7 +859,9 @@ rt_bool_t rtgui_listbox_unfocus(rtgui_object_t *object, rtgui_event_t* event)
 	RT_ASSERT(box != RT_NULL);
 
 	if(!RTGUI_WIDGET_IS_FOCUSED(box))
-	{
+	{	/* Ignore when now_item is not in the current page */
+		if(box->now_item < box->first_item || box->now_item > box->first_item+box->item_per_page)
+			return RT_FALSE;
 		/* clear focus rectangle */
 		rtgui_listbox_update(box);
 	}

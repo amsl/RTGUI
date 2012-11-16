@@ -39,6 +39,7 @@ DECLARE_CLASS_TYPE(edit);
 #define RTGUI_EDIT_ALT              0x40
 #define RTGUI_EDIT_CAPSLOCK         0x80
 #define RTGUI_EDIT_NUMLOCK          0x100
+#define RTGUI_EDIT_WORDWRAP			0x200
 
 struct edit_update
 {
