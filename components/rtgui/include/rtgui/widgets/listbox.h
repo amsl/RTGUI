@@ -72,7 +72,7 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 void rtgui_listbox_set_onitem(rtgui_listbox_t* box, rtgui_event_handler_ptr func);
 void rtgui_listbox_set_updown(rtgui_listbox_t* box, rtgui_event_handler_ptr func);
 void rtgui_listbox_set_items(rtgui_listbox_t* box, const rtgui_listbox_item_t* items, rt_int16_t count);
-void rtgui_listbox_update_current(rtgui_listbox_t* box, rt_int16_t loc);
+void rtgui_listbox_update_item(rtgui_listbox_t* box, rt_int16_t loc);
 void rtgui_listbox_set_current_item(rtgui_listbox_t *box, int index);
 void rtgui_listbox_add_item(rtgui_listbox_t* box, rtgui_listbox_item_t* item, rt_bool_t update);
 void rtgui_listbox_insert_item(rtgui_listbox_t* box, rtgui_listbox_item_t* item, rt_int16_t item_num);

@@ -636,7 +636,7 @@ void rtgui_listbox_add_item(rtgui_listbox_t* box,rtgui_listbox_item_t* item, rt_
 		rtgui_listbox_adjust_scrollbar(box);
 		if(!RTGUI_WIDGET_IS_HIDE(box) && update)
 		{
-			rtgui_listbox_ondraw(box);
+			rtgui_listbox_update_item(box, box->item_count-1);
 		}
 	}
 }
@@ -682,8 +682,11 @@ void rtgui_listbox_insert_item(rtgui_listbox_t* box, rtgui_listbox_item_t* item,
 		box->items[item_num+1].image= item->image;
 		rtgui_listbox_adjust_scrollbar(box);
 		if(!RTGUI_WIDGET_IS_HIDE(box))
-		{
-			rtgui_listbox_ondraw(box);
+		{	/* First positioning to the current item */
+			if(box->now_item < box->first_item || box->now_item > box->first_item+box->item_per_page)
+				rtgui_listbox_update_item(box, box->now_item);
+			/* After that positioning to inserted item */
+			rtgui_listbox_update_item(box, item_num+1);
 		}
 	}
 }
@@ -797,7 +800,7 @@ void rtgui_listbox_clear_items(rtgui_listbox_t* box)
 }
 
 /* update listbox with assign row */
-void rtgui_listbox_update_current(rtgui_listbox_t* box, rt_int16_t loc)
+void rtgui_listbox_update_item(rtgui_listbox_t* box, rt_int16_t loc)
 {
 	RT_ASSERT(box != RT_NULL);
 
@@ -844,7 +847,7 @@ void rtgui_listbox_set_current_item(rtgui_listbox_t *box, int index)
 		old_item = box->now_item;
 		box->now_item = index;
 
-		rtgui_listbox_update_current(box, old_item);
+		rtgui_listbox_update_item(box, old_item);
 	}
 }
 RTM_EXPORT(rtgui_listbox_set_current_item);
