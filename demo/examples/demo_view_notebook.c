@@ -29,7 +29,7 @@ const static struct rtgui_listbox_item items2[] =
 rtgui_container_t *demo_view_notebook(void)
 {
     rtgui_rect_t rect;
-    rtgui_container_t *container;
+    rtgui_container_t *container, *container_tmp;
     struct rtgui_notebook *notebook;
     rtgui_listbox_t *box;
 
@@ -42,14 +42,16 @@ rtgui_container_t *demo_view_notebook(void)
     notebook = rtgui_notebook_create(&rect, RTGUI_NOTEBOOK_BOTTOM);
     /* container是一个container控件，调用add_child方法添加这个notebook控件 */
     rtgui_container_add_child(container, RTGUI_WIDGET(notebook));
-
-	box = rtgui_listbox_create(container, 10, 50, 100, 100, RTGUI_BORDER_SUNKEN);
+	
+	container_tmp = rtgui_container_create();
+	rtgui_notebook_add(notebook, "Tab 1", RTGUI_WIDGET(container_tmp));
+	box = rtgui_listbox_create(container_tmp, 10, 10, 200, 200, RTGUI_BORDER_SUNKEN);
 	rtgui_listbox_set_items(box, items, sizeof(items) / sizeof(struct rtgui_listbox_item));
-	rtgui_notebook_add(notebook, "Tab 1", RTGUI_WIDGET(box));
 
-	box = rtgui_listbox_create(container, 10, 50, 100, 100, RTGUI_BORDER_SUNKEN);
+	container_tmp = rtgui_container_create();
+	rtgui_notebook_add(notebook, "Tab 2", RTGUI_WIDGET(container_tmp));
+	box = rtgui_listbox_create(container_tmp, 10, 10, 200, 200, RTGUI_BORDER_SUNKEN);
 	rtgui_listbox_set_items(box, items2, sizeof(items2) / sizeof(struct rtgui_listbox_item));
-    rtgui_notebook_add(notebook, "Tab 2", RTGUI_WIDGET(box));
 
     return container;
 }
