@@ -1320,6 +1320,10 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
                 edit->update.end.y = edit->upleft.y + edit->row_per_page;
             }
         }
+#ifdef RTGUI_EDIT_USING_SCROLL
+		rtgui_edit_ondraw(edit);
+		return RT_TRUE;
+#endif
     }
     else
     {
