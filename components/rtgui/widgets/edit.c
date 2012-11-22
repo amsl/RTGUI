@@ -891,7 +891,12 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
                 }
             }
 			rtgui_edit_update_max_cols(edit, line);
-            goto _edit_exit;
+#ifdef RTGUI_EDIT_USING_SCROLL
+			rtgui_edit_ondraw(edit);
+			return RT_TRUE;
+#else
+			goto _edit_exit;
+#endif
         }
         else if (ofs == line->len - 1)
         {
@@ -969,7 +974,12 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
 					}
 				}
 			}
-            goto _edit_exit;
+#ifdef RTGUI_EDIT_USING_SCROLL
+			rtgui_edit_ondraw(edit);
+			return RT_TRUE;
+#else
+			goto _edit_exit;
+#endif
         }
 		else
 		{
@@ -1378,8 +1388,9 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
         }
     }
     line->len = rtgui_edit_line_strlen(line->text);
-
+#ifndef RTGUI_EDIT_USING_SCROLL
 _edit_exit:
+#endif
     if (edit->flag & RTGUI_EDIT_CARET)
     {
         if (edit->caret_timer != RT_NULL)
