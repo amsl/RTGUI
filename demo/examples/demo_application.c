@@ -35,7 +35,6 @@ static void application_entry(void *parameter)
 {
     struct rtgui_app *app;
     struct rtgui_rect rect;
-	rtgui_button_t *button;
 
     app = rtgui_app_create(rt_thread_self(), "gui_demo");
     if (app == RT_NULL)

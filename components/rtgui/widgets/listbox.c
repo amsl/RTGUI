@@ -341,7 +341,7 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 	item_rect.y1 += RTGUI_WIDGET_BORDER(box);
 	item_rect.y1 += ((box->now_item-box->first_item) % box->item_per_page) * (2 + box->item_size);
 	item_rect.y2 = item_rect.y1 + (2 + box->item_size);
-	if (item_rect.y2 > rect.y2) item_rect.y2 = rect.y2;
+	if (item_rect.y2 > rect.y2-RTGUI_WIDGET_BORDER(box)) item_rect.y2 = rect.y2-RTGUI_WIDGET_BORDER(box);
 
 	/* draw current item */
 	if(RTGUI_WIDGET_IS_FOCUSED(box))
@@ -470,7 +470,7 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 		{
 			rtgui_listbox_onmouse(box, (struct rtgui_event_mouse*)event);
 		}
-		if(!RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+		if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
 		{
 			rtgui_scrollbar_event_handler(RTGUI_OBJECT(box->scrollbar), event);
 		}

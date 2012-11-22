@@ -15,6 +15,7 @@
 #define __RTGUI_EDIT_H__
 
 #include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/scrollbar.h>
 #include <rtgui/widgets/container.h>
 
 #ifdef __cplusplus
@@ -41,6 +42,8 @@ DECLARE_CLASS_TYPE(edit);
 #define RTGUI_EDIT_NUMLOCK          0x100
 #define RTGUI_EDIT_WORDWRAP			0x200
 
+#define RTGUI_EDIT_USING_SCROLL
+
 struct edit_update
 {
     /* rt_uint32_t type; */ /* update type */
@@ -50,7 +53,7 @@ struct edit_update
 struct edit_line
 {
     rt_int16_t  zsize; /* zone size */
-    rt_int16_t  len;
+    rt_int16_t  len, wraps;
     struct edit_line *prev;
     struct edit_line *next;
     char        *text;
@@ -78,12 +81,13 @@ struct rtgui_edit
     rtgui_rect_t  caret_rect;
     struct edit_update update;
     char          *update_buf; /* speed up renewal process */
-    struct rtgui_dc *dbl_buf;
+    struct rtgui_dc *dbl_buf_dc;
 
     struct edit_line  *head;
     struct edit_line  *tail;
     struct edit_line  *first_line;
 #ifdef RTGUI_EDIT_USING_SCROLL
+	struct edit_line  *max_cols_line;
     struct rtgui_scrollbar *hscroll;
     struct rtgui_scrollbar *vscroll;
 #endif

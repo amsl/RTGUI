@@ -108,7 +108,7 @@ rtgui_container_t *demo_view_edit(void)
 
     edit = rtgui_edit_create(container, 10, 35, 220, 200);
     rtgui_edit_set_text(edit, 
-                        "Edit beta v0.1\n"
+                        "Edit beta v0.2\n"
                         "Hello RT-Thread\n"
                         "this's edit demo\n"
                         "rtgui_edit_create\n"
@@ -117,10 +117,13 @@ rtgui_container_t *demo_view_edit(void)
                         "rtgui_edit_delete_line\n"
                         "rtgui_edit_connect_line\n"
 						"双字节测试\n"
+						"this line text can be \n"
                         "a\n"
                         "b\n"
                         "c\n"
                         "d\n"
+						"e\n"
+						"f\n"
                         "1234567890\n");
 
     /* 创建一个按钮, 读取某个文件 */

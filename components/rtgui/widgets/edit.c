@@ -14,7 +14,6 @@
  */
 #include <rtgui/dc.h>
 #include <rtgui/widgets/edit.h>
-#include <rtgui/widgets/scrollbar.h>
 #include <rtgui/rtgui_system.h>
 #include <rtgui/filerw.h>
 
@@ -24,8 +23,8 @@ static void rtgui_edit_timeout(struct rtgui_timer *timer, void *parameter);
 static rt_bool_t rtgui_edit_onfocus(struct rtgui_object *object, rtgui_event_t *event);
 static rt_bool_t rtgui_edit_onunfocus(struct rtgui_object *object, rtgui_event_t *event);
 #ifdef RTGUI_EDIT_USING_SCROLL
-static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_widget *widget, rtgui_event_t *event);
-static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_widget *widget, rtgui_event_t *event);
+static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_object *object, rtgui_event_t *event);
+static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_object *object, rtgui_event_t *event);
 #endif
 
 void _rtgui_edit_constructor(struct rtgui_edit *edit)
@@ -65,13 +64,15 @@ void _rtgui_edit_constructor(struct rtgui_edit *edit)
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(edit), "H", &font_rect);
     edit->font_width = RC_W(font_rect);
     edit->font_height = RC_H(font_rect);
+	edit->item_height = edit->font_height;
 
-    edit->dbl_buf = rtgui_dc_buffer_create(edit->font_width * 2 + 1, edit->font_height + 1);
+    edit->dbl_buf_dc = rtgui_dc_buffer_create(edit->font_width * 2 + 1, edit->font_height + 1);
 
     edit->head = RT_NULL;
     edit->tail = RT_NULL;
     edit->first_line = RT_NULL;
 #ifdef RTGUI_EDIT_USING_SCROLL
+	edit->max_cols_line = RT_NULL;
     edit->hscroll = RT_NULL;
     edit->vscroll = RT_NULL;
 #endif
@@ -95,7 +96,7 @@ void _rtgui_edit_deconstructor(struct rtgui_edit *edit)
     if (edit->update_buf != RT_NULL)
         rtgui_free(edit->update_buf);
 
-    rtgui_dc_destory(edit->dbl_buf);
+    rtgui_dc_destory(edit->dbl_buf_dc);
 }
 
 DEFINE_CLASS_TYPE(edit, "edit",
@@ -103,68 +104,6 @@ DEFINE_CLASS_TYPE(edit, "edit",
                   _rtgui_edit_constructor,
                   _rtgui_edit_deconstructor,
                   sizeof(struct rtgui_edit));
-
-#ifdef RTGUI_EDIT_USING_SCROLL
-void rtgui_edit_adjust_scroll(rtgui_scrollbar_t *bar)
-{
-    struct rtgui_edit *edit;
-
-    RT_ASSERT(bar != RT_NULL);
-
-    if (bar->widget_link != RT_NULL)
-    {
-        rtgui_rect_t rect;
-        rt_uint32_t _left = 0, _top = 0, _width = RTGUI_DEFAULT_SB_WIDTH, _len = 0;
-
-        edit = bar->widget_link;
-        rtgui_widget_get_rect(edit, &rect);
-        rtgui_widget_rect_to_device(edit, &rect);
-        if (bar->orient == RTGUI_HORIZONTAL)
-        {
-            if (RTGUI_WIDGET_IS_HIDE(edit->hscroll))
-            {
-                if (edit->max_rows > edit->row_per_page)
-                {
-					rtgui_widget_onshow(RTGUI_OBJECT(edit->vscroll), RT_NULL);
-                    rtgui_scrollbar_set_line_step(edit->hscroll, 1);
-                    rtgui_scrollbar_set_page_step(edit->hscroll, edit->row_per_page);
-                    rtgui_scrollbar_set_range(edit->hscroll, edit->max_rows);
-                }
-                else
-                    rtgui_widget_onhide(RTGUI_OBJECT(edit->vscroll), RT_NULL);
-            }
-            else
-            {
-                _left = RTGUI_WIDGET_BORDER(edit);
-                _top = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
-                _len = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
-
-                if (!RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-                    _len -= _width;
-                rect.x1 += _left;
-                rect.y1 += _top;
-                rect.x2 = rect.x1 + _len;
-                rect.y2 = rect.y1 + _width;
-            }
-        }
-        else if (bar->orient == RTGUI_VERTICAL)
-        {
-            _left = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
-            _top = RTGUI_WIDGET_BORDER(edit);
-            _len = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
-
-            if (!RTGUI_WIDGET_IS_HIDE(edit->hscroll))
-                _len -= _width;
-            rect.x1 += _left;
-            rect.y1 += _top;
-            rect.x2 = rect.x1 + _width;
-            rect.y2 = rect.y1 + _len;
-        }
-        rtgui_widget_set_rect(bar, &rect);
-    }
-}
-RTM_EXPORT(rtgui_edit_adjust_scroll);
-#endif
 
 struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left, int top, int w, int h)
 {
@@ -176,7 +115,7 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
     if (edit != RT_NULL)
     {
         rtgui_rect_t rect;
-        int effe;
+
         rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
         rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
         rect.x1 += left;
@@ -186,18 +125,7 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
         rtgui_widget_set_rect(RTGUI_WIDGET(edit), &rect);
         rtgui_container_add_child(container, RTGUI_WIDGET(edit));
 
-        /* set character number */
-        edit->item_height = edit->font_height; /* the same height */
-        effe = h - (edit->margin + RTGUI_WIDGET_BORDER(edit)) * 2;
-        edit->row_per_page = effe / edit->item_height;
-        if (effe % edit->item_height)
-            edit->row_per_page += 1;
-
-        effe = w - (edit->margin + RTGUI_WIDGET_BORDER(edit)) * 2;
-        edit->col_per_page = effe / edit->font_width;
-        if (effe % edit->font_width)
-            edit->col_per_page += 1;
-        edit->update_buf = rtgui_malloc(edit->col_per_page + 1);
+		edit->update_buf = rtgui_malloc(edit->col_per_page + 1);
 
 #ifdef RTGUI_EDIT_USING_SCROLL
         if (edit->hscroll == RT_NULL && edit->flag & RTGUI_EDIT_HSCROLL)
@@ -207,16 +135,21 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
             _left = RTGUI_WIDGET_BORDER(edit);
             _top = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
             _len = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
-            if (edit->max_rows > edit->row_per_page) _len -= _width;
+			_len = _len - _width;
 
-            edit->hscroll = rtgui_scrollbar_create(edit, _left, _top, _width, _len, RTGUI_HORIZONTAL);
+            edit->hscroll = rtgui_scrollbar_create(RTGUI_CONTAINER(edit), _left, _top, _width, _len, RTGUI_HORIZONTAL);
 
-            if (edit->hscroll != RT_NULL)
+            if (edit->hscroll)
             {
                 edit->hscroll->widget_link = (rtgui_widget_t*)edit;
                 edit->hscroll->on_scroll = rtgui_edit_hscroll_handle;
-				rtgui_widget_onhide(RTGUI_OBJECT(edit->hscroll), RT_NULL);
+				rtgui_scrollbar_set_line_step(edit->hscroll, 1);
+				_len = _len - edit->margin*2;
+				edit->col_per_page = _len / edit->font_width;
+				rtgui_scrollbar_set_page_step(edit->hscroll, edit->col_per_page);
             }
+			else
+				rt_kprintf("EDIT:create hscroll failed.\n");
         }
         if (edit->vscroll == RT_NULL && edit->flag & RTGUI_EDIT_VSCROLL)
         {
@@ -225,17 +158,26 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
             _left = RC_W(rect) - RTGUI_WIDGET_BORDER(edit) - _width;
             _top = RTGUI_WIDGET_BORDER(edit);
             _len = RC_H(rect) - RTGUI_WIDGET_BORDER(edit) * 2;
-            if (edit->max_cols > edit->col_per_page) _len -= _width;
+			_len = _len - _width;
 
-            edit->vscroll = rtgui_scrollbar_create(edit, _left, _top, _width, _len, RTGUI_VERTICAL);
+            edit->vscroll = rtgui_scrollbar_create(RTGUI_CONTAINER(edit), _left, _top, _width, _len, RTGUI_VERTICAL);
 
             if (edit->vscroll != RT_NULL)
             {
                 edit->vscroll->widget_link = (rtgui_widget_t*)edit;
                 edit->vscroll->on_scroll = rtgui_edit_vscroll_handle;
-				rtgui_widget_onhide(RTGUI_OBJECT(edit->vscroll), RT_NULL);
+				rtgui_scrollbar_set_line_step(edit->vscroll, 1);
+				_len = _len - edit->margin*2;
+				edit->item_height = edit->font_height;
+				edit->row_per_page = _len / edit->item_height;
+				rtgui_scrollbar_set_page_step(edit->vscroll, edit->row_per_page);
             }
+			else
+				rt_kprintf("EDIT:create vscroll failed.\n");
         }
+#else
+		edit->col_per_page = (w-(edit->margin+RTGUI_WIDGET_BORDER(edit))*2)/edit->font_width;
+		edit->row_per_page = (h-(edit->margin+RTGUI_WIDGET_BORDER(edit))*2)/edit->item_height;
 #endif
     }
 
@@ -279,6 +221,26 @@ rt_inline rt_int16_t rtgui_edit_line_strlen(const char *s)
     return sc - s;
 }
 
+static void rtgui_edit_update_max_cols(struct rtgui_edit *edit, struct edit_line *line)
+{
+#ifdef RTGUI_EDIT_USING_SCROLL
+	struct edit_line *tmpline;
+	line->len = rtgui_edit_line_strlen(line->text);
+	edit->max_cols = line->len;
+	tmpline = edit->head;
+	while (tmpline)
+	{
+		if(edit->max_cols < tmpline->len)
+		{
+			edit->max_cols = tmpline->len;
+			edit->max_cols_line = tmpline;
+			break;
+		}
+		tmpline = tmpline->next;
+	}
+#endif
+}
+
 rt_bool_t rtgui_edit_append_line(struct rtgui_edit *edit, const char *text)
 {
     rt_int16_t len;
@@ -298,7 +260,13 @@ rt_bool_t rtgui_edit_append_line(struct rtgui_edit *edit, const char *text)
 
     line->next = RT_NULL;
     edit->max_rows++;
-    if (edit->max_cols < len) edit->max_cols = len;
+    if (edit->max_cols < len) 
+	{
+		edit->max_cols = len;
+#ifdef RTGUI_EDIT_USING_SCROLL
+		edit->max_cols_line = line;
+#endif
+	}
 
     node = edit->head;
     if (node == RT_NULL)
@@ -428,6 +396,7 @@ rt_bool_t rtgui_edit_connect_line(struct rtgui_edit *edit, struct edit_line *lin
     *(line->text + len1 + len2) = '\0';
 
     line->len = rtgui_edit_line_strlen(line->text);
+
     return RT_TRUE;
 }
 RTM_EXPORT(rtgui_edit_connect_line);
@@ -650,7 +619,13 @@ static void rtgui_edit_onmouse(struct rtgui_edit *edit, struct rtgui_event_mouse
     RT_ASSERT(emouse != RT_NULL);
 
     rtgui_widget_get_rect(RTGUI_WIDGET(edit), &rect);
-    if ((rtgui_region_contains_point(&(RTGUI_WIDGET(edit)->clip), emouse->x, emouse->y, &rect) == RT_EOK))
+	rtgui_widget_rect_to_device(RTGUI_WIDGET(edit), &rect);
+	rtgui_rect_inflate(&rect, -RTGUI_WIDGET_BORDER(edit));
+#ifdef RTGUI_EDIT_USING_SCROLL
+	rect.x2 -= RC_W(edit->vscroll->parent.extent);
+	rect.y2 -= RC_H(edit->hscroll->parent.extent);
+#endif
+    if ((rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK))
     {
         rt_uint16_t x, y;
 
@@ -709,18 +684,6 @@ static void rtgui_edit_onmouse(struct rtgui_edit *edit, struct rtgui_event_mouse
             {
                 /* please add codes at here. */
             }
-#ifdef RTGUI_EDIT_USING_SCROLL
-            if (edit->vscroll && !RTGUI_WIDGET_IS_HIDE(edit))
-            {
-                if (!RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-                    rtgui_scrollbar_set_value(edit->vscroll, edit->upleft.y);
-            }
-            if (edit->hscroll && !RTGUI_WIDGET_IS_HIDE(edit))
-            {
-                if (!RTGUI_WIDGET_IS_HIDE(edit->hscroll))
-                    rtgui_scrollbar_set_value(edit->hscroll, edit->upleft.x);
-            }
-#endif
         }
     }
 }
@@ -927,7 +890,7 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
                     edit->update.end.y = update_end_index + 1;
                 }
             }
-            line->len = rtgui_edit_line_strlen(line->text);
+			rtgui_edit_update_max_cols(edit, line);
             goto _edit_exit;
         }
         else if (ofs == line->len - 1)
@@ -950,78 +913,100 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
         if (edit->update.end.x > edit->col_per_page)
             edit->update.end.x = edit->col_per_page;
         edit->update.end.y = edit->visual.y;
+
+		rtgui_edit_update_max_cols(edit, line);
     }
     else if (ekbd->key == RTGUIK_BACKSPACE)
     {
         if (edit->visual.x == 0)
         {
-            /* incorporated into prev line */
-            struct rtgui_event_kbd event_kbd;
-            struct edit_line *prev_line = line->prev;
-            if (prev_line != RT_NULL)
-            {
-                struct edit_line *update_end_line;
+            if(edit->upleft.x > 0)
+			{
+				if(edit->upleft.x >= edit->col_per_page)
+				{
+					edit->upleft.x -= edit->col_per_page;
+					edit->visual.x = edit->col_per_page;
+				}
+				else
+				{
+					edit->visual.x = edit->upleft.x;
+					edit->upleft.x = 0;
+				}
+				rtgui_edit_onkey(object, event);
+			}
+			else
+			{
+				/* incorporated into prev line */
+				struct rtgui_event_kbd event_kbd;
+				struct edit_line *prev_line = line->prev;
+				if (prev_line != RT_NULL)
+				{
+					struct edit_line *update_end_line;
 
-                update_type = EDIT_UPDATE;
-                edit->visual.x = prev_line->len;
+					update_type = EDIT_UPDATE;
+					edit->visual.x = prev_line->len;
 
-                rtgui_edit_connect_line(edit, prev_line, line);
-                kbd_event_set_key(&event_kbd, RTGUIK_UP);
-                rtgui_edit_onkey(object, (rtgui_event_t *)&event_kbd);
-                rtgui_edit_delete_line(edit, line);
+					rtgui_edit_connect_line(edit, prev_line, line);
+					kbd_event_set_key(&event_kbd, RTGUIK_UP);
+					rtgui_edit_onkey(object, (rtgui_event_t *)&event_kbd);
+					rtgui_edit_delete_line(edit, line);
 
-                edit->update.start = edit->visual; /* update.start.y is changed */
-                if (edit->max_rows - edit->upleft.y > edit->row_per_page)
-                {
-                    update_end_line = rtgui_edit_get_line_by_index(edit, edit->upleft.y + edit->row_per_page);
-                    if (update_end_line != RT_NULL)
-                    {
-                        edit->update.end.x = edit->col_per_page;
-                        edit->update.end.y = edit->upleft.y + edit->row_per_page;
-                    }
-                }
-                else
-                {
-                    int update_end_index = rtgui_edit_get_index_by_line(edit, edit->tail);
-                    edit->update.end.x = edit->col_per_page;
-                    edit->update.end.y = update_end_index + 1;
-                }
-            }
+					edit->update.start = edit->visual; /* update.start.y is changed */
+					if (edit->max_rows - edit->upleft.y > edit->row_per_page)
+					{
+						update_end_line = rtgui_edit_get_line_by_index(edit, edit->upleft.y + edit->row_per_page);
+						if (update_end_line != RT_NULL)
+						{
+							edit->update.end.x = edit->col_per_page;
+							edit->update.end.y = edit->upleft.y + edit->row_per_page;
+						}
+					}
+					else
+					{
+						int update_end_index = rtgui_edit_get_index_by_line(edit, edit->tail);
+						edit->update.end.x = edit->col_per_page;
+						edit->update.end.y = update_end_index + 1;
+					}
+				}
+			}
             goto _edit_exit;
         }
+		else
+		{
+			rt_int16_t tmp_pos = 1;
+			/* delete front character */
+			if (edit->visual.x == line->len)
+			{
+				identify_double_byte(edit, line, EDIT_IDENT_DIR_LEFT, &tmp_pos);
+				line->text[edit->visual.x - tmp_pos] = '\0';
+				edit->visual.x -= tmp_pos;
+			}
+			else if (edit->visual.x != 0)
+			{
+				/* remove current character */
+				char *c;
+				identify_double_byte(edit, line, EDIT_IDENT_DIR_LEFT, &tmp_pos);
+				/* remove character */
+				for (c = &line->text[edit->upleft.x+edit->visual.x - tmp_pos]; c[tmp_pos] != '\0'; c++)
+				{
+					*c = c[tmp_pos];
+				}
+				*c = '\0';
+				edit->visual.x -= tmp_pos;
+			}
+			/* adjusted line buffer length */
+			if (rtgui_edit_alloc_len(edit->bzsize, line->len + 2) < line->zsize)
+			{
+				line->zsize = rtgui_edit_alloc_len(edit->bzsize, line->len + 1);
+				line->text = rt_realloc(line->text, line->zsize);
+			}
+			update_type = EDIT_UPDATE;
+			edit->update.start = edit->visual;
+			edit->update.end.x = line->len;
+			edit->update.end.y = edit->visual.y;
 
-        /* delete front character */
-        if (edit->visual.x == line->len)
-        {
-            rt_int16_t tmp_pos = 1;
-            identify_double_byte(edit, line, EDIT_IDENT_DIR_LEFT, &tmp_pos);
-            line->text[edit->visual.x - tmp_pos] = '\0';
-            edit->visual.x -= tmp_pos;
-        }
-        else if (edit->visual.x != 0)
-        {
-            /* remove current character */
-            char *c;
-            rt_int16_t tmp_pos = 1;
-            identify_double_byte(edit, line, EDIT_IDENT_DIR_LEFT, &tmp_pos);
-            /* remove character */
-            for (c = &line->text[edit->visual.x - tmp_pos]; c[tmp_pos] != '\0'; c++)
-            {
-                *c = c[tmp_pos];
-            }
-            *c = '\0';
-            edit->visual.x -= tmp_pos;
-        }
-        /* adjusted line buffer length */
-        if (rtgui_edit_alloc_len(edit->bzsize, line->len + 2) < line->zsize)
-        {
-            line->zsize = rtgui_edit_alloc_len(edit->bzsize, line->len + 1);
-            line->text = rt_realloc(line->text, line->zsize);
-        }
-        update_type = EDIT_UPDATE;
-        edit->update.start = edit->visual;
-        edit->update.end.x = line->len;
-        edit->update.end.y = edit->visual.y;
+			rtgui_edit_update_max_cols(edit, line);
+		}
     }
     else if (ekbd->key == RTGUIK_UP)
     {
@@ -1082,15 +1067,6 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
             if (identify_double_byte(edit, prev_line, EDIT_IDENT_DIR_LEFT, &tmp_pos))
                 edit->visual.x -= (2 - tmp_pos);
         }
-
-#ifdef RTGUI_EDIT_USING_SCROLL
-        /* update vscroll */
-        if (edit->vscroll && !RTGUI_WIDGET_IS_HIDE(edit))
-        {
-            if (!RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-                rtgui_scrollbar_set_value(edit->vscroll, edit->upleft.y);
-        }
-#endif
     }
     else if (ekbd->key == RTGUIK_DOWN)
     {
@@ -1156,15 +1132,6 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
             if (identify_double_byte(edit, next_line, EDIT_IDENT_DIR_LEFT, &tmp_pos))
                 edit->visual.x -= (2 - tmp_pos);
         }
-
-#ifdef RTGUI_EDIT_USING_SCROLL
-        /* update vscroll */
-        if (edit->vscroll && !RTGUI_WIDGET_IS_HIDE(edit))
-        {
-            if (!RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-                rtgui_scrollbar_set_value(edit->vscroll, edit->upleft.y);
-        }
-#endif
     }
     else if (ekbd->key == RTGUIK_LEFT)
     {
@@ -1320,8 +1287,8 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
         }
         else
         {
-            /* nothing */
-            /* it will be adjusted upleft.y when entering DOWN case */
+			/* nothing */
+			/* it will be adjusted upleft.y when entering DOWN case */
         }
 
         /* move the caret to the next line head */
@@ -1377,10 +1344,19 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
                     edit->visual.x ++;
                 line->text[line->len + 1] = '\0';
                 line->len = rtgui_edit_line_strlen(line->text);
+
                 edit->update.end.x = line->len;
                 if (edit->update.end.x > edit->col_per_page)
                     edit->update.end.x = edit->col_per_page;
                 edit->update.end.y = edit->visual.y;
+
+				if (edit->max_cols < line->len)
+				{
+					edit->max_cols = line->len;
+#ifdef RTGUI_EDIT_USING_SCROLL
+					edit->max_cols_line = line;
+#endif
+				}
             }
             else
             {
@@ -1427,6 +1403,38 @@ _edit_exit:
         edit->flag |= RTGUI_EDIT_CARET;
         rtgui_edit_draw_caret(edit);
     }
+#ifdef RTGUI_EDIT_USING_SCROLL
+	if(edit->hscroll != RT_NULL)
+	{
+		rt_bool_t bdraw = RT_FALSE;
+		if(rtgui_scrollbar_get_value(edit->hscroll) != edit->upleft.x)
+		{
+			rtgui_scrollbar_set_value(edit->hscroll, edit->upleft.x);
+			bdraw = RT_TRUE;
+		}
+		if(rtgui_scrollbar_get_range(edit->hscroll) != edit->max_cols)
+		{
+			rtgui_scrollbar_set_range(edit->hscroll, edit->max_cols);
+			bdraw = RT_TRUE;
+		}
+		if(bdraw)rtgui_widget_update(RTGUI_WIDGET(edit->hscroll));
+	}
+	if(edit->vscroll != RT_NULL)
+	{
+		rt_bool_t bdraw = RT_FALSE;
+		if(rtgui_scrollbar_get_value(edit->vscroll) != edit->upleft.y)
+		{
+			rtgui_scrollbar_set_value(edit->vscroll, edit->upleft.y);
+			bdraw = RT_TRUE;
+		}
+		if(rtgui_scrollbar_get_range(edit->vscroll) != edit->max_rows)
+		{
+			rtgui_scrollbar_set_range(edit->vscroll, edit->max_rows);
+			bdraw = RT_TRUE;
+		}
+		if(bdraw)rtgui_widget_update(RTGUI_WIDGET(edit->vscroll));
+	}
+#endif
     return RT_TRUE;
 }
 
@@ -1463,25 +1471,55 @@ static rt_bool_t rtgui_edit_onunfocus(struct rtgui_object *object, rtgui_event_t
 }
 
 #ifdef RTGUI_EDIT_USING_SCROLL
-static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_widget *widget, rtgui_event_t *event)
+static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_object *object, rtgui_event_t *event)
 {
-    struct rtgui_edit *edit = RTGUI_EDIT(widget);
+    rt_int16_t bak;
+	struct rtgui_edit *edit = RTGUI_EDIT(object);
 
+	bak = edit->upleft.x;
     /* adjust first display row when dragging */
-    edit->upleft.y = edit->hscroll->value;
+    edit->upleft.x = edit->hscroll->value;
+	edit->visual.x -= edit->upleft.x-bak;
+
+	if (RTGUI_WIDGET_IS_FOCUSED(edit))
+	{
+		rtgui_edit_init_caret(edit, edit->visual);
+		edit->flag |= RTGUI_EDIT_CARET;
+		rtgui_edit_draw_caret(edit);
+	}
 
     rtgui_edit_ondraw(edit);
 
     return RT_TRUE;
 }
 
-static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_widget *widget, rtgui_event_t *event)
+static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_object *object, rtgui_event_t *event)
 {
-    struct rtgui_edit *edit = RTGUI_EDIT(widget);
+	rt_int16_t bak;
+    struct rtgui_edit *edit = RTGUI_EDIT(object);
 
+	bak = edit->upleft.y;
     /* adjust first display row when dragging */
-    edit->upleft.x = edit->vscroll->value;
+    edit->upleft.y = edit->vscroll->value;
+	bak = edit->upleft.y - bak;
+	edit->visual.y -= bak;
+	
+	/* Modified first line */
+	if(bak > 0)
+	{
+		while((bak--) > 0) edit->first_line = edit->first_line->next;
+	}
+	else
+	{
+		while((bak++) != 0) edit->first_line = edit->first_line->prev;
+	}
 
+	if (RTGUI_WIDGET_IS_FOCUSED(edit))
+	{
+		rtgui_edit_init_caret(edit, edit->visual);
+		edit->flag |= RTGUI_EDIT_CARET;
+		rtgui_edit_draw_caret(edit);
+	}
     rtgui_edit_ondraw(edit);
 
     return RT_TRUE;
@@ -1503,7 +1541,10 @@ void rtgui_edit_update(struct rtgui_edit *edit)
 
     rtgui_widget_get_rect(RTGUI_WIDGET(edit), &rect);
     rtgui_rect_inflate(&rect, -(edit->margin + RTGUI_WIDGET_BORDER(edit)));
-
+#ifdef RTGUI_EDIT_USING_SCROLL
+	rect.x2 = rect.x2 - RC_W(edit->vscroll->parent.extent);
+	rect.y2 = rect.y2 - RC_H(edit->hscroll->parent.extent);
+#endif
     if (edit->update_buf == RT_NULL)
     {
         /* try again allocate */
@@ -1592,10 +1633,6 @@ void rtgui_edit_ondraw(struct rtgui_edit *edit)
 {
     rtgui_rect_t rect, r;
     struct rtgui_dc *dc;
-#ifdef RTGUI_EDIT_USING_SCROLL
-    int hscroll_flag = 0;
-    int vscroll_flag = 0;
-#endif
 
     RT_ASSERT(edit != RT_NULL);
 
@@ -1617,14 +1654,8 @@ void rtgui_edit_ondraw(struct rtgui_edit *edit)
     rtgui_rect_inflate(&rect, -(edit->margin + RTGUI_WIDGET_BORDER(edit)));
 
 #ifdef RTGUI_EDIT_USING_SCROLL
-    if (edit->vscroll && !RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-    {
-        rect.x2 = rect.x2 - RC_W(edit->vscroll->parent.extent);
-    }
-    if (edit->hscroll && !RTGUI_WIDGET_IS_HIDE(edit->hscroll))
-    {
-        rect.y2 = rect.y2 - RC_H(edit->hscroll->parent.extent);
-    }
+    rect.x2 = rect.x2 - RC_W(edit->vscroll->parent.extent);
+    rect.y2 = rect.y2 - RC_H(edit->hscroll->parent.extent);
 #endif
     r = rect;
 
@@ -1659,11 +1690,11 @@ void rtgui_edit_ondraw(struct rtgui_edit *edit)
                     dbl_bmp[0] = *(str - 1);
                     dbl_bmp[1] = *str;
                     dbl_bmp[2] = '\0';
-                    RTGUI_DC_BC(edit->dbl_buf) = RTGUI_WIDGET_BACKGROUND(edit);
-                    rtgui_dc_fill_rect(edit->dbl_buf, &r);
-                    RTGUI_DC_FC(edit->dbl_buf) = RTGUI_WIDGET_FOREGROUND(edit);
-                    rtgui_dc_draw_text(edit->dbl_buf, dbl_bmp, &r);
-                    rtgui_dc_blit(edit->dbl_buf, &pot, dc, &rect);
+                    RTGUI_DC_BC(edit->dbl_buf_dc) = RTGUI_WIDGET_BACKGROUND(edit);
+                    rtgui_dc_fill_rect(edit->dbl_buf_dc, &r);
+                    RTGUI_DC_FC(edit->dbl_buf_dc) = RTGUI_WIDGET_FOREGROUND(edit);
+                    rtgui_dc_draw_text(edit->dbl_buf_dc, dbl_bmp, &r);
+                    rtgui_dc_blit(edit->dbl_buf_dc, &pot, dc, &rect);
                 }
                 rect.x1 += ofs * edit->font_width;
                 rtgui_dc_draw_text(dc, line->text + edit->upleft.x + ofs, &rect);
@@ -1685,25 +1716,15 @@ void rtgui_edit_ondraw(struct rtgui_edit *edit)
     }
 
 #ifdef RTGUI_EDIT_USING_SCROLL
-    if (edit->hscroll && !RTGUI_WIDGET_IS_HIDE(edit->hscroll))
-    {
-        hscroll_flag = 1;
-        rtgui_scrollbar_ondraw(edit->hscroll);
-    }
-    if (edit->vscroll && !RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-    {
-        vscroll_flag = 1;
-        rtgui_scrollbar_ondraw(edit->vscroll);
-    }
+	{
+		rtgui_color_t _bc;
 
-    if (hscroll_flag && vscroll_flag)
-    {
-        rtgui_color_t _bc;
         rtgui_widget_get_rect(RTGUI_WIDGET(edit), &rect);
-        rect.x1 = rect.x2 - RTGUI_WIDGET_BORDER(edit);
-        rect.y1 = rect.y2 - RTGUI_WIDGET_BORDER(edit);
+		rtgui_rect_inflate(&rect, -RTGUI_WIDGET_BORDER(edit));
+        rect.x1 = rect.x2 - RC_W(edit->vscroll->parent.extent);
+        rect.y1 = rect.y2 - RC_H(edit->hscroll->parent.extent);
         _bc = RTGUI_DC_BC(dc);
-        RTGUI_DC_BC(dc) = default_background;
+        RTGUI_DC_BC(dc) = RTGUI_RGB(225, 228, 220);
         rtgui_dc_fill_rect(dc, &rect);
         RTGUI_DC_BC(dc) = _bc;
     }
@@ -1715,10 +1736,6 @@ void rtgui_edit_ondraw(struct rtgui_edit *edit)
 void rtgui_edit_set_text(struct rtgui_edit *edit, const char *text)
 {
     const char *begin, *ptr;
-#ifdef RTGUI_EDIT_USING_SCROLL
-    int hscroll_flag = 0;
-    int vscroll_flag = 0;
-#endif
 
     RT_ASSERT(edit != RT_NULL);
 
@@ -1749,50 +1766,8 @@ void rtgui_edit_set_text(struct rtgui_edit *edit, const char *text)
     }
 
 #ifdef RTGUI_EDIT_USING_SCROLL
-    if (edit->hscroll != RT_NULL)
-    {
-        if (edit->max_cols > edit->col_per_page)
-        {
-			rtgui_widget_onshow(RTGUI_OBJECT(edit->hscroll), RT_NULL);
-            rtgui_scrollbar_set_line_step(edit->hscroll, 1);
-            rtgui_scrollbar_set_page_step(edit->hscroll, edit->col_per_page);
-            rtgui_scrollbar_set_range(edit->hscroll, edit->max_cols);
-            hscroll_flag = 1;
-        }
-        else
-        {
-			rtgui_widget_onhide(RTGUI_OBJECT(edit->hscroll), RT_NULL);
-        }
-    }
-    if (edit->vscroll != RT_NULL)
-    {
-        if (edit->max_rows > edit->row_per_page)
-        {
-			rtgui_widget_onshow(RTGUI_OBJECT(edit->vscroll), RT_NULL);
-            rtgui_scrollbar_set_line_step(edit->vscroll, 1);
-            rtgui_scrollbar_set_page_step(edit->vscroll, edit->row_per_page);
-            rtgui_scrollbar_set_range(edit->vscroll, edit->max_rows);
-            vscroll_flag = 1;
-        }
-        else
-        {
-			rtgui_widget_onhide(RTGUI_OBJECT(edit->vscroll), RT_NULL);
-        }
-    }
-
-    if (edit->hscroll != RT_NULL && !RTGUI_WIDGET_IS_HIDE(edit->hscroll))
-    {
-        rtgui_edit_adjust_scroll(edit->hscroll);
-    }
-    if (edit->vscroll != RT_NULL && !RTGUI_WIDGET_IS_HIDE(edit->vscroll))
-    {
-        rtgui_edit_adjust_scroll(edit->vscroll);
-    }
-
-    if (hscroll_flag || vscroll_flag)
-    {
-        rtgui_widget_update_clip(RTGUI_WIDGET(edit));
-    }
+	rtgui_scrollbar_set_range(edit->hscroll, edit->max_cols);
+	rtgui_scrollbar_set_range(edit->vscroll, edit->max_rows);
 #endif
 }
 
@@ -1810,6 +1785,7 @@ rt_bool_t rtgui_edit_event_handler(struct rtgui_object *object, rtgui_event_t *e
         else
 #endif
             rtgui_edit_ondraw(edit);
+		rtgui_container_dispatch_event(RTGUI_CONTAINER(object), event);
         break;
 
     case RTGUI_EVENT_MOUSE_BUTTON:
@@ -1818,7 +1794,15 @@ rt_bool_t rtgui_edit_event_handler(struct rtgui_object *object, rtgui_event_t *e
             widget->on_mouseclick(object, event);
         else
 #endif
+		{
             rtgui_edit_onmouse(edit, (struct rtgui_event_mouse *)event);
+		}
+#ifdef RTGUI_EDIT_USING_SCROLL
+		if(RTGUI_WIDGET_IS_ENABLE(edit->vscroll))
+			rtgui_scrollbar_event_handler(RTGUI_OBJECT(edit->vscroll), event);
+		if(RTGUI_WIDGET_IS_ENABLE(edit->hscroll))
+			rtgui_scrollbar_event_handler(RTGUI_OBJECT(edit->hscroll), event);
+#endif
         return RT_TRUE;
 
     case RTGUI_EVENT_KBD:
@@ -1831,7 +1815,7 @@ rt_bool_t rtgui_edit_event_handler(struct rtgui_object *object, rtgui_event_t *e
         return RT_TRUE;
 
     default:
-        return rtgui_widget_event_handler(object, event);
+        return rtgui_container_event_handler(object, event);
     }
 
     return RT_FALSE;

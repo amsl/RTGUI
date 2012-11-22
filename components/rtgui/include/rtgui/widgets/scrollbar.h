@@ -74,15 +74,18 @@ void rtgui_scrollbar_destroy(rtgui_scrollbar_t* bar);
 void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar);
 void rtgui_scrollbar_get_thumb_rect(rtgui_scrollbar_t *bar, rtgui_rect_t *erect);
 
-void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, int count);
+void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, rt_int16_t count);
 void rtgui_scrollbar_set_value(rtgui_scrollbar_t* bar, rt_int16_t value);
 
 void rtgui_scrollbar_set_onscroll(rtgui_scrollbar_t* bar, rtgui_event_handler_ptr handler);
 void rtgui_scrollbar_set_orientation(rtgui_scrollbar_t* bar, int orient);
-void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, int step);
-void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, int step);
+void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, rt_int16_t step);
+void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, rt_int16_t step);
 
 rt_bool_t rtgui_scrollbar_event_handler(rtgui_object_t *obj, rtgui_event_t* event);
+rt_int16_t rtgui_scrollbar_get_value(rtgui_scrollbar_t *bar);
+rt_int16_t rtgui_scrollbar_get_page_step(rtgui_scrollbar_t *bar);
+rt_int16_t rtgui_scrollbar_get_range(rtgui_scrollbar_t *bar);
 
 #ifdef __cplusplus
 }
