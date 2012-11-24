@@ -65,7 +65,7 @@ static void application_entry(void *parameter)
 	rtgui_container_add_child(RTGUI_CONTAINER(main_win), RTGUI_WIDGET(the_notebook));
 	
 	//demo_view_box();
-demo_view_textbox();
+
     /* 初始化各个例子的视图 */
     demo_view_benchmark();
 
@@ -89,7 +89,7 @@ demo_view_textbox();
     demo_view_progressbar();
     demo_view_scrollbar();
     demo_view_radiobox();
-    //demo_view_textbox();
+    demo_view_textbox();
     demo_view_listbox();
     demo_view_menu();
     demo_view_listctrl();

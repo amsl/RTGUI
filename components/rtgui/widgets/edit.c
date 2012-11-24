@@ -625,6 +625,7 @@ static void rtgui_edit_onmouse(struct rtgui_edit *edit, struct rtgui_event_mouse
 	rect.x2 -= RC_W(edit->vscroll->parent.extent);
 	rect.y2 -= RC_H(edit->hscroll->parent.extent);
 #endif
+
     if ((rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK))
     {
         rt_uint16_t x, y;
@@ -646,16 +647,20 @@ static void rtgui_edit_onmouse(struct rtgui_edit *edit, struct rtgui_event_mouse
                 if (line == RT_NULL)
                     return;
 
-                if (edit->visual.x > line->len)
-                    edit->visual.x = line->len;
-                if (edit->upleft.x > 0)
-                {
-                    if (edit->upleft.x >= line->len)
-                        edit->upleft.x = 0;
-                    else
-                        edit->visual.x -= edit->upleft.x;
-                    rtgui_edit_ondraw(edit);
-                }
+                if (edit->upleft.x+edit->visual.x > line->len)
+                    edit->visual.x = line->len-edit->upleft.x;
+
+				if (edit->visual.x < 0)
+				{
+					if (edit->upleft.x > edit->col_per_page &&
+						line->len > edit->col_per_page)
+						edit->upleft.x = line->len - edit->col_per_page;
+					else
+						edit->upleft.x = 0;
+					edit->visual.x = line->len-edit->upleft.x;
+					rtgui_edit_ondraw(edit);
+				}
+                
                 if (identify_double_byte(edit, line, EDIT_IDENT_DIR_LEFT, &tmp_pos))
                     edit->visual.x -= (2 - tmp_pos);
                 if (edit->flag & RTGUI_EDIT_CARET)
@@ -1497,10 +1502,21 @@ static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_object *object, rtgui_ev
 	edit->visual.x -= edit->upleft.x-bak;
 
 	if (RTGUI_WIDGET_IS_FOCUSED(edit))
-	{
-		rtgui_edit_init_caret(edit, edit->visual);
-		edit->flag |= RTGUI_EDIT_CARET;
-		rtgui_edit_draw_caret(edit);
+	{	/* iff caret is enable */
+		if (edit->visual.x>=0 && edit->visual.x <= edit->col_per_page)
+		{
+			rtgui_edit_init_caret(edit, edit->visual);
+			edit->flag |= RTGUI_EDIT_CARET;
+			rtgui_edit_draw_caret(edit);
+			if (edit->caret_timer != RT_NULL)
+				rtgui_timer_start(edit->caret_timer);
+		}
+		else
+		{
+			if (edit->caret_timer != RT_NULL)
+				rtgui_timer_stop(edit->caret_timer);
+			edit->flag &= ~RTGUI_EDIT_CARET;
+		}
 	}
 
     rtgui_edit_ondraw(edit);
@@ -1530,10 +1546,21 @@ static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_object *object, rtgui_ev
 	}
 
 	if (RTGUI_WIDGET_IS_FOCUSED(edit))
-	{
-		rtgui_edit_init_caret(edit, edit->visual);
-		edit->flag |= RTGUI_EDIT_CARET;
-		rtgui_edit_draw_caret(edit);
+	{	/* iff caret is enable */
+		if (edit->visual.y>=0 && edit->visual.y <= edit->row_per_page)
+		{
+			rtgui_edit_init_caret(edit, edit->visual);
+			edit->flag |= RTGUI_EDIT_CARET;
+			rtgui_edit_draw_caret(edit);
+			if (edit->caret_timer != RT_NULL)
+				rtgui_timer_start(edit->caret_timer);
+		}
+		else
+		{
+			if (edit->caret_timer != RT_NULL)
+				rtgui_timer_stop(edit->caret_timer);
+			edit->flag &= ~RTGUI_EDIT_CARET;
+		}
 	}
     rtgui_edit_ondraw(edit);
 
