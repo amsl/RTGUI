@@ -43,7 +43,6 @@ void rtgui_system_theme_init(void);
 void rtgui_theme_draw_win(struct rtgui_topwin *win);
 void rtgui_theme_draw_button(rtgui_button_t *btn);
 void rtgui_theme_draw_label(rtgui_label_t *label);
-void rtgui_theme_draw_textbox(rtgui_textbox_t *box);
 void rtgui_theme_draw_iconbox(rtgui_iconbox_t *iconbox);
 void rtgui_theme_draw_radiobutton(struct rtgui_radiobox *radiobox, rt_uint16_t item);
 

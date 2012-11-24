@@ -51,11 +51,13 @@ static void _rtgui_textbox_constructor(rtgui_textbox_t *box)
     box->flag = RTGUI_TEXTBOX_SINGLE;
     /* allocate default line buffer */
     box->text = RT_NULL;
+	rtgui_textbox_set_mask_char(box, '*');
 
     rtgui_font_get_metrics(RTGUI_WIDGET_FONT(box), "H", &rect);
     box->font_width = RC_W(rect);
     box->on_enter = RT_NULL;
     box->dis_length = 0;
+	box->first_pos = 0;
 }
 
 static void _rtgui_textbox_deconstructor(rtgui_textbox_t *textbox)
@@ -201,9 +203,9 @@ static void rtgui_textbox_onmouse(rtgui_textbox_t *box, struct rtgui_event_mouse
         {
             box->position = 0;
         }
-        else if (x > length * box->font_width)
+        else if (x > (length - box->first_pos) * box->font_width)
         {
-            box->position = length;
+            box->position = length - box->first_pos;
         }
         else
         {
@@ -258,16 +260,16 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
     if (ekbd->key == RTGUIK_DELETE)
     {
         /* delete latter character */
-        if (box->position == length - 1)
+        if (box->first_pos + box->position == length - 1)
         {
-            box->text[box->position] = '\0';
+            box->text[box->first_pos + box->position] = '\0';
         }
         else
         {
             char *c;
 
             /* remove character */
-            for (c = &box->text[box->position]; c[1] != '\0'; c++)
+            for (c = &box->text[box->first_pos + box->position]; c[1] != '\0'; c++)
                 *c = c[1];
             *c = '\0';
         }
@@ -276,10 +278,24 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
     {
         /* delete front character */
         if (box->position == 0)
-            return RT_FALSE;
-        else if (box->position == length)
+		{
+            if(box->first_pos > 0)
+			{
+				if(box->first_pos > box->dis_length)
+				{
+					box->first_pos -= box->dis_length;
+					box->position = box->dis_length;
+				}
+				else
+				{
+					box->position = box->first_pos;
+					box->first_pos = 0;
+				}
+			}
+		}
+        else if (box->position == length-box->first_pos)
         {
-            box->text[box->position - 1] = '\0';
+            box->text[box->first_pos + box->position - 1] = '\0';
             box->position --;
         }
         else if (box->position != 0)
@@ -304,24 +320,42 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
         {
             box->position --;
         }
+		else
+		{
+			if(box->first_pos > 0)
+				box->first_pos -= 1;//DEBUG
+		}
     }
     else if (ekbd->key == RTGUIK_RIGHT)
     {
         /* move to next */
-        if (box->position < length)
+        if (box->first_pos + box->position < length)
         {
-            box->position ++;
+            if(box->position < box->dis_length)
+				box->position ++;
+			else 
+				box->first_pos += 1;//DEBUG
         }
     }
     else if (ekbd->key == RTGUIK_HOME)
     {
         /* move cursor to start */
         box->position = 0;
+		box->first_pos = 0;
     }
     else if (ekbd->key == RTGUIK_END)
     {
         /* move cursor to end */
-        box->position = length;
+        if(length > box->dis_length)
+		{
+			box->position = box->dis_length;
+			box->first_pos = length - box->dis_length;
+		}
+		else
+		{
+			box->position = length;
+			box->first_pos = 0;
+		}
     }
     else if (ekbd->key == RTGUIK_RETURN)
     {
@@ -356,7 +390,6 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
                     if (ekbd->key == '-')
                     {
                         if (length + 1 > box->line_length) return RT_FALSE;
-                        if (length + 1 > box->dis_length) return RT_FALSE;
 
                         if (strchr(box->text, '-'))
                         {
@@ -381,19 +414,21 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
                 }
             }
             if (length + 1 > box->line_length) return RT_FALSE;
-            if (length + 1 > box->dis_length) return RT_FALSE;
-
-            if (box->position <= length - 1)
+            
+            if (box->first_pos + box->position <= length - 1)
             {
                 char *c;
 
-                for (c = &box->text[length]; c != &box->text[box->position]; c--)
+                for (c = &box->text[length]; c != &box->text[box->first_pos + box->position]; c--)
                     *c = *(c - 1);
                 box->text[length + 1] = '\0';
             }
 
-            box->text[box->position] = ekbd->key;
-            box->position ++;
+            box->text[box->first_pos + box->position] = ekbd->key;
+            if(box->position < box->dis_length)
+				box->position ++;
+			else
+				box->first_pos ++;
         }
     }
 
@@ -526,20 +561,20 @@ void rtgui_textbox_ondraw(rtgui_textbox_t *box)
         /* draw single text */
         if (box->flag & RTGUI_TEXTBOX_MASK)
         {
-            /* draw '*' */
+            /* draw mask char */
             rt_size_t len = rt_strlen(box->text);
             if (len > 0)
             {
                 char *text_mask = rtgui_malloc(len + 1);
-                rt_memset(text_mask, '*', len + 1);
+                rt_memset(text_mask, box->mask_char, len + 1);
                 text_mask[len] = 0;
-                rtgui_dc_draw_text(dc, text_mask, &rect);
+                rtgui_dc_draw_text(dc, text_mask+box->first_pos, &rect);
                 rtgui_free(text_mask);
             }
         }
         else
         {
-            rtgui_dc_draw_text(dc, box->text, &rect);
+            rtgui_dc_draw_text(dc, box->text+box->first_pos, &rect);
         }
     }
 
@@ -561,8 +596,8 @@ void rtgui_textbox_set_value(rtgui_textbox_t *box, const char *text)
     box->line_length = ((rt_strlen(text) + 1) / RTGUI_TEXTBOX_LINE_MAX + 1) * RTGUI_TEXTBOX_LINE_MAX;
 
     /* allocate line buffer */
-    box->text = rtgui_malloc(box->line_length);
-    rt_memset(box->text, 0, box->line_length);
+    box->text = rtgui_malloc(box->line_length+1);
+    rt_memset(box->text, 0, box->line_length+1);
 
     /* copy text */
     rt_memcpy(box->text, text, rt_strlen(text) + 1);
@@ -574,6 +609,16 @@ void rtgui_textbox_set_value(rtgui_textbox_t *box, const char *text)
 const char *rtgui_textbox_get_value(rtgui_textbox_t *box)
 {
     return (const char *)box->text;
+}
+
+void rtgui_textbox_set_mask_char(rtgui_textbox_t *box, const char ch)
+{
+	box->mask_char = ch;
+}
+
+const char rtgui_textbox_get_mask_char(rtgui_textbox_t *box)
+{
+	return box->mask_char;
 }
 
 void rtgui_textbox_set_line_length(rtgui_textbox_t *box, rt_size_t length)
