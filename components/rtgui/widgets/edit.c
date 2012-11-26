@@ -1195,7 +1195,7 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
         /* move to next char */
         if (line->len >= edit->col_per_page)
         {
-            if (edit->upleft.x + edit->col_per_page <= line->len)
+            if (edit->upleft.x + edit->visual.x < line->len)
             {
                 if (edit->visual.x < edit->col_per_page - 1)
                 {
@@ -1501,6 +1501,8 @@ static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_object *object, rtgui_ev
     edit->upleft.x = edit->hscroll->value;
 	edit->visual.x -= edit->upleft.x-bak;
 
+    rtgui_edit_ondraw(edit);
+
 	if (RTGUI_WIDGET_IS_FOCUSED(edit))
 	{	/* iff caret is enable */
 		if (edit->visual.x>=0 && edit->visual.x <= edit->col_per_page)
@@ -1518,8 +1520,6 @@ static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_object *object, rtgui_ev
 			edit->flag &= ~RTGUI_EDIT_CARET;
 		}
 	}
-
-    rtgui_edit_ondraw(edit);
 
     return RT_TRUE;
 }
@@ -1545,6 +1545,8 @@ static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_object *object, rtgui_ev
 		while((bak++) != 0) edit->first_line = edit->first_line->prev;
 	}
 
+    rtgui_edit_ondraw(edit);
+
 	if (RTGUI_WIDGET_IS_FOCUSED(edit))
 	{	/* iff caret is enable */
 		if (edit->visual.y>=0 && edit->visual.y <= edit->row_per_page)
@@ -1562,7 +1564,6 @@ static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_object *object, rtgui_ev
 			edit->flag &= ~RTGUI_EDIT_CARET;
 		}
 	}
-    rtgui_edit_ondraw(edit);
 
     return RT_TRUE;
 }
