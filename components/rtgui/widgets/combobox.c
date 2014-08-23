@@ -1,280 +1,415 @@
-#include <rtgui/dc.h>
-#include <rtgui/rtgui_theme.h>
+/*
+ * File      : combobox.c
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ *
+ */
+#include <rtgui/widgets/scrollbar.h>
 #include <rtgui/widgets/combobox.h>
+#include <rtgui/widgets/view.h>
 
-static rt_bool_t rtgui_combobox_pulldown_hide(struct rtgui_object *object, struct rtgui_event *event);
-const static rt_uint8_t down_arrow[]  = {0xff, 0x7e, 0x3c, 0x18};
-
-static void _rtgui_combobox_constructor(rtgui_combobox_t *box)
+static void _rtgui_combo_constructor(rtgui_combo_t *cbo)
 {
-    rtgui_rect_t rect = {0, 0, RTGUI_COMBOBOX_WIDTH, RTGUI_COMBOBOX_HEIGHT};
+	RTGUI_WIDGET_FLAG(cbo) |= RTGUI_WIDGET_FLAG_FOCUSABLE;
+	cbo->style = RTGUI_COMBO_STYLE_DOWNARROW_UP;
+	cbo->lbox = RT_NULL;
+	cbo->tbox = RT_NULL;
+	if(theme.style == RTGUI_BORDER_UP)
+		rtgui_widget_set_border_style(cbo,RTGUI_BORDER_DOWN);
+	else if(theme.style == RTGUI_BORDER_EXTRA)
+		rtgui_widget_set_border_style(cbo,RTGUI_BORDER_SUNKEN);
+	rtgui_widget_set_event_handler(cbo, rtgui_combo_event_handler);
 
-    /* init widget and set event handler */
-    rtgui_object_set_event_handler(RTGUI_OBJECT(box), rtgui_combobox_event_handler);
-    rtgui_widget_set_rect(RTGUI_WIDGET(box), &rect);
-
-    RTGUI_WIDGET_TEXTALIGN(box) = RTGUI_ALIGN_CENTER_VERTICAL;
-
-    box->pd_pressed = RT_FALSE;
-    box->current_item = 0;
-    box->on_selected = RT_NULL;
-    box->pd_win    = RT_NULL;
+	RTGUI_WIDGET_BC(cbo) = theme.blankspace;
+	/* set default text align */
+	RTGUI_WIDGET_TEXTALIGN(cbo) = RTGUI_ALIGN_CENTER_VERTICAL;
+	cbo->on_selected = RT_NULL;
 }
 
-static void _rtgui_combobox_destructor(rtgui_combobox_t *box)
+static void _rtgui_combo_destructor(rtgui_combo_t *cbo)
 {
-    /* destroy pull down window */
-    rtgui_win_destroy(box->pd_win);
-
-    /* reset box field */
-    box->pd_win    = RT_NULL;
 }
 
-rt_bool_t rtgui_combobox_pdwin_onitem(struct rtgui_object *object, struct rtgui_event *event)
+DEFINE_CLASS_TYPE(combo, "combo",
+	RTGUI_CONTAINER_TYPE,
+	_rtgui_combo_constructor,
+	_rtgui_combo_destructor,
+	sizeof(struct rtgui_combo));
+
+rtgui_combo_t* rtgui_combo_create(pvoid parent,const char* text,int left,int top,int w,int h)
 {
-    struct rtgui_widget *widget;
-    rtgui_win_t *pd_win;
-    rtgui_combobox_t *combo;
-    rtgui_listbox_t *list;
+	rtgui_container_t *container;
+	rtgui_combo_t* cbo;
 
-    RT_ASSERT(object != RT_NULL);
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
 
-    widget = RTGUI_WIDGET(object);
-    list = RTGUI_LISTBOX(widget);
-    pd_win = RTGUI_WIN(rtgui_widget_get_toplevel(widget));
-    combo = RTGUI_COMBOBOX(pd_win->user_data);
-    combo->current_item = list->now_item;
+	cbo = rtgui_widget_create(RTGUI_COMBO_TYPE);
+	if(cbo != RT_NULL)
+	{
+		rtgui_rect_t rect;
 
-    if (combo->on_selected != RT_NULL)
-        combo->on_selected(RTGUI_OBJECT(combo), RT_NULL);
+		rtgui_widget_get_rect(container, &rect);
+		rtgui_widget_rect_to_device(container,&rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1+w;
+		rect.y2 = rect.y1+RTGUI_COMBO_HEIGHT;
+		rtgui_widget_set_rect(cbo,&rect);
 
-    rtgui_win_hiden(pd_win);
-    rtgui_widget_update(RTGUI_WIDGET(combo));
+		rtgui_container_add_child(container, cbo);
 
-    return RT_FALSE;
+		if(cbo->tbox == RT_NULL)
+		{
+			int tw,th;
+			tw = w-RTGUI_COMBO_BUTTON_WIDTH-RTGUI_WIDGET_BORDER_SIZE(cbo)*2;
+			th = h-RTGUI_WIDGET_BORDER_SIZE(cbo)*2;
+			cbo->tbox = rtgui_textbox_create(cbo,text,
+			                                 RTGUI_WIDGET_BORDER_SIZE(cbo),
+			                                 RTGUI_WIDGET_BORDER_SIZE(cbo),
+			                                 tw,th,RTGUI_TEXTBOX_NONE);
+
+			if(cbo->tbox == RT_NULL) return RT_NULL;
+			rtgui_widget_set_border_style(cbo->tbox,RTGUI_BORDER_NONE);
+			cbo->tbox->isedit = RT_FALSE;/* default combo textbox cannot edit */
+		}
+		if(cbo->lbox == RT_NULL)
+		{
+			rtgui_point_t point;
+			rt_uint32_t mleft,mtop,mwidth;
+
+			rtgui_widget_get_position(cbo, &point);
+			mleft = point.x;
+			mtop = point.y+RTGUI_COMBO_HEIGHT;
+			mwidth = rtgui_widget_get_width(cbo);
+
+			/* create pull down listbox */
+			cbo->lbox = rtgui_listbox_create(parent,mleft,mtop,mwidth,4);
+			if(cbo->lbox == RT_NULL)return RT_NULL;
+			rtgui_widget_set_border_style(cbo->lbox,RTGUI_BORDER_SIMPLE);
+			cbo->lbox->ispopup = RT_TRUE;
+			cbo->lbox->widget_link = cbo;
+			rtgui_listbox_set_onitem(cbo->lbox,rtgui_combo_onitem);
+
+			RTGUI_WIDGET_HIDE(cbo->lbox);
+		}
+	}
+
+	return cbo;
 }
 
-rt_bool_t rtgui_combobox_pdwin_ondeactive(struct rtgui_object *object, struct rtgui_event *event)
+void rtgui_combo_destroy(rtgui_combo_t* cbo)
 {
-    rtgui_win_hiden(RTGUI_WIN(object));
-    return RT_TRUE;
+	rtgui_widget_destroy(cbo);
 }
 
-DEFINE_CLASS_TYPE(combobox, "combobox",
-                  RTGUI_WIDGET_TYPE,
-                  _rtgui_combobox_constructor,
-                  _rtgui_combobox_destructor,
-                  sizeof(struct rtgui_combobox));
-
-rtgui_combobox_t *rtgui_combobox_create(struct rtgui_listbox_item *items, rt_uint16_t count, struct rtgui_rect *rect)
+const rt_uint8_t combo_down_bmp[]=
 {
-    rtgui_combobox_t *box;
+	0xFE,0x7C,0x38,0x10,
+};
 
-    box = (rtgui_combobox_t *)rtgui_widget_create(RTGUI_COMBOBOX_TYPE);
-    box->items_count = count;
-    box->items = items;
-    rtgui_widget_set_rect(RTGUI_WIDGET(box), rect);
+void rtgui_combo_ondraw(rtgui_combo_t *cbo)
+{
+	rtgui_rect_t rect;
+	rtgui_dc_t* dc;
 
-    box->pd_win = RT_NULL;
+	RT_ASSERT(cbo != RT_NULL);
 
-    return box;
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(cbo);
+	if(dc == RT_NULL)return;
+
+	rtgui_widget_get_rect(cbo, &rect);
+
+	rtgui_rect_inflate(&rect,-RTGUI_WIDGET_BORDER_SIZE(cbo));
+	if(RTGUI_WIDGET_IS_ENABLE(cbo))
+		RTGUI_DC_BC(dc) = theme.blankspace;
+	else
+		RTGUI_DC_BC(dc) = theme.background;
+	rtgui_dc_fill_rect(dc, &rect);
+
+	rtgui_rect_inflate(&rect,RTGUI_WIDGET_BORDER_SIZE(cbo));
+	rtgui_dc_draw_border(dc, &rect,RTGUI_WIDGET_BORDER_STYLE(cbo));
+
+	if(RC_H(rect)<RTGUI_COMBO_HEIGHT)return;
+
+	/* draw downarrow button */
+	rect.x1 = rect.x2-RTGUI_COMBO_BUTTON_WIDTH;
+	RTGUI_DC_BC(dc) = theme.background;
+	rtgui_dc_fill_rect(dc, &rect);
+
+	if(cbo->style & RTGUI_COMBO_STYLE_DOWNARROW_UP)
+	{
+		rtgui_dc_draw_border(dc, &rect, theme.style);
+		rtgui_dc_draw_byte(dc,rect.x1+(rect.x2-rect.x1-7)/2, rect.y1+(rect.y2-rect.y1-4)/2, 4, combo_down_bmp);
+	}
+	else if(cbo->style & RTGUI_COMBO_STYLE_DOWNARROW_DOWN)
+	{
+		rtgui_dc_draw_border(dc, &rect, theme.style);
+		rtgui_dc_draw_byte(dc,rect.x1+(rect.x2-rect.x1-7)/2+1, rect.y1+(rect.y2-rect.y1-4)/2+1, 4, combo_down_bmp);
+	}
+
+	if(cbo->tbox != RT_NULL)
+	{
+		RTGUI_DC_FC(dc) = theme.foreground;
+		rtgui_textbox_ondraw(cbo->tbox);
+	}
+
+	rtgui_dc_end_drawing(dc);
 }
 
-void rtgui_combobox_destroy(rtgui_combobox_t *box)
+void rtgui_combo_draw_downarrow(rtgui_combo_t *cbo)
 {
-    rtgui_widget_destroy(RTGUI_WIDGET(box));
+	rtgui_rect_t rect;
+	rtgui_dc_t* dc;
+
+	RT_ASSERT(cbo != RT_NULL);
+
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(cbo);
+	if(dc == RT_NULL)return;
+
+	rtgui_widget_get_rect(cbo, &rect);
+
+	rect.x1 = rect.x2-RTGUI_COMBO_BUTTON_WIDTH-RTGUI_WIDGET_BORDER_SIZE(cbo);
+	rect.y1 += RTGUI_WIDGET_BORDER_SIZE(cbo);
+	rect.x2 -= RTGUI_WIDGET_BORDER_SIZE(cbo);
+	rect.y2 -= RTGUI_WIDGET_BORDER_SIZE(cbo);
+	RTGUI_DC_BC(dc) = theme.background;
+	rtgui_dc_fill_rect(dc, &rect);
+
+	if(cbo->style & RTGUI_COMBO_STYLE_DOWNARROW_UP)
+	{
+		rtgui_dc_draw_border(dc, &rect,RTGUI_WIDGET_BORDER_STYLE(cbo));
+		rtgui_dc_draw_byte(dc,rect.x1+4, rect.y1+8, 4, combo_down_bmp);
+	}
+	else if(cbo->style & RTGUI_COMBO_STYLE_DOWNARROW_DOWN)
+	{
+		rtgui_dc_draw_border(dc, &rect,RTGUI_WIDGET_BORDER_STYLE(cbo));
+		rtgui_dc_draw_byte(dc,rect.x1+5, rect.y1+9, 4, combo_down_bmp);
+	}
+
+	rtgui_dc_end_drawing(dc);
 }
 
-static void rtgui_combobox_ondraw(struct rtgui_combobox *box)
+void rtgui_combo_set_onitem(rtgui_combo_t* cbo, rtgui_event_handler_ptr func)
 {
-    /* draw button */
-    rtgui_color_t bc;
-    struct rtgui_dc *dc;
-    struct rtgui_rect rect, r;
+	if(cbo == RT_NULL) return;
 
-    /* begin drawing */
-    dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(box));
-    if (dc == RT_NULL) return;
-
-    bc = RTGUI_WIDGET_BACKGROUND(box);
-
-    /* get widget rect */
-    rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
-    RTGUI_WIDGET_BACKGROUND(box) = white;
-
-    /* fill widget rect with background color */
-    rtgui_dc_fill_rect(dc, &rect);
-    rtgui_dc_draw_rect(dc, &rect);
-
-    /* draw current item */
-    if (box->current_item < box->items_count)
-    {
-        rect.x1 += 5;
-        rtgui_dc_draw_text(dc, box->items[box->current_item].name, &rect);
-    }
-
-    /* restore background color */
-    RTGUI_WIDGET_BACKGROUND(box) = bc;
-
-    /* draw pull down button */
-    rect.x1 = rect.x2 - RTGUI_COMBOBOX_BUTTON_WIDTH;
-    rtgui_rect_inflate(&rect, -1);
-    rtgui_dc_fill_rect(dc, &rect);
-    if (box->pd_pressed == RT_TRUE) rtgui_dc_draw_border(dc, &rect, RTGUI_BORDER_SUNKEN);
-    else rtgui_dc_draw_border(dc, &rect, RTGUI_BORDER_RAISE);
-
-    r.x1 = 0;
-    r.y1 = 0;
-    r.x2 = 8;
-    r.y2 = 4;
-    rtgui_rect_moveto_align(&rect, &r, RTGUI_ALIGN_CENTER_HORIZONTAL | RTGUI_ALIGN_CENTER_VERTICAL);
-    rtgui_dc_draw_byte(dc, r.x1, r.y1, 4, down_arrow);
-
-    /* end drawing */
-    rtgui_dc_end_drawing(dc);
-    return;
+	if(cbo->lbox != RT_NULL)
+	{
+		rtgui_listbox_set_onitem(cbo->lbox,func);
+	}
 }
 
-static rt_bool_t rtgui_combobox_onmouse_button(struct rtgui_combobox *box, struct rtgui_event_mouse *event)
+rt_uint32_t rtgui_combo_get_select(rtgui_combo_t* cbo)
 {
-    struct rtgui_rect rect;
-
-    /* get widget rect */
-    rect = RTGUI_WIDGET(box)->extent;
-
-    /* move to the pull down button */
-    rect.x1 = rect.x2 - RTGUI_COMBOBOX_BUTTON_WIDTH;
-    if (rtgui_rect_contains_point(&rect, event->x, event->y) == RT_EOK)
-    {
-        /* handle mouse button on pull down button */
-        if (event->button & RTGUI_MOUSE_BUTTON_LEFT &&
-                event->button & RTGUI_MOUSE_BUTTON_DOWN)
-        {
-            box->pd_pressed = RT_TRUE;
-            rtgui_widget_update(RTGUI_WIDGET(box));
-        }
-        else if (event->button & RTGUI_MOUSE_BUTTON_LEFT &&
-                 event->button & RTGUI_MOUSE_BUTTON_UP)
-        {
-            box->pd_pressed = RT_FALSE;
-            rtgui_widget_update(RTGUI_WIDGET(box));
-
-            /* pop pull down window */
-            if (box->pd_win == RT_NULL)
-            {
-                rtgui_listbox_t  *list;
-
-                /* create pull down window */
-                rect = RTGUI_WIDGET(box)->extent;
-                rect.y1 = rect.y2;
-                /* give it 5 pixels margin, or the last item won't get shown */
-                rect.y2 = rect.y1 + box->items_count * (2 + rtgui_theme_get_selected_height()) + 5;
-                box->pd_win = rtgui_win_create(RT_NULL, "combo", &rect, RTGUI_WIN_STYLE_NO_TITLE);
-                rtgui_win_set_ondeactivate(RTGUI_WIN(box->pd_win), rtgui_combobox_pulldown_hide);
-                /* set user data to parent combobox */
-                box->pd_win->user_data = (rt_uint32_t)box;
-
-                /* create list box */
-                rtgui_rect_inflate(&rect, -1);
-				list = rtgui_listbox_create(RTGUI_CONTAINER(box->pd_win), 1,1,
-							RC_W(rect), RC_H(rect), RTGUI_BORDER_NONE);
-				rtgui_listbox_set_items(list, box->items, box->items_count);
-                rtgui_container_add_child(RTGUI_CONTAINER(box->pd_win), RTGUI_WIDGET(list));
-                rtgui_widget_focus(RTGUI_WIDGET(list));
-
-                rtgui_listbox_set_onitem(list, rtgui_combobox_pdwin_onitem);
-                rtgui_win_set_ondeactivate(box->pd_win, rtgui_combobox_pdwin_ondeactive);
-            }
-
-            /* show combo box pull down window */
-            rtgui_win_show(RTGUI_WIN(box->pd_win), RT_FALSE);
-        }
-
-        return RT_TRUE;
-    }
-
-    return RT_FALSE;
+	return cbo->lbox->now_item;
 }
 
-rt_bool_t rtgui_combobox_event_handler(struct rtgui_object *object, struct rtgui_event *event)
+char* rtgui_combo_get_string(rtgui_combo_t* cbo)
 {
-    struct rtgui_combobox *box;
-    RTGUI_WIDGET_EVENT_HANDLER_PREPARE
+	if(cbo->lbox->items != RT_NULL)
+	{
+		return cbo->lbox->items[cbo->lbox->now_item].name;
+	}
 
-    box = RTGUI_COMBOBOX(object);
-
-    switch (event->type)
-    {
-    case RTGUI_EVENT_PAINT:
-        if (widget->on_draw != RT_NULL)
-            widget->on_draw(RTGUI_OBJECT(widget), event);
-        else
-            rtgui_combobox_ondraw(box);
-
-        break;
-
-    case RTGUI_EVENT_MOUSE_BUTTON:
-        return rtgui_combobox_onmouse_button(box, (struct rtgui_event_mouse *)event);
-
-    case RTGUI_EVENT_FOCUSED:
-    {
-        /* item focused */
-        struct rtgui_event_focused *focused;
-
-        focused = (struct rtgui_event_focused *) event;
-
-        if (focused->widget != RT_NULL)
-        {
-            /* hide pull down window */
-            rtgui_win_hiden(RTGUI_WIN(box->pd_win));
-            rtgui_combobox_ondraw(box);
-        }
-    }
-    break;
-    default:
-        return rtgui_widget_event_handler(object, event);
-    }
-
-    return RT_FALSE;
+	return RT_NULL;
 }
 
-static rt_bool_t rtgui_combobox_pulldown_hide(struct rtgui_object *object, struct rtgui_event *event)
+/* return item index */
+rt_bool_t rtgui_combo_onitem(pvoid wdt, rtgui_event_t* event)
 {
-    struct rtgui_widget *widget;
-    struct rtgui_combobox *box;
+	rtgui_listbox_t* box = RTGUI_LISTBOX(wdt);
 
-    RT_ASSERT(object != RT_NULL);
-    RT_ASSERT(event != RT_NULL);
+	if(box != RT_NULL && box->ispopup)
+	{
+		char *str;
+		rtgui_combo_t* cbo=box->widget_link;
+		if(cbo==RT_NULL)return RT_FALSE;
 
-    widget = RTGUI_WIDGET(object);
-    box = RTGUI_COMBOBOX(object);
+		str = rtgui_combo_get_string(cbo);
 
-    if (widget == RT_NULL) return RT_TRUE;
+		rtgui_textbox_set_value(cbo->tbox,str);
+	}
 
-    box = (struct rtgui_combobox *)(((struct rtgui_win *)widget)->user_data);
-    if (box == RT_NULL) return RT_TRUE;
-
-    /* hide pull down window */
-    rtgui_win_hiden(RTGUI_WIN(box->pd_win));
-
-    /* clear pull down button state */
-    box->pd_pressed = RT_FALSE;
-    rtgui_widget_update(RTGUI_WIDGET(box));
-
-    return RT_TRUE;
+	return RT_TRUE;
 }
 
-struct rtgui_listbox_item *rtgui_combox_get_select(struct rtgui_combobox *box)
+void rtgui_combo_get_downarrow_rect(rtgui_combo_t* cbo, rtgui_rect_t* rect)
 {
-    if ((box != RT_NULL) && (box->current_item < box->items_count))
-    {
-        return &(box->items[box->current_item]);
-    }
-
-    return RT_NULL;
+	rtgui_widget_get_rect(cbo, rect);
+	rect->x1 = rect->x2 - RTGUI_COMBO_BUTTON_WIDTH;
 }
 
-void rtgui_combobox_set_onselected(struct rtgui_combobox *box, rtgui_event_handler_ptr func)
+void rtgui_combo_add_string(rtgui_combo_t* cbo,const char* string)
 {
-    box->on_selected = func;
+	if(cbo->lbox != RT_NULL)
+	{
+		rtgui_listbox_item_t item;
+		rtgui_rect_t rect;
+		rt_uint32_t h,count;
+
+		item.name = (char*)string;
+		item.image = RT_NULL;
+		rtgui_listbox_add_item(cbo->lbox, &item, 1);
+
+		rtgui_widget_get_rect(cbo->lbox, &rect);
+		count = rtgui_listbox_get_count(cbo->lbox);
+
+		h = RTGUI_WIDGET_BORDER_SIZE(cbo->lbox)*2+(RTGUI_SEL_H + 2)*count;
+
+		if(h>RC_H(rect))
+		{
+			if(cbo->lbox->item_per_page<5)/* change when less than five */
+			{
+				rect.y2 = rect.y1+h;
+				rtgui_widget_rect_to_device(cbo->lbox,&rect);
+				rtgui_widget_set_rect(cbo->lbox,&rect);/* update listbox extent */
+				cbo->lbox->item_per_page = RC_H(rect) / (RTGUI_SEL_H+2);
+
+				if(cbo->lbox->scroll != RT_NULL)/* update scrollbar extent */
+				{
+					rtgui_widget_get_rect(cbo->lbox->scroll, &rect);
+					rect.y2 = rect.y1+h-RTGUI_WIDGET_BORDER_SIZE(cbo->lbox)*2;
+					rtgui_widget_rect_to_device(cbo->lbox->scroll,&rect);
+					rtgui_widget_set_rect(cbo->lbox->scroll,&rect);
+
+					if(cbo->lbox->item_count > cbo->lbox->item_per_page)
+					{
+						RTGUI_WIDGET_SHOW(cbo->lbox->scroll);
+						rtgui_scrollbar_set_line_step(cbo->lbox->scroll, 1);
+						rtgui_scrollbar_set_page_step(cbo->lbox->scroll, cbo->lbox->item_per_page);
+						rtgui_scrollbar_set_range(cbo->lbox->scroll, cbo->lbox->item_count);
+					}
+					else
+					{
+						RTGUI_WIDGET_HIDE(cbo->lbox->scroll);
+					}
+					rtgui_widget_update_clip(cbo->lbox);
+				}
+			}
+		}
+	}
 }
+
+void rtgui_combo_set_items(rtgui_combo_t* cbo, rtgui_listbox_item_t* items, rt_uint32_t count)
+{
+	if(cbo != RT_NULL && cbo->lbox != RT_NULL)
+	{
+		rtgui_listbox_set_items(cbo->lbox,items,count);
+	}
+}
+
+rt_bool_t rtgui_combo_event_handler(pvoid wdt, rtgui_event_t* event)
+{
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_combo_t* cbo = RTGUI_COMBO(wdt);
+
+
+	RT_ASSERT(widget != RT_NULL);
+
+	switch(event->type)
+	{
+	case RTGUI_EVENT_PAINT:
+		if(widget->on_draw != RT_NULL)
+			widget->on_draw(widget, event);
+		else
+			rtgui_combo_ondraw(cbo);
+		break;
+
+	case RTGUI_EVENT_KBD:
+		if(widget->on_key != RT_NULL)
+			widget->on_key(widget, event);
+
+		return RT_TRUE;
+
+	case RTGUI_EVENT_MOUSE_BUTTON:
+	{
+		rtgui_rect_t rect;
+		struct rtgui_event_mouse* emouse = (struct rtgui_event_mouse*)event;
+		rt_bool_t inclip=RT_EOK;
+
+		if(!RTGUI_WIDGET_IS_ENABLE(cbo)) break;
+
+		if(cbo->tbox->isedit == RT_TRUE)
+		{
+			/* only detect textbox area */
+			inclip = rtgui_region_contains_point(&RTGUI_WIDGET_CLIP(cbo),emouse->x,emouse->y,&rect);
+		}
+		else
+		{
+			/* detect all area */
+			inclip = (rtgui_region_contains_point(&RTGUI_WIDGET_CLIP(cbo),emouse->x,emouse->y,&rect) &&
+			          rtgui_region_contains_point(&RTGUI_WIDGET_CLIP(cbo->tbox),emouse->x,emouse->y,&rect));
+		}
+
+		if(inclip == RT_EOK)
+		{
+			rtgui_combo_get_downarrow_rect(cbo,&rect);
+			if(emouse->button & RTGUI_MOUSE_BUTTON_DOWN)
+			{
+				if(rtgui_rect_contains_point(&rect,emouse->x,emouse->y) == RT_EOK)
+				{
+					/* on pull-down button */
+					cbo->style = RTGUI_COMBO_STYLE_DOWNARROW_DOWN;
+					rtgui_combo_draw_downarrow(cbo);
+				}
+
+				if(cbo->lbox != RT_NULL)
+				{
+					if(RTGUI_WIDGET_IS_HIDE(cbo->lbox))
+					{
+						/* display pupup listbox */
+						RTGUI_WIDGET_SHOW(cbo->lbox);
+						rtgui_widget_focus(cbo->lbox);
+						rtgui_widget_update_clip_pirate(RTGUI_WIDGET_PARENT(cbo->lbox),cbo->lbox);
+						/* set listbox location is 0 */
+						cbo->lbox->first_item=0;
+						cbo->lbox->now_item = 0;
+						if(cbo->lbox->scroll != RT_NULL)
+						{
+							if(!RTGUI_WIDGET_IS_HIDE(cbo->lbox->scroll))
+							{
+								rtgui_scrollbar_set_value(cbo->lbox->scroll,cbo->lbox->first_item);
+							}
+						}
+						rtgui_widget_update(RTGUI_WIDGET_PARENT(cbo->lbox));
+					}
+					else
+					{
+						/* hide it */
+						rtgui_widget_hide(cbo->lbox);
+					}
+				}
+			}
+			else if(emouse->button & RTGUI_MOUSE_BUTTON_UP)
+			{
+				if(rtgui_region_contains_point(&RTGUI_WIDGET_CLIP(cbo),emouse->x,emouse->y,&rect) == RT_EOK)
+				{
+					/* on upriver button */
+					cbo->style = RTGUI_COMBO_STYLE_DOWNARROW_UP;
+					rtgui_combo_draw_downarrow(cbo);
+				}
+			}
+		}
+		else
+			rtgui_view_event_handler(widget,event);
+
+		return RT_TRUE;
+	}
+
+	default:
+		return rtgui_view_event_handler(widget,event);
+	}
+
+	return RT_FALSE;
+}
+

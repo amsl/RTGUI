@@ -10,130 +10,231 @@
  * Change Logs:
  * Date           Author       Notes
  * 2009-10-16     Bernard      first version
- * 2012-01-24     onelife      add mono color support
  */
 #ifndef __RTGUI_COLOR_H__
 #define __RTGUI_COLOR_H__
 
+//#include <stdlib.h>
 #include <rtgui/rtgui.h>
 
-#define RTGUI_ARGB(a, r, g, b)  \
-        ((rtgui_color_t)(((rt_uint8_t)(r)|\
-        (((unsigned)(rt_uint8_t)(g))<<8))|\
-        (((unsigned long)(rt_uint8_t)(b))<<16)|\
-        (((unsigned long)(rt_uint8_t)(a))<<24)))
-#define RTGUI_RGB(r, g, b)  RTGUI_ARGB(255, (r), (g), (b))
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define RTGUI_RGB_R(c)  ((c) & 0xff)
-#define RTGUI_RGB_G(c)  (((c) >> 8)  & 0xff)
-#define RTGUI_RGB_B(c)  (((c) >> 16) & 0xff)
-#define RTGUI_RGB_A(c)  (((c) >> 24) & 0xff)
+#define RGB_EXCHANGE_16
 
-extern const rtgui_color_t default_foreground;
-extern const rtgui_color_t default_background;
+#define RTGUI_ARGB(r, g, b, a)	\
+		((rt_uint32_t)(((rt_uint8_t)(r)|\
+		(((unsigned)(rt_uint8_t)(g))<<8))|\
+		(((unsigned long)(rt_uint8_t)(b))<<16)|\
+		(((unsigned long)(rt_uint8_t)(a))<<24)))
 
-extern const rtgui_color_t red;
-extern const rtgui_color_t green;
-extern const rtgui_color_t blue;
-extern const rtgui_color_t black;
-extern const rtgui_color_t white;
-extern const rtgui_color_t high_light;
-extern const rtgui_color_t dark_grey;
-extern const rtgui_color_t light_grey;
+#define RTGUI_RGB(r, g, b) \
+		((((b) >> 3) << 11)|\
+		(((g) >> 2) << 5) |\
+		((r)>> 3))
+//#define RTGUI_RGB(r, g, b)	RTGUI_ARGB(255, (r), (g), (b))
+
+#define RAND_COLOR 		RTGUI_RGB(rand()%255, rand()%255, rand()%255)
+
+#define RTGUI_RGB_R(c)	((c) & 0xff)
+#define RTGUI_RGB_G(c)	(((c) >> 8)  & 0xff)
+#define RTGUI_RGB_B(c)	(((c) >> 16) & 0xff)
+#define RTGUI_RGB_A(c)	(((c) >> 24) & 0xff)
 
 /*
  * RTGUI default color format
- * BBBB BBBB GGGG GGGG RRRR RRRR
+ * BBBBB GGGGGG RRRRR
  */
 
-/* convert rtgui color to mono */
-rt_inline rt_uint8_t rtgui_color_to_mono(rtgui_color_t c)
+/* convert rtgui 32 to 16 (RGB=5:6:5) */
+rt_inline rt_uint16_t rtgui_color_to_565(rt_uint32_t c)
 {
-    rt_uint8_t pixel;
+	rt_uint16_t pixel;
 
-    pixel = (RTGUI_RGB_R(c) | RTGUI_RGB_G(c) | RTGUI_RGB_B(c)) ? 0x01 : 0x00;
-    return pixel;
+#ifdef RGB_EXCHANGE_16
+	pixel = (rt_uint16_t)(((RTGUI_RGB_B(c)>> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_R(c) >> 3));
+#else
+	pixel = (rt_uint16_t)(((RTGUI_RGB_R(c) >> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_B(c)>> 3));
+#endif
+
+	return pixel;
 }
 
-rt_inline rtgui_color_t rtgui_color_from_mono(rt_uint8_t pixel)
+rt_inline rt_uint32_t rtgui_color_from_565(rt_uint16_t pixel)
 {
-    rtgui_color_t color;
+	rt_uint8_t r, g, b;
+	rt_uint32_t color;
+	
+	r = (pixel >> 11) & 0x1f;
+	g = (pixel >> 5)  & 0x3f;
+	b = pixel & 0x1f;
+	
+#ifdef RGB_EXCHANGE_16
+ 	color = b * 255 / 31 + ((g * 255 / 63) << 8) + ((r * 255 / 31) << 16);
+#else
+	color = r * 255 / 31 + ((g * 255 / 63) << 8) + ((b * 255 / 31) << 16);
+#endif
 
-    if (pixel)
-    {
-        color = white;
-    }
-    else
-    {
-        color = black;
-    }
-    return color;
+	return color;
 }
 
-/* convert rtgui color to BBBBBGGGGGGRRRRR */
-rt_inline rt_uint16_t rtgui_color_to_565(rtgui_color_t c)
+rt_inline rt_uint16_t rgb_exchange_16(rt_uint16_t c)
 {
-    rt_uint16_t pixel;
-
-    pixel = (rt_uint16_t)(((RTGUI_RGB_B(c) >> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_R(c) >> 3));
-
-    return pixel;
+	rt_uint16_t color;
+	color =  c&0x07E0;
+	color += c<<11;
+	color += c>>11;
+	return color;
 }
 
-rt_inline rtgui_color_t rtgui_color_from_565(rt_uint16_t pixel)
+enum
 {
-    rt_uint16_t r, g, b;
-    rtgui_color_t color;
+	LightPink				= RTGUI_RGB(255,182,193),//Ç³·ÛÉ«
+	Pink					= RTGUI_RGB(255,192,203),//·Ûºì
+	Crimson					= RTGUI_RGB(220,20, 60 ),//ÐÉºì
+	LavenderBlush			= RTGUI_RGB(255,240,245),//Á³ºìµÄµ­×ÏÉ«
+	PaleVioletRed			= RTGUI_RGB(219,112,147),//²Ô°×µÄ×ÏÂÞÀ¼ºìÉ«
+	HotPink					= RTGUI_RGB(255,105,180),//ÈÈÇéµÄ·Ûºì
+	DeepPink				= RTGUI_RGB(255,20, 147),//Éî·ÛÉ«
+	MediumVioletRed			= RTGUI_RGB(199,21, 133),//ÊÊÖÐµÄ×ÏÂÞÀ¼ºìÉ«
+	Orchid					= RTGUI_RGB(218,112,214),//À¼»¨µÄ×ÏÉ«
+	Thistle					= RTGUI_RGB(216,191,216),//¼»
+	plum					= RTGUI_RGB(221,160,221),//Àî×Ó
+	Violet					= RTGUI_RGB(238,130,238),//×ÏÂÞÀ¼
+	Magenta					= RTGUI_RGB(255,0,  255),//Ñóºì
+	Fuchsia					= RTGUI_RGB(255,0,  255),//µÆÁýº£ÌÄ(×ÏºìÉ«)
+	DarkMagenta				= RTGUI_RGB(139,0,  139),//ÉîÑóºìÉ«
+	Purple					= RTGUI_RGB(128,0,  128),//×ÏÉ«
+	MediumOrchid			= RTGUI_RGB(186,85, 211),//ÊÊÖÐµÄÀ¼»¨×Ï
+	DarkVoilet				= RTGUI_RGB(148,0,  211),//Éî×ÏÂÞÀ¼É«
+	DarkOrchid				= RTGUI_RGB(153,50, 204),//ÉîÀ¼»¨×Ï
+	Indigo					= RTGUI_RGB(75, 0,  130),//µåÇà
+	BlueViolet				= RTGUI_RGB(138,43, 226),//Éî×ÏÂÞÀ¼µÄÀ¶É«
+	MediumPurple			= RTGUI_RGB(147,112,219),//ÊÊÖÐµÄ×ÏÉ«
+	MediumSlateBlue			= RTGUI_RGB(123,104,238),//ÊÊÖÐµÄ°åÑÒ°µÀ¶»ÒÉ«
+	SlateBlue				= RTGUI_RGB(106,90, 205),//°åÑÒ°µÀ¶»ÒÉ«
+	DarkSlateBlue			= RTGUI_RGB(72, 61, 139),//ÉîÑÒ°µÀ¶»ÒÉ«
+	Lavender				= RTGUI_RGB(230,230,250),//Þ¹ÒÂ²Ý»¨µÄµ­×ÏÉ«
+	GhostWhite				= RTGUI_RGB(248,248,255),//ÓÄÁéµÄ°×É«
+	Blue					= RTGUI_RGB(0,  0,  255),//´¿À¶
+	MediumBlue				= RTGUI_RGB(0,  0,  205),//ÊÊÖÐµÄÀ¶É«
+	MidnightBlue			= RTGUI_RGB(25, 25, 112),//ÎçÒ¹µÄÀ¶É«
+	DarkBlue				= RTGUI_RGB(0,  0,  139),//ÉîÀ¶É«
+	Navy					= RTGUI_RGB(0,  0,  128),//º£¾üÀ¶
+	RoyalBlue				= RTGUI_RGB(65, 105,225),//»Ê¾üÀ¶
+	CornflowerBlue			= RTGUI_RGB(100,149,237),//Ê¸³µ¾ÕµÄÀ¶É«
+	LightSteelBlue			= RTGUI_RGB(176,196,222),//µ­¸ÖÀ¶
+	LightSlateGray			= RTGUI_RGB(119,136,153),//Ç³Ê¯°å»Ò
+	SlateGray				= RTGUI_RGB(112,128,144),//Ê¯°å»Ò
+	DoderBlue				= RTGUI_RGB(30, 144,255),//µÀÆæÀ¶
+	AliceBlue				= RTGUI_RGB(240,248,255),//°®ÀöË¿À¶
+	SteelBlue				= RTGUI_RGB(70, 130,180),//¸ÖÀ¶
+	LightSkyBlue			= RTGUI_RGB(135,206,250),//µ­À¶É«
+	SkyBlue					= RTGUI_RGB(90,130,235),//ÌìÀ¶É«
+	DeepSkyBlue				= RTGUI_RGB(0,  191,255),//ÉîÌìÀ¶
+	LightBLue				= RTGUI_RGB(173,216,230),//µ­À¶
+	PowDerBlue				= RTGUI_RGB(176,224,230),//»ðÒ©À¶
+	CadetBlue				= RTGUI_RGB(95, 158,160),//¾üÐ£À¶
+	Azure					= RTGUI_RGB(240,255,255),//ÎµÀ¶É«
+	LightCyan				= RTGUI_RGB(225,255,255),//µ­ÇàÉ«
+	PaleTurquoise			= RTGUI_RGB(175,238,238),//²Ô°×µÄÂÌ±¦Ê¯
+	Cyan					= RTGUI_RGB(0,  255,255),//ÇàÉ«
+	Aqua					= RTGUI_RGB(0,  255,255),//Ë®ÂÌÉ«
+	DarkTurquoise			= RTGUI_RGB(0,  206,209),//ÉîÂÌ±¦Ê¯
+	DarkSlateGray			= RTGUI_RGB(47, 79, 79 ),//ÉîÊ¯°å»Ò
+	DarkCyan				= RTGUI_RGB(0,  139,139),//ÉîÇàÉ«
+	Teal					= RTGUI_RGB(0,  128,128),//Ë®Ñ¼É«
+	MediumTurquoise			= RTGUI_RGB(72, 209,204),//ÊÊÖÐµÄÂÌ±¦Ê¯
+	LightSeaGreen			= RTGUI_RGB(32, 178,170),//Ç³º£ÑóÂÌ
+	Turquoise				= RTGUI_RGB(64, 224,208),//ÂÌ±¦Ê¯
+	Auqamarin				= RTGUI_RGB(127,255,170),//ÂÌÓñ\±ÌÂÌÉ«
+	MediumAquamarine		= RTGUI_RGB(0,  250,154),//ÊÊÖÐµÄ±ÌÂÌÉ«
+	MediumSpringGreen		= RTGUI_RGB(245,255,250),//ÊÊÖÐµÄ´ºÌìµÄÂÌÉ«
+	MintCream				= RTGUI_RGB(0,  255,127),//±¡ºÉÄÌÓÍ
+	SpringGreen				= RTGUI_RGB(60, 179,113),//´ºÌìµÄÂÌÉ«
+	SeaGreen				= RTGUI_RGB(46, 139,87 ),//º£ÑóÂÌ
+	Honeydew				= RTGUI_RGB(240,255,240),//·äÃÛ
+	LightGreen				= RTGUI_RGB(144,238,144),//µ­ÂÌÉ«
+	PaleGreen				= RTGUI_RGB(152,251,152),//²Ô°×µÄÂÌÉ«
+	DarkSeaGreen			= RTGUI_RGB(143,188,143),//Éîº£ÑóÂÌ
+	LimeGreen				= RTGUI_RGB(50, 205,50 ),//Ëá³ÈÂÌ
+	Lime					= RTGUI_RGB(0,  255,0  ),//Ëá³ÈÉ«
+	ForestGreen				= RTGUI_RGB(34, 139,34 ),//É­ÁÖÂÌ
+	Green					= RTGUI_RGB(0,  128,0  ),//´¿ÂÌ
+	DarkGreen				= RTGUI_RGB(0,  100,0  ),//ÉîÂÌÉ«
+	Chartreuse				= RTGUI_RGB(127,255,0  ),//²éÌØ¾ÆÂÌ
+	LawnGreen				= RTGUI_RGB(124,252,0  ),//²ÝÆºÂÌ
+	GreenYellow				= RTGUI_RGB(173,255,47 ),//ÂÌ»ÆÉ«
+	OliveDrab				= RTGUI_RGB(85, 107,47 ),//éÏé­ÍÁºÖÉ«
+	Beige					= RTGUI_RGB(107,142,35 ),//Ã×É«(Ç³ºÖÉ«)
+	LightGoldenrodYellow	= RTGUI_RGB(250,250,210),//Ç³Çï÷è÷ë»Æ
+	Ivory					= RTGUI_RGB(255,255,240),//ÏóÑÀ
+	LightYellow				= RTGUI_RGB(255,255,224),//Ç³»ÆÉ«
+	Yellow					= RTGUI_RGB(255,255,0  ),//´¿»Æ
+	Olive					= RTGUI_RGB(128,128,0  ),//éÏé­
+	DarkKhaki				= RTGUI_RGB(189,183,107),//Éî¿¨Æä²¼
+	LemonChiffon			= RTGUI_RGB(255,250,205),//ÄûÃÊ±¡É´
+	PaleGodenrod			= RTGUI_RGB(238,232,170),//»ÒÇï÷è÷ë
+	Khaki					= RTGUI_RGB(240,230,140),//¿¨Æä²¼
+	Gold					= RTGUI_RGB(255,215,0  ),//½ð
+	Cornislk				= RTGUI_RGB(255,248,220),//ÓñÃ×É«
+	GoldEnrod				= RTGUI_RGB(218,165,32 ),//Çï÷è÷ë
+	FloralWhite				= RTGUI_RGB(255,250,240),//»¨µÄ°×É«
+	OldLace					= RTGUI_RGB(253,245,230),//ÀÏÊÎ´ø
+	Wheat					= RTGUI_RGB(245,222,179),//Ð¡ÂóÉ«
+	Moccasin				= RTGUI_RGB(255,228,181),//Â¹Æ¤Ð¬
+	Orange					= RTGUI_RGB(255,165,0  ),//³ÈÉ«
+	PapayaWhip				= RTGUI_RGB(255,239,213),//·¬Ä¾¹Ï
+	BlanchedAlmond			= RTGUI_RGB(255,235,205),//Æ¯°×µÄÐÓÈÊ
+	NavajoWhite				= RTGUI_RGB(255,222,173),//
+	AntiqueWhite			= RTGUI_RGB(250,235,215),//¹Å´úµÄ°×É«
+	Tan						= RTGUI_RGB(210,180,140),//É¹ºÚ
+	BrulyWood				= RTGUI_RGB(222,184,135),//½áÊµµÄÊ÷
+	Bisque					= RTGUI_RGB(255,228,196),//(Å¨ÌÀ)ÈéÖ¬,·¬ÇÑµÈ
+	DarkOrange				= RTGUI_RGB(255,140,0  ),//Éî³ÈÉ«
+	Linen					= RTGUI_RGB(250,240,230),//ÑÇÂé²¼
+	Peru					= RTGUI_RGB(205,133,63 ),//ÃØÂ³
+	PeachPuff				= RTGUI_RGB(255,218,185),//ÌÒÉ«
+	SandyBrown				= RTGUI_RGB(244,164,96 ),//É³×ØÉ«
+	Chocolate				= RTGUI_RGB(210,105,30 ),//ÇÉ¿ËÁ¦
+	SaddleBrown				= RTGUI_RGB(139,69, 19),//Âí°°×ØÉ«
+	SeaShell				= RTGUI_RGB(255,245,238),//º£±´¿Ç
+	Sienna					= RTGUI_RGB(160,82, 45 ),//»ÆÍÁô÷É«
+	LightSalmon				= RTGUI_RGB(255,160,122),//Ç³ÏÊÈâ(öÙÓã)É«
+	Coral					= RTGUI_RGB(255,127,80 ),//Éºº÷
+	OrangeRed				= RTGUI_RGB(255,69, 0  ),//³ÈºìÉ«
+	DarkSalmon				= RTGUI_RGB(233,150,122),//ÉîÏÊÈâ(öÙÓã)É«
+	Tomato					= RTGUI_RGB(255,99, 71 ),//·¬ÇÑ
+	MistyRose				= RTGUI_RGB(255,228,225),//±¡ÎíÃµ¹å
+	Salmon					= RTGUI_RGB(250,128,114),//ÏÊÈâ(öÙÓã)É«
+	Snow					= RTGUI_RGB(255,250,250),//Ñ©
+	LightCoral				= RTGUI_RGB(240,128,128),//µ­Éºº÷É«
+	RosyBrown				= RTGUI_RGB(188,143,143),//Ãµ¹å×ØÉ«
+	IndianRed				= RTGUI_RGB(205,92, 92 ),//Ó¡¶Èºì
+	Red						= RTGUI_RGB(255,0,  0  ),//´¿ºì
+	Brown					= RTGUI_RGB(165,42, 42 ),//×ØÉ«
+	FireBrick				= RTGUI_RGB(178,34, 34 ),//ÄÍ»ð×©
+	DarkRed					= RTGUI_RGB(139,0,  0  ),//ÉîºìÉ«
+	Maroon					= RTGUI_RGB(128,0,  0  ),//ÀõÉ«
+	White					= RTGUI_RGB(255,255,255),//´¿°×
+	WhiteSmoke				= RTGUI_RGB(245,245,245),//°×ÑÌ
+	Gainsboro				= RTGUI_RGB(220,220,220),//Gainsboro
+	LightGrey				= RTGUI_RGB(211,211,211),//Ç³»ÒÉ«
+	Silver					= RTGUI_RGB(192,192,192),//Òø°×É«
+	DarkGray				= RTGUI_RGB(169,169,169),//Éî»ÒÉ«
+	Gray					= RTGUI_RGB(128,128,128),//»ÒÉ«
+	DimGray					= RTGUI_RGB(105,105,105),//°µµ­µÄ»ÒÉ«
+	Black					= RTGUI_RGB(0,  0,  0  ),//´¿ºÚ
+	DefaultBackground		= RTGUI_RGB(226,223,226),//Ä¬ÈÏ±³¾°É«
+};
 
-    r = pixel & 0x1f;
-    g = (pixel >> 5) & 0x3f;
-    b = (pixel >> 11) & 0x1f;
+#define default_foreground	Black
+#define	default_background	DefaultBackground
 
-    color = r * 255 / 31 + ((g * 255 / 63) << 8) + ((b * 255 / 31) << 16);
-
-    return color;
+#ifdef __cplusplus
 }
-
-/* convert rtgui color to RRRRRGGGGGGBBBBB */
-rt_inline rt_uint16_t rtgui_color_to_565p(rtgui_color_t c)
-{
-    rt_uint16_t pixel;
-
-    pixel = (rt_uint16_t)(((RTGUI_RGB_R(c) >> 3) << 11) | ((RTGUI_RGB_G(c) >> 2) << 5) | (RTGUI_RGB_B(c) >> 3));
-    return pixel;
-}
-
-rt_inline rtgui_color_t rtgui_color_from_565p(rt_uint16_t pixel)
-{
-    rt_uint8_t r, g, b;
-    rtgui_color_t color;
-
-    r = (pixel >> 11) & 0x1f;
-    g = (pixel >> 5)  & 0x3f;
-    b = pixel & 0x1f;
-
-    color = r * 255 / 31 + ((g * 255 / 63) << 8) + ((b * 255 / 31) << 16);
-
-    return color;
-}
-
-/* convert rtgui color to RGB */
-rt_inline rt_uint32_t rtgui_color_to_888(rtgui_color_t c)
-{
-    rt_uint32_t pixel;
-
-    pixel = RTGUI_RGB_R(c) << 16 | RTGUI_RGB_G(c) << 8 | RTGUI_RGB_B(c);
-    return pixel;
-}
-
-rt_inline rtgui_color_t rtgui_color_from_888(rt_uint32_t pixel)
-{
-    rtgui_color_t color;
-
-    color = RTGUI_RGB(((pixel >> 16) & 0xff), ((pixel >> 8) & 0xff), pixel & 0xff);
-
-    return color;
-}
+#endif
 
 #endif
 

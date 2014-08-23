@@ -17,11 +17,19 @@
 #ifndef __RTGUI_DC_CLIENT_H__
 #define __RTGUI_DC_CLIENT_H__
 
-#include <rtgui/dc.h>
+#include <rtgui/dc_hw.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* create a hardware dc */
-struct rtgui_dc *rtgui_dc_client_create(rtgui_widget_t *owner);
-void rtgui_dc_client_init(rtgui_widget_t *owner);
+rtgui_dc_t* rtgui_dc_client_create(rtgui_widget_t* owner);
+void rtgui_dc_client_init(rtgui_widget_t* owner);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

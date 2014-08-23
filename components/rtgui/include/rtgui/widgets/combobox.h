@@ -1,49 +1,65 @@
-#ifndef __RTGUI_COMBOBOX_H__
-#define __RTGUI_COMBOBOX_H__
+#ifndef __RTGUI_COMBO_H__
+#define __RTGUI_COMBO_H__
 
-#include <rtgui/rtgui.h>
-#include <rtgui/image.h>
-#include <rtgui/widgets/window.h>
+#include <rtgui/widgets/container.h>
+#include <rtgui/widgets/textbox.h>
 #include <rtgui/widgets/listbox.h>
 
-DECLARE_CLASS_TYPE(combobox);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define RTGUI_COMBO_HEIGHT					24
+#define RTGUI_COMBO_BUTTON_WIDTH			16
+
+#define RTGUI_COMBO_STYLE_DOWNARROW_UP		0x01
+#define RTGUI_COMBO_STYLE_DOWNARROW_DOWN	0x02
+
+typedef	struct rtgui_combo	rtgui_combo_t;
+
+DECLARE_CLASS_TYPE(combo);
 /** Gets the type of a combobox */
-#define RTGUI_COMBOBOX_TYPE       (RTGUI_TYPE(combobox))
-/** Casts the object to a rtgui_combobox */
-#define RTGUI_COMBOBOX(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_COMBOBOX_TYPE, rtgui_combobox_t))
-/** Checks if the object is a rtgui_combobox */
-#define RTGUI_IS_COMBOBOX(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_COMBOBOX_TYPE))
+#define RTGUI_COMBO_TYPE       (RTGUI_TYPE(combo))
+/** Casts the object to a rtgui_textbox_t */
+#define RTGUI_COMBO(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_COMBO_TYPE, rtgui_combo_t))
+/** Checks if the object is a rtgui_textbox_t */
+#define RTGUI_IS_COMBO(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_COMBO_TYPE))
 
-#define RTGUI_COMBOBOX_WIDTH        75
-#define RTGUI_COMBOBOX_HEIGHT       20
-#define RTGUI_COMBOBOX_BUTTON_WIDTH 18
-
-struct rtgui_combobox
+typedef struct rtgui_combo_item
 {
-    struct rtgui_widget parent;
+	char	*name;
+}rtgui_combo_item_t;
 
-    /* widget private data */
+struct rtgui_combo
+{
+	rtgui_container_t parent;
 
-    /* pull down window */
-    struct rtgui_win *pd_win;
-    rt_bool_t pd_pressed;
+	/* widget private data */
+	rt_uint32_t style;
 
-    /* combobox items */
-    struct rtgui_listbox_item *items;
-    rt_uint16_t items_count;
-    rt_uint16_t current_item;
+	rtgui_textbox_t *tbox;
+	rtgui_listbox_t *lbox;
 
-    /* call back */
-    rtgui_event_handler_ptr on_selected;
+	/* call back */
+	void (*on_selected) (pvoid wdt, rtgui_event_t* event);
 };
-typedef struct rtgui_combobox rtgui_combobox_t;
 
-rtgui_combobox_t *rtgui_combobox_create(struct rtgui_listbox_item *items, rt_uint16_t counter, struct rtgui_rect *rect);
-void rtgui_combobox_destroy(rtgui_combobox_t *box);
+rtgui_combo_t* rtgui_combo_create(pvoid parent,const char* text,int left,int top,int w,int h);
+void rtgui_combo_destroy(rtgui_combo_t* cbo);
+void rtgui_combo_ondraw(rtgui_combo_t *cbo);
+void rtgui_combo_draw_downarrow(rtgui_combo_t *cbo);
+void rtgui_combo_set_onitem(rtgui_combo_t* cbo, rtgui_event_handler_ptr func);
+rt_bool_t rtgui_combo_event_handler(pvoid wdt, rtgui_event_t* event);
+rt_bool_t rtgui_combo_onitem(pvoid wdt, rtgui_event_t* event);
+void rtgui_combo_set_items(rtgui_combo_t* cbo, rtgui_listbox_item_t* items, rt_uint32_t count);
 
-rt_bool_t rtgui_combobox_event_handler(struct rtgui_object *object, struct rtgui_event *event);
-struct rtgui_listbox_item *rtgui_combox_get_select(struct rtgui_combobox *box);
+rt_uint32_t rtgui_combo_get_select(rtgui_combo_t* cbo);
+void rtgui_combo_add_string(rtgui_combo_t* cbo, const char* string);
+char* rtgui_combo_get_string(rtgui_combo_t* cbo);
 
-void rtgui_combobox_set_onselected(struct rtgui_combobox *box, rtgui_event_handler_ptr func);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+

@@ -9,29 +9,31 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2009-10-16     Bernard      first version
+ *
  */
-#include <rtgui/dc.h>
+#include <string.h>
 #include <rtgui/widgets/label.h>
-#include <rtgui/rtgui_system.h>
-#include <rtgui/rtgui_theme.h>
 
 static void _rtgui_label_constructor(rtgui_label_t *label)
 {
-    RTGUI_WIDGET_TEXTALIGN(label) = RTGUI_ALIGN_LEFT | RTGUI_ALIGN_CENTER_VERTICAL;
-    /* init widget and set event handler */
-    rtgui_object_set_event_handler(RTGUI_OBJECT(label), rtgui_label_event_handler);
+	/* init widget and set event handler */
+	rtgui_widget_set_event_handler(label, rtgui_label_event_handler);
 
-    /* set field */
-    label->text = RT_NULL;
+	RTGUI_WIDGET_FC(label) = theme.foreground;
+	RTGUI_WIDGET_BC(label) = theme.background;
+	RTGUI_WIDGET_TEXTALIGN(label) = RTGUI_ALIGN_CENTER_VERTICAL;
+	/* set field */
+	label->text = RT_NULL;
 }
 
 static void _rtgui_label_destructor(rtgui_label_t *label)
 {
-    /* release text memory */
-    if (label->text)
-        rt_free(label->text);
-    label->text = RT_NULL;
+	/* release text memory */
+	if(label->text != RT_NULL)
+	{
+		rt_free(label->text);
+		label->text = RT_NULL;
+	}
 }
 
 DEFINE_CLASS_TYPE(label, "label",
@@ -40,87 +42,112 @@ DEFINE_CLASS_TYPE(label, "label",
                   _rtgui_label_destructor,
                   sizeof(struct rtgui_label));
 
-rt_bool_t rtgui_label_event_handler(struct rtgui_object *object, struct rtgui_event *event)
+void rtgui_label_ondraw(rtgui_label_t* label)
 {
-    struct rtgui_label *label;
-    RTGUI_WIDGET_EVENT_HANDLER_PREPARE
+	/* draw label */
+	rtgui_rect_t rect;
+	rtgui_dc_t* dc;
 
-    label = RTGUI_LABEL(object);
-    switch (event->type)
-    {
-    case RTGUI_EVENT_PAINT:
-        rtgui_theme_draw_label(label);
-        break;
-    default:
-        return rtgui_widget_event_handler(object, event);
-    }
+	RT_ASSERT(label != RT_NULL);
 
-    return RT_FALSE;
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(label);
+	if(dc == RT_NULL)return;
+
+	rtgui_widget_get_rect(label, &rect);
+	rtgui_dc_fill_rect(dc,&rect);
+
+	/* default left and center draw */
+	rect.x1 += 1;
+	if(RTGUI_WIDGET_FLAG(label) & RTGUI_WIDGET_FLAG_FONT_STROKE)
+		rtgui_dc_draw_text_stroke(dc, label->text, &rect, theme.foreground, theme.blankspace);
+	else
+		rtgui_dc_draw_text(dc, label->text, &rect);
+
+	rtgui_dc_end_drawing(dc);
 }
-RTM_EXPORT(rtgui_label_event_handler);
 
-rtgui_label_t *rtgui_label_create(rtgui_container_t *container, const char *text, int left, int top, int w, int h)
+rt_bool_t rtgui_label_event_handler(pvoid wdt, rtgui_event_t* event)
 {
-    struct rtgui_label *label;
-	
-	RT_ASSERT(container != RT_NULL);
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_label_t* label = RTGUI_LABEL(wdt);
 
-    label = (struct rtgui_label *) rtgui_widget_create(RTGUI_LABEL_TYPE);
-    if (label != RT_NULL)
-    {
-        rtgui_rect_t rect;
+	RT_ASSERT(widget != RT_NULL);
 
-		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+	switch(event->type)
+	{
+	case RTGUI_EVENT_PAINT:
+		if(widget->on_draw)
+			widget->on_draw(widget, event);
+		else
+			rtgui_label_ondraw(label);
+		break;
+	default:
+		break;
+	}
+
+	return RT_FALSE;
+}
+
+//parent必须是一个容器类控件
+rtgui_label_t* rtgui_label_create(pvoid parent, const char* text,int left, int top, int w, int h)
+{
+	rtgui_container_t *container;
+	rtgui_label_t* label;
+
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
+
+	label = rtgui_widget_create(RTGUI_LABEL_TYPE);
+	if(label != RT_NULL)
+	{
+		rtgui_rect_t rect;
+		
+		rtgui_widget_get_rect(container, &rect);
+		rtgui_widget_rect_to_device(container,&rect);
 		rect.x1 += left;
 		rect.y1 += top;
 		rect.x2 = rect.x1 + w;
 		rect.y2 = rect.y1 + h;
-        rtgui_widget_set_rect(RTGUI_WIDGET(label), &rect);
-        /* set text */
-        label->text = (char *)rt_strdup((const char *)text);
-		rtgui_container_add_child(container, RTGUI_WIDGET(label));
-    }
+		rtgui_widget_set_rect(label, &rect);
 
-    return label;
+		label->text = rt_strdup(text);
+
+		rtgui_container_add_child(container, label);
+	}
+
+	return label;
 }
-RTM_EXPORT(rtgui_label_create);
 
-void rtgui_label_destroy(rtgui_label_t *label)
+void rtgui_label_destroy(rtgui_label_t* label)
 {
-    rtgui_widget_destroy(RTGUI_WIDGET(label));
+	rtgui_widget_destroy(label);
 }
-RTM_EXPORT(rtgui_label_destroy);
 
-char *rtgui_label_get_text(rtgui_label_t *label)
+char* rtgui_label_get_text(rtgui_label_t* label)
 {
-    RT_ASSERT(label != RT_NULL);
+	if(label == RT_NULL)return RT_NULL;
 
-    return label->text;
+	return label->text;
 }
-RTM_EXPORT(rtgui_label_get_text);
 
-void rtgui_label_set_text(rtgui_label_t *label, const char *text)
+void rtgui_label_set_text(rtgui_label_t* label, const char* text)
 {
-    RT_ASSERT(label != RT_NULL);
+	RT_ASSERT(label != RT_NULL);
 
-    if (label->text != RT_NULL)
-    {
-        /* it's a same text string */
-        if (rt_strcmp(text, label->text) == 0)
-            return;
+	if(label->text != RT_NULL)
+	{
+		if (rt_strcmp(text, label->text) == 0) return;
+		
+		/* release old text memory */
+		rt_free(label->text);
+	}
 
-        /* release old text memory */
-        rt_free(label->text);
-    }
+	if(text != RT_NULL)
+		label->text = rt_strdup(text);
+	else
+		label->text = RT_NULL;
 
-    if (text != RT_NULL)
-        label->text = (char *)rt_strdup((const char *)text);
-    else
-        label->text = RT_NULL;
-
-    /* update widget */
-    rtgui_theme_draw_label(label);
+	/* update widget */
+	rtgui_label_ondraw(label);
 }
-RTM_EXPORT(rtgui_label_set_text);
-

@@ -16,6 +16,14 @@
 
 #include <rtgui/image.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void rtgui_image_xpm_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

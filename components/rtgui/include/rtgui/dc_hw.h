@@ -17,8 +17,25 @@
 
 #include <rtgui/dc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct rtgui_dc_hw rtgui_dc_hw_t;
+
+struct rtgui_dc_hw
+{
+	rtgui_dc_t parent;
+	rtgui_widget_t *owner;
+	const struct rtgui_gdev* hw_drv;
+};
+
 /* create a hardware dc */
-struct rtgui_dc *rtgui_dc_hw_create(rtgui_widget_t *owner);
+rtgui_dc_t* rtgui_dc_hw_create(rtgui_widget_t* owner);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

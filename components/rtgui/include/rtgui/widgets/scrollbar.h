@@ -33,21 +33,21 @@ DECLARE_CLASS_TYPE(scrollbar);
 #define RTGUI_DEFAULT_SB_WIDTH			16
 
 /* scrollbar status/positions*/
-#define SBS_UNKNOWN         0x0000
-#define SBS_LEFTARROW       0x0001
-#define SBS_RIGHTARROW      0x0002
-#define SBS_LEFTSPACE       0x0004 /* Need mouse_motion event */
-#define SBS_RIGHTSPACE      0x0008 /* Need mouse_motion event */
-#define SBS_HORZTHUMB       0x0010 /* Need mouse_motion event */
-#define SBS_UPARROW         0x0020
-#define SBS_DOWNARROW       0x0040
-#define SBS_UPSPACE		    0x0080 /* Need mouse_motion event */
-#define SBS_DOWNSPACE       0x0100 /* Need mouse_motion event */
-#define SBS_VERTTHUMB       0x0200 /* Need mouse_motion event */
-#define SBS_UPTHUMB		    0x0400 /* Need mouse_motion event */
-#define SBS_DOWNTHUMB       0x0800 /* Need mouse_motion event */
-#define SBS_LEFTTHUMB       0x1000 /* Need mouse_motion event */
-#define SBS_RIGHTTHUMB      0x2000 /* Need mouse_motion event */
+#define SBAR_UNKNOWN        0x0000
+#define SBAR_LEFTARROW      0x0001
+#define SBAR_RIGHTARROW     0x0002
+#define SBAR_LEFTSPACE      0x0004
+#define SBAR_RIGHTSPACE     0x0008
+#define SBAR_HORZTHUMB      0x0010
+#define SBAR_UPARROW        0x0020
+#define SBAR_DOWNARROW      0x0040
+#define SBAR_UPSPACE		0x0080 
+#define SBAR_DOWNSPACE      0x0100
+#define SBAR_VERTTHUMB      0x0200
+#define SBAR_UPTHUMB		0x0400
+#define SBAR_DOWNTHUMB		0x0800
+#define SBAR_LEFTTHUMB		0x1000 
+#define SBAR_RIGHTTHUMB		0x2000 
 
 struct rtgui_scrollbar
 {
@@ -63,29 +63,27 @@ struct rtgui_scrollbar
 	rt_int16_t value, thumb_len,thumb_w;
 	/* position 1:1 width of scrollbar */
 	rt_int16_t count;
-
-	rtgui_widget_t *widget_link;/* be connected widget */
-	rt_bool_t (*on_scroll) (rtgui_object_t *object, rtgui_event_t* event);
+	
+	pvoid widget_link;/* be connected widget */
+	rt_bool_t (*on_scroll) (pvoid wdt, rtgui_event_t* event);
 };
 typedef struct rtgui_scrollbar rtgui_scrollbar_t;
 
-rtgui_scrollbar_t* rtgui_scrollbar_create(rtgui_container_t *container,int left,int top,int w,int len,int orient);
+rtgui_scrollbar_t* rtgui_scrollbar_create(pvoid wdt,int left,int top,int w,int len,int orient);
 void rtgui_scrollbar_destroy(rtgui_scrollbar_t* bar);
 void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar);
 void rtgui_scrollbar_get_thumb_rect(rtgui_scrollbar_t *bar, rtgui_rect_t *erect);
 
-void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, rt_int16_t count);
+void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, int count);
 void rtgui_scrollbar_set_value(rtgui_scrollbar_t* bar, rt_int16_t value);
 
 void rtgui_scrollbar_set_onscroll(rtgui_scrollbar_t* bar, rtgui_event_handler_ptr handler);
 void rtgui_scrollbar_set_orientation(rtgui_scrollbar_t* bar, int orient);
-void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, rt_int16_t step);
-void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, rt_int16_t step);
+void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, int step);
+void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, int step);
 
-rt_bool_t rtgui_scrollbar_event_handler(rtgui_object_t *obj, rtgui_event_t* event);
-rt_int16_t rtgui_scrollbar_get_value(rtgui_scrollbar_t *bar);
-rt_int16_t rtgui_scrollbar_get_page_step(rtgui_scrollbar_t *bar);
-rt_int16_t rtgui_scrollbar_get_range(rtgui_scrollbar_t *bar);
+rt_bool_t rtgui_scrollbar_event_handler(pvoid wdt, rtgui_event_t* event);
+void rtgui_scrollbar_hide(rtgui_scrollbar_t* bar);
 
 #ifdef __cplusplus
 }

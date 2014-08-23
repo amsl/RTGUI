@@ -1,7 +1,7 @@
 /*
  * File      : slider.c
  * This file is part of RT-Thread RTOS
- * COPYRIGHT (C) 2006 - 2010, RT-Thread Development Team
+ * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
  *
  * The license and distribution terms for this file may be
  * found in the file LICENSE in this distribution or at
@@ -9,299 +9,318 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2009-10-16     Bernard      first version
- * 2010-09-10     Bernard      fix hide issue
+ *
  */
-#include <rtgui/dc.h>
-#include <rtgui/rtgui_theme.h>
 #include <rtgui/widgets/slider.h>
 
-#define RTGUI_SLIDER_DEFAULT_WIDTH  100
-#define RTGUI_SLIDER_DEFAULT_HEIGHT 20
-#define RTGUI_SLIDER_DEFAULT_MIN    0
-#define RTGUI_SLIDER_DEFAULT_MAX    100
-
-static rt_bool_t rtgui_slider_onunfocus(struct rtgui_object *object, rtgui_event_t *event);
+#define RTGUI_SLIDER_DEFAULT_WIDTH	100
+#define RTGUI_SLIDER_DEFAULT_HEIGHT	20
+#define RTGUI_SLIDER_DEFAULT_MIN	0
+#define RTGUI_SLIDER_DEFAULT_MAX	100
 
 static void _rtgui_slider_constructor(rtgui_slider_t *slider)
 {
-    rtgui_rect_t rect = {0, 0, RTGUI_SLIDER_DEFAULT_WIDTH, RTGUI_SLIDER_DEFAULT_HEIGHT};
+	/* init widget and set event handler */
+	RTGUI_WIDGET_FLAG(slider) |= RTGUI_WIDGET_FLAG_FOCUSABLE;
+	rtgui_widget_set_event_handler(slider, rtgui_slider_event_handler);
 
-    /* init widget and set event handler */
-    RTGUI_WIDGET(slider)->flag |= RTGUI_WIDGET_FLAG_FOCUSABLE;
-    rtgui_widget_set_rect(RTGUI_WIDGET(slider), &rect);
-    rtgui_object_set_event_handler(RTGUI_OBJECT(slider), rtgui_slider_event_handler);
-    rtgui_widget_set_onunfocus(RTGUI_WIDGET(slider), rtgui_slider_onunfocus);
-    /* set proper of control */
-    slider->min = RTGUI_SLIDER_DEFAULT_MIN;
-    slider->max = RTGUI_SLIDER_DEFAULT_MAX;
-    slider->value = RTGUI_SLIDER_DEFAULT_MIN;
-    slider->orient = RTGUI_HORIZONTAL;
+	/* set proper of control */
+	slider->min = RTGUI_SLIDER_DEFAULT_MIN;
+	slider->max = RTGUI_SLIDER_DEFAULT_MAX;
+	slider->value = RTGUI_SLIDER_DEFAULT_MIN;
+	slider->orient = RTGUI_HORIZONTAL;
 
-    slider->ticks = 10;
-    slider->thumb_width = 8;
-    slider->on_changed = RT_NULL;
+	slider->ticks = 10;
+	slider->thumb_width = 6;
+	slider->on_change = RT_NULL;
+}
+
+static void _rtgui_slider_destructor(rtgui_slider_t *slider)
+{
 }
 
 DEFINE_CLASS_TYPE(slider, "slider",
                   RTGUI_WIDGET_TYPE,
                   _rtgui_slider_constructor,
-                  RT_NULL,
+                  _rtgui_slider_destructor,
                   sizeof(struct rtgui_slider));
 
-static void rtgui_slider_onmouse(struct rtgui_slider *slider, struct rtgui_event_mouse *event)
+/* create a slider */
+rtgui_slider_t* rtgui_slider_create(pvoid parent, int left, int top, int w, int h, int orient, int min, int max)
 {
-    RT_ASSERT(slider != RT_NULL);
-    RT_ASSERT(event  != RT_NULL);
+	rtgui_container_t *container;
+	rtgui_slider_t* slider;
 
-    if (event->button & RTGUI_MOUSE_BUTTON_DOWN &&
-            event->button & RTGUI_MOUSE_BUTTON_LEFT)
-    {
-        int sel;
-        int range = slider->max - slider->min;
-        int x0, xsize;
-        int x;
-        x0 = 1 + slider->thumb_width / 2;
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
 
-        if (slider->orient == RTGUI_VERTICAL)
-        {
-            x = event->y - RTGUI_WIDGET(slider)->extent.y1;
-            x -= x0;
-            xsize = RC_H(RTGUI_WIDGET(slider)->extent) - 2 * x0;
-        }
-        else
-        {
-            x = event->x - RTGUI_WIDGET(slider)->extent.x1;
-            x -= x0;
-            xsize = RC_W(RTGUI_WIDGET(slider)->extent) - 2 * x0;
-        }
-
-        if (x <= 0)
-        {
-            sel = slider->min;
-        }
-        else if (x >= xsize)
-        {
-            sel = slider->max;
-        }
-        else
-        {
-            sel = ((range * x) + xsize / 2) / xsize;
-            sel += slider->min;
-        }
-
-        rtgui_widget_focus(RTGUI_WIDGET(slider));
-        rtgui_slider_set_value(slider, sel);
-        if (slider->on_changed != RT_NULL) /* invoke callback function */
-            slider->on_changed(RTGUI_WIDGET(slider), RT_NULL);
-    }
-}
-
-static rt_bool_t rtgui_slider_onkey(struct rtgui_slider *slider, struct rtgui_event_kbd *event)
-{
-    RT_ASSERT(slider != RT_NULL);
-    RT_ASSERT(event != RT_NULL);
-
-    if (!(RTGUI_KBD_IS_UP(event)))
-        return RT_TRUE;
-
-    if (slider->orient == RTGUI_HORIZONTAL)
-    {
-        if (event->key == RTGUIK_RIGHT)
-        {
-            if (slider->value > slider->min)
-                slider->value++;
-        }
-        else if (event->key == RTGUIK_LEFT)
-        {
-            if (slider->value < slider->max)
-                slider->value--;
-        }
-    }
-    else
-    {
-        if (event->key == RTGUIK_UP)
-        {
-            if (slider->value > slider->min)
-                slider->value--;
-        }
-        else if (event->key == RTGUIK_DOWN)
-        {
-            if (slider->value < slider->max)
-                slider->value++;
-        }
-    }
-
-    /* update widget */
-    rtgui_widget_update(RTGUI_WIDGET(slider));
-    if (slider->on_changed != RT_NULL) /* invoke callback function */
-        slider->on_changed(RTGUI_WIDGET(slider), RT_NULL);
-
-    return RT_TRUE;
-}
-
-rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_event *event)
-{
-    struct rtgui_widget *widget;
-    struct rtgui_slider *slider;
-
-    RT_ASSERT(object != RT_NULL);
-    RT_ASSERT(event != RT_NULL);
-
-    widget = RTGUI_WIDGET(object);
-    slider = RTGUI_SLIDER(object);
-
-    switch (event->type)
-    {
-    case RTGUI_EVENT_PAINT:
-        if (widget->on_draw != RT_NULL)
-            widget->on_draw(RTGUI_OBJECT(widget), event);
-        else
-        {
-            rtgui_theme_draw_slider(slider);
-        }
-
-        break;
-
-    case RTGUI_EVENT_KBD:
-        if (!RTGUI_WIDGET_IS_ENABLE(widget) || RTGUI_WIDGET_IS_HIDE(widget)) return RT_FALSE;
-
-        if (widget->on_key != RT_NULL)
-            return widget->on_key(RTGUI_OBJECT(widget), event);
-        else
-            return rtgui_slider_onkey(slider, (struct rtgui_event_kbd *)event);
-
-    case RTGUI_EVENT_MOUSE_BUTTON:
-        if (!RTGUI_WIDGET_IS_ENABLE(widget) || RTGUI_WIDGET_IS_HIDE(widget)) return RT_FALSE;
-
-        if (widget->on_mouseclick != RT_NULL)
-            widget->on_mouseclick(RTGUI_OBJECT(widget), event);
-        else
-        {
-            rtgui_slider_onmouse(slider, (struct rtgui_event_mouse *)event);
-        }
-        break;
-
-    default:
-        return rtgui_widget_event_handler(object, event);
-    }
-
-    return RT_FALSE;
-}
-RTM_EXPORT(rtgui_slider_event_handler);
-
-struct rtgui_slider *rtgui_slider_create(rtgui_container_t *container, rt_size_t min, rt_size_t max, 
-						int left, int top, int w, int h, int orient)
-{
-    struct rtgui_slider *slider;
-
-    slider = (struct rtgui_slider *) rtgui_widget_create(RTGUI_SLIDER_TYPE);
-    if (slider != RT_NULL)
-    {
+	slider = rtgui_widget_create(RTGUI_SLIDER_TYPE);
+	if(slider != RT_NULL)
+	{
 		rtgui_rect_t rect;
-        /* set proper of control */
-        slider->min = min;
-        slider->max = max;
-        slider->value = min;
 
-        slider->ticks = 10;
-        slider->thumb_width = 8;
-		rtgui_slider_set_orientation(slider, orient);
+		/* set proper of control */
+		slider->min = min;
+		slider->max = max;
+		slider->value = min;
 
-		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		slider->ticks = max-min;
+		slider->thumb_width = 6;/* thumb size */
+
+		rtgui_slider_set_orient(slider, orient);
+
+		rtgui_widget_get_rect(container, &rect);
+		rtgui_widget_rect_to_device(container,&rect);
 		rect.x1 += left;
 		rect.y1 += top;
-		rect.x2 = rect.x1 + w;
-		rect.y2 = rect.y1 + h;
-		rtgui_widget_set_rect(RTGUI_WIDGET(slider), &rect);
-        
-		rtgui_container_add_child(container, RTGUI_WIDGET(slider));
-    }
+		rect.x2 = rect.x1+w;
+		rect.y2 = rect.y1+h;
+		rtgui_widget_set_rect(slider, &rect);
 
-    return slider;
+		rtgui_container_add_child(container, slider);
+	}
+
+	return slider;
 }
-RTM_EXPORT(rtgui_slider_create);
 
-void rtgui_slider_set_range(struct rtgui_slider *slider, rt_size_t min, rt_size_t max)
+void rtgui_slider_destroy(rtgui_slider_t* slider)
 {
-    RT_ASSERT(slider != RT_NULL);
-
-    slider->max = max;
-    slider->min = min;
+	rtgui_widget_destroy(slider);
 }
-RTM_EXPORT(rtgui_slider_set_range);
 
-void rtgui_slider_set_value(struct rtgui_slider *slider, rt_size_t value)
+static void rtgui_slider_onmouse(rtgui_slider_t* slider, struct rtgui_event_mouse* event)
 {
-    RT_ASSERT(slider != RT_NULL);
+	RT_ASSERT(slider != RT_NULL);
+	RT_ASSERT(event  != RT_NULL);
 
-    if (RTGUI_WIDGET_IS_ENABLE(slider))
-    {
-        if (value < slider->min) value = slider->min;
-        if (value > slider->max) value = slider->max;
+	if(event->button & RTGUI_MOUSE_BUTTON_DOWN && event->button & RTGUI_MOUSE_BUTTON_LEFT)
+	{
+		int sel;
+		int range = slider->max - slider->min;
+		int x0, xsize;
+		int x;
+		x0 = 1 + slider->thumb_width/2;
 
-        if (slider->value != value)
-        {
-            slider->value = value;
-            rtgui_theme_draw_slider(slider);
-        }
-    }
+		if(slider->orient == RTGUI_VERTICAL)
+		{
+			x = event->y - RTGUI_WIDGET(slider)->extent.y1;
+			x -= x0;
+			xsize = rtgui_widget_get_height(slider) - 2 * x0;
+		}
+		else
+		{
+			x = event->x - RTGUI_WIDGET(slider)->extent.x1;
+			x -= x0;
+			xsize = rtgui_widget_get_width(slider) - 2 * x0;
+		}
+
+		if(x <= 0)
+		{
+			sel = slider->min;
+		}
+		else if(x >= xsize)
+		{
+			sel = slider->max;
+		}
+		else
+		{
+			sel = ((range * x) + xsize/2) / xsize;
+			sel += slider->min;
+		}
+
+		rtgui_widget_focus(slider);
+		rtgui_slider_set_value(slider, sel);
+		
+		if(slider->on_change != RT_NULL) 
+			slider->on_change(slider,(rtgui_event_t*)event);
+	}
 }
-RTM_EXPORT(rtgui_slider_set_value);
 
-void rtgui_slider_set_orientation(struct rtgui_slider *slider, int orientation)
+static void rtgui_slider_onkey(rtgui_slider_t* slider, struct rtgui_event_kbd *event)
 {
-    RT_ASSERT(slider != RT_NULL);
+	RT_ASSERT(slider != RT_NULL);
+	RT_ASSERT(event != RT_NULL);
 
-    /* set orientation */
-    slider->orient = orientation;
-    if (slider->orient == RTGUI_HORIZONTAL)
-    {
-        /* HORIZONTAL */
-        rtgui_widget_set_miniheight(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_HEIGHT);
-        rtgui_widget_set_miniwidth(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_WIDTH);
-    }
-    else
-    {
-        /* VERTICAL */
-        rtgui_widget_set_miniwidth(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_HEIGHT);
-        rtgui_widget_set_miniheight(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_WIDTH);
-    }
+	if(!(RTGUI_KBD_IS_UP(event))) return;
+
+	if(event->key == RTGUIK_LEFT)
+	{
+		if(slider->value > slider->min)
+			slider->value ++;
+	}
+
+	if(event->key == RTGUIK_RIGHT)
+	{
+		if(slider->value < slider->max)
+			slider->value --;
+	}
+
+	/* update widget */
+	rtgui_widget_update(slider);
 }
-RTM_EXPORT(rtgui_slider_set_orientation);
 
-rt_size_t rtgui_slider_get_value(struct rtgui_slider *slider)
+void rtgui_slider_ondraw(rtgui_slider_t* slider)
 {
-    RT_ASSERT(slider != RT_NULL);
+	/* draw button */
+	int i, xsize, x0;
+	rtgui_rect_t rect, focus_rect, slider_rect, slot_rect;
+	rtgui_dc_t* dc;
 
-    return slider->value;
+	RT_ASSERT(slider != RT_NULL);
+
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(slider);
+	if(dc == RT_NULL)return;
+
+	/* get widget rect */
+	rtgui_widget_get_rect(slider, &focus_rect);
+	/* fill widget rect with background color */
+	rtgui_dc_fill_rect(dc,&focus_rect);
+	rect = focus_rect;
+
+	if(slider->orient == RTGUI_VERTICAL)
+	{
+		rtgui_rect_inflate(&rect, -1);
+		xsize = rect.y2 - rect.y1 - slider->thumb_width;
+		x0 = rect.y1 + slider->thumb_width / 2;
+
+		/* calculate thumb position */
+		slider_rect = rect;
+		slider_rect.x1 += 1;
+		slider_rect.x2 -= 1;
+		slider_rect.y1 = x0 + xsize * (slider->value - slider->min) / (slider->max - slider->min) - slider->thumb_width/2;
+		slider_rect.y2  = slider_rect.y1 + slider->thumb_width;
+
+		/* calculate slot position */
+		slot_rect.y1 = x0;
+		slot_rect.y2 = x0 + xsize;
+		slot_rect.x1 = (slider_rect.x1 + slider_rect.x2) /2 -1;
+		slot_rect.x2 = slot_rect.x1 +3;
+		RTGUI_DC_FC(dc) = theme.foreground;
+		/* draw slot */
+		rtgui_dc_draw_border(dc, &slot_rect, RTGUI_WIDGET_BORDER_STYLE(slider));
+
+		/* draw the ticks */
+		for(i = 0; i <= slider->ticks; i++)
+		{
+			int k = x0 + xsize * i / slider->ticks;
+			rtgui_dc_draw_hline(dc,rect.x1+1, rect.x1+4, k);
+		}
+
+		/* draw the thumb */
+		rtgui_dc_fill_rect(dc,&slider_rect);
+		rtgui_dc_draw_border(dc, &slider_rect, RTGUI_WIDGET_BORDER_STYLE(slider));
+	}
+	else
+	{
+		rtgui_rect_inflate(&rect, -1);
+		xsize = rect.x2 - rect.x1 - slider->thumb_width;
+		x0 = rect.x1 + slider->thumb_width / 2;
+
+		/* calculate thumb position */
+		slider_rect = rect;
+		slider_rect.x1 = x0 + xsize*(slider->value - slider->min)/(slider->max - slider->min) - slider->thumb_width/2;
+		slider_rect.x2  = slider_rect.x1 + slider->thumb_width;
+		slider_rect.y1 += 1;
+		slider_rect.y2 -= 1;
+
+		/* calculate slot position */
+		slot_rect.x1 = x0;
+		slot_rect.x2 = x0 + xsize;
+		slot_rect.y1 = (slider_rect.y1 + slider_rect.y2) /2 -1;
+		slot_rect.y2 = slot_rect.y1 +3;
+		/* draw slot */
+		rtgui_dc_draw_border(dc, &slot_rect, RTGUI_WIDGET_BORDER_STYLE(slider));
+
+		/* draw the ticks */
+		for(i = 0; i <= slider->ticks; i++)
+		{
+			int x = x0 + xsize * i / slider->ticks;
+			rtgui_dc_draw_vline(dc,x, rect.y1+1, rect.y1+4);
+		}
+
+		/* draw the thumb */
+		rtgui_dc_fill_rect(dc,&slider_rect);
+		rtgui_dc_draw_border(dc, &slider_rect, RTGUI_WIDGET_BORDER_STYLE(slider));
+	}
+
+	/* draw focus */
+	if(RTGUI_WIDGET_IS_FOCUSED(slider))
+	{
+		RTGUI_DC_FC(dc) = theme.foreground;
+		rtgui_dc_draw_focus_rect(dc, &focus_rect);
+	}
+
+	rtgui_dc_end_drawing(dc);
 }
-RTM_EXPORT(rtgui_slider_get_value);
 
-static rt_bool_t rtgui_slider_onunfocus(struct rtgui_object *object, rtgui_event_t *event)
+rt_bool_t rtgui_slider_event_handler(pvoid wdt, rtgui_event_t* event)
 {
-    rtgui_rect_t rect;
-    rtgui_widget_t *widget;
-    struct rtgui_dc *dc;
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_slider_t *slider = RTGUI_SLIDER(wdt);
 
-    RT_ASSERT(object);
-    widget = RTGUI_WIDGET(object);
+	switch(event->type)
+	{
+		case RTGUI_EVENT_PAINT:
+			if(widget->on_draw != RT_NULL)
+				widget->on_draw(widget, event);
+			else
+				rtgui_slider_ondraw(slider);
 
-    dc = rtgui_dc_begin_drawing(widget);
-    if (dc == RT_NULL) return RT_FALSE;
+			return RT_FALSE;
 
-    rtgui_widget_get_rect(widget, &rect);
+		case RTGUI_EVENT_KBD:
+			if(widget->on_key != RT_NULL)
+				widget->on_key(widget, event);
+			else
+				rtgui_slider_onkey(slider, (struct rtgui_event_kbd *)event);
+			return RT_TRUE;
 
-    if (!RTGUI_WIDGET_IS_FOCUSED(widget))
-    {
-        /* only clear focus rect */
-        rtgui_color_t color = RTGUI_DC_FC(dc);
-        RTGUI_DC_FC(dc) = RTGUI_DC_BC(dc);
-        rtgui_dc_draw_focus_rect(dc, &rect);
-        RTGUI_DC_FC(dc) = color;
-    }
+		case RTGUI_EVENT_MOUSE_BUTTON:
+			if(widget->on_mouseclick != RT_NULL)
+				widget->on_mouseclick(widget, event);
+			else
+				rtgui_slider_onmouse(slider, (struct rtgui_event_mouse*)event);
+			return RT_TRUE;
+		default:
+			return RT_FALSE;
+	}
+}
 
-    rtgui_dc_end_drawing(dc);
-    return RT_TRUE;
+void rtgui_slider_set_range(rtgui_slider_t* slider, rt_size_t min, rt_size_t max)
+{
+	RT_ASSERT(slider != RT_NULL);
+
+	slider->max = max;
+	slider->min = min;
+}
+
+void rtgui_slider_set_value(rtgui_slider_t* slider, rt_size_t value)
+{
+	RT_ASSERT(slider != RT_NULL);
+
+	if(value < slider->min) value = slider->min;
+	if(value > slider->max) value = slider->max;
+
+	if(slider->value != value)
+	{
+		slider->value = value;
+		rtgui_slider_ondraw(slider);
+	}
+}
+
+/* set slider draw orientation */
+void rtgui_slider_set_orient(rtgui_slider_t* slider, int orient)
+{
+	RT_ASSERT(slider != RT_NULL);
+
+	/* set orient */
+	slider->orient = orient;
+}
+
+rt_size_t rtgui_slider_get_value(rtgui_slider_t* slider)
+{
+	RT_ASSERT(slider != RT_NULL);
+
+	return slider->value;
 }

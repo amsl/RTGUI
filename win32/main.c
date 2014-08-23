@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	/* init driver */
 	sdlfb_hw_init();
 	device = rt_device_find("sdl");
-	rtgui_graphic_set_device(device);
+	rtgui_gdev_set(device);
 
 	/* init gui system */
 	rtgui_system_server_init();

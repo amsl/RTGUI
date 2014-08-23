@@ -9,38 +9,41 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2009-10-16     Bernard      first version
+ *
  */
-#include <rtgui/dc.h>
 #include <rtgui/widgets/iconbox.h>
-#include <rtgui/rtgui_theme.h>
+
+static rt_bool_t rtgui_iconbox_onfocus(pvoid wdt, rtgui_event_t* event);
+static rt_bool_t rtgui_iconbox_onunfocus(pvoid wdt, rtgui_event_t* event);
 
 static void _rtgui_iconbox_constructor(rtgui_iconbox_t *iconbox)
 {
-    /* init widget and set event handler */
-    RTGUI_WIDGET(iconbox)->flag |= (RTGUI_WIDGET_FLAG_TRANSPARENT | RTGUI_WIDGET_FLAG_FOCUSABLE);
-    rtgui_object_set_event_handler(RTGUI_OBJECT(iconbox), rtgui_iconbox_event_handler);
+	/* init widget and set event handler */
+	rtgui_widget_set_event_handler(iconbox, rtgui_iconbox_event_handler);
+	RTGUI_WIDGET_FLAG(iconbox) |= RTGUI_WIDGET_FLAG_TRANSPARENT;
+	/* set proper of control */
+	iconbox->image = RT_NULL;
+	iconbox->selected = RT_FALSE;
+	iconbox->text = RT_NULL;
+	iconbox->text_position = RTGUI_ICONBOX_TEXT_BELOW;
+	iconbox->func = RT_NULL;
 
-    /* set proper of control */
-    iconbox->image = RT_NULL;
-    iconbox->selected = RT_FALSE;
-    iconbox->text = RT_NULL;
-    iconbox->text_position = RTGUI_ICONBOX_TEXT_BELOW;
+	rtgui_widget_set_onfocus(iconbox,rtgui_iconbox_onfocus);
+	rtgui_widget_set_onunfocus(iconbox,rtgui_iconbox_onunfocus);
 }
 
 static void _rtgui_iconbox_destructor(rtgui_iconbox_t *iconbox)
 {
-    if (iconbox->image != RT_NULL)
-    {
-        rtgui_image_destroy(iconbox->image);
-        iconbox->image = RT_NULL;
-    }
-
-    if (iconbox->text != RT_NULL)
-    {
-        rt_free(iconbox->text);
-        iconbox->text = RT_NULL;
-    }
+	if(iconbox->image != RT_NULL)
+	{
+		rtgui_image_destroy(iconbox->image);
+		iconbox->image = RT_NULL;
+	}
+	if(iconbox->text != RT_NULL)
+	{
+		rt_free(iconbox->text);
+		iconbox->text = RT_NULL;
+	}
 }
 
 DEFINE_CLASS_TYPE(iconbox, "iconbox",
@@ -49,141 +52,200 @@ DEFINE_CLASS_TYPE(iconbox, "iconbox",
                   _rtgui_iconbox_destructor,
                   sizeof(struct rtgui_iconbox));
 
-rt_bool_t rtgui_iconbox_event_handler(struct rtgui_object *object, struct rtgui_event *event)
+void rtgui_iconbox_ondraw(rtgui_iconbox_t* iconbox)
 {
-    struct rtgui_iconbox *iconbox;
+	rtgui_rect_t rect,ico_rect;
+	rtgui_dc_t* dc;
 
-    iconbox = RTGUI_ICONBOX(object);
+	RT_ASSERT(iconbox != RT_NULL);
 
-    switch (event->type)
-    {
-    case RTGUI_EVENT_PAINT:
-        rtgui_theme_draw_iconbox(iconbox);
-        break;
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(iconbox);
+	if(dc == RT_NULL)return;
 
-    case RTGUI_EVENT_MOUSE_BUTTON:
-        if (RTGUI_WIDGET_IS_HIDE(object)) return RT_FALSE;
+	/* get widget rect */
+	rtgui_widget_get_rect(iconbox, &rect);
 
-        {
-            struct rtgui_event_mouse *emouse = (struct rtgui_event_mouse *)event;
+	ico_rect.x1 = rect.x1+(RC_W(rect)-iconbox->image->w)/2;
+	ico_rect.y1 = rect.y1+(36-iconbox->image->h)/2+RTGUI_MARGIN;
+	ico_rect.x2 = ico_rect.x1+iconbox->image->w;
+	ico_rect.y2 = ico_rect.y1+iconbox->image->h;
 
-            /* it's not this widget event, clean status */
-            if (rtgui_rect_contains_point(&(RTGUI_WIDGET(iconbox)->extent),
-                                          emouse->x, emouse->y) != RT_EOK)
-            {
-                if (iconbox->selected != RT_TRUE)
-                {
-                    rtgui_iconbox_set_selected(iconbox, RT_TRUE);
-                    rtgui_widget_focus(RTGUI_WIDGET(iconbox));
-                }
-                break;
-            }
-        }
-        return RT_TRUE;
+	/* draw icon */
+	rtgui_image_blit(iconbox->image, dc, &ico_rect);
 
-    default:
-        return rtgui_widget_event_handler(object, event);
-    }
+	/* draw text */
+	RTGUI_DC_FC(dc) = theme.blankspace;
+	if(iconbox->text_position == RTGUI_ICONBOX_TEXT_BELOW && iconbox->text != RT_NULL)
+	{
+		rect.y1 += iconbox->image->h + RTGUI_MARGIN;
+		rtgui_dc_draw_text(dc, iconbox->text, &rect);
+	}
+	else if(iconbox->text_position == RTGUI_ICONBOX_TEXT_RIGHT && iconbox->text != RT_NULL)
+	{
+		rect.x1 += iconbox->image->w + RTGUI_MARGIN;
+		rtgui_dc_draw_text(dc, iconbox->text, &rect);
+	}
 
-    return RT_FALSE;
+	rtgui_dc_end_drawing(dc);
 }
 
-struct rtgui_iconbox *rtgui_iconbox_create(rtgui_container_t *container, struct rtgui_image *image,
-        const char *text,
-        int position)
+rt_bool_t rtgui_iconbox_event_handler(pvoid wdt, rtgui_event_t* event)
 {
-    struct rtgui_iconbox *iconbox;
-	RT_ASSERT(container != RT_NULL);
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_iconbox_t* iconbox = RTGUI_ICONBOX(wdt);
 
-    iconbox = (struct rtgui_iconbox *)rtgui_widget_create(RTGUI_ICONBOX_TYPE);
-    if (iconbox != RT_NULL)
-    {
-        rtgui_rect_t rect = {0, 0, 0, 0}, text_rect;
+	switch(event->type)
+	{
+	case RTGUI_EVENT_PAINT:
+		if(widget->on_draw != RT_NULL)
+			widget->on_draw(widget, event);
+		else
+		{
+			rtgui_iconbox_ondraw(iconbox);
+		}
 
-        rect.x2 = image->w;
-        rect.y2 = image->h;
+		break;
+	case RTGUI_EVENT_MOUSE_BUTTON:
+		rtgui_widget_focus(wdt);
+		if(iconbox->func != RT_NULL)
+			iconbox->func();
+		return RT_TRUE;
+	}
 
-        /* get text rect */
-        rtgui_font_get_metrics(rtgui_font_default(), text, &text_rect);
-        if (position == RTGUI_ICONBOX_TEXT_BELOW)
-        {
-            rect.y2 += RTGUI_WIDGET_DEFAULT_MARGIN;
-            if (text_rect.x2 > rect.x2)
-            {
-                rect.x2 = text_rect.x2;
-            }
-            rect.y2 += text_rect.y2;
-        }
-        else if (position == RTGUI_ICONBOX_TEXT_RIGHT)
-        {
-            rect.x2 += RTGUI_WIDGET_DEFAULT_MARGIN;
-            if (text_rect.y2 > rect.y2)
-            {
-                rect.y2 = text_rect.y2;
-            }
-            rect.x2 += text_rect.x2;
-        }
-
-        /* set widget rect */
-        rtgui_widget_set_rect(RTGUI_WIDGET(iconbox), &rect);
-
-        /* set image and text position */
-        iconbox->image = image;
-        iconbox->text = (char *)rt_strdup((const char *)text);
-        iconbox->text_position = position;
-
-		rtgui_container_add_child(container, RTGUI_WIDGET(iconbox));
-    }
-
-    return iconbox;
+	return RT_FALSE;
 }
 
-void rtgui_iconbox_destroy(struct rtgui_iconbox *iconbox)
+rtgui_iconbox_t* rtgui_iconbox_create(pvoid parent, rtgui_image_t* image,const char* text,int position)
 {
-    rtgui_widget_destroy(RTGUI_WIDGET(iconbox));
+	rtgui_container_t *container;
+	rtgui_iconbox_t* iconbox;
+
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
+
+	iconbox = rtgui_widget_create(RTGUI_ICONBOX_TYPE);
+	if(iconbox != RT_NULL)
+	{
+		rtgui_rect_t rect, text_rect;
+
+		rect.x2 = image->w;
+		rect.y2 = image->h;
+
+		/* get text rect */
+		rtgui_font_get_string_rect(RTGUI_WIDGET_FONT(iconbox), text, &text_rect);
+		if(position == RTGUI_ICONBOX_TEXT_BELOW)
+		{
+			rect.y2 += RTGUI_MARGIN;
+			if(text_rect.x2 > rect.x2)
+			{
+				rect.x2 = text_rect.x2;
+			}
+			rect.y2 += text_rect.y2;
+		}
+		else if(position == RTGUI_ICONBOX_TEXT_RIGHT)
+		{
+			rect.x2 += RTGUI_MARGIN;
+			if(text_rect.y2 > rect.y2)
+			{
+				rect.y2 = text_rect.y2;
+			}
+			rect.x2 += text_rect.x2;
+		}
+
+		/* set widget rect */
+		rtgui_widget_set_rect(iconbox, &rect);
+
+		/* set image and text position */
+		iconbox->image = image;
+		iconbox->text = rt_strdup(text);
+		iconbox->text_position = position;
+
+		rtgui_container_add_child(container, iconbox);
+	}
+
+	return iconbox;
 }
 
-void rtgui_iconbox_set_text_position(struct rtgui_iconbox *iconbox, int position)
+void rtgui_iconbox_destroy(rtgui_iconbox_t* iconbox)
 {
-    struct rtgui_rect rect = {0, 0, 0, 0}, text_rect;
-
-    RT_ASSERT(iconbox != RT_NULL);
-
-    iconbox->text_position = position;
-
-    /* set mini width and height */
-    rect.x2 = iconbox->image->w;
-    rect.y2 = iconbox->image->h;
-
-    /* get text rect */
-    if (iconbox->text != RT_NULL)
-    {
-        rtgui_font_get_metrics(rtgui_font_default(),
-                               iconbox->text, &text_rect);
-        if (position == RTGUI_ICONBOX_TEXT_BELOW)
-        {
-            rect.y2 += RTGUI_WIDGET_DEFAULT_MARGIN;
-            if (text_rect.x2 > rect.x2)
-            {
-                rect.x2 = text_rect.x2;
-            }
-            rect.y2 += text_rect.y2;
-        }
-        else if (position == RTGUI_ICONBOX_TEXT_RIGHT)
-        {
-            rect.x2 += RTGUI_WIDGET_DEFAULT_MARGIN;
-            if (text_rect.y2 > rect.y2)
-            {
-                rect.y2 = text_rect.y2;
-            }
-            rect.x2 += text_rect.x2;
-        }
-    }
+	rtgui_widget_destroy(iconbox);
 }
 
-void rtgui_iconbox_set_selected(struct rtgui_iconbox *iconbox, rt_bool_t selected)
+void rtgui_iconbox_set_text_position(rtgui_iconbox_t* iconbox, int position)
 {
-    RT_ASSERT(iconbox != RT_NULL);
+	rtgui_rect_t rect = {0, 0, 0, 0}, text_rect;
 
-    iconbox->selected = selected;
+	RT_ASSERT(iconbox != RT_NULL);
+
+	iconbox->text_position = position;
+
+	/* set mini width and height */
+	rect.x2 = iconbox->image->w;
+	rect.y2 = iconbox->image->h;
+
+	/* get text rect */
+	if(iconbox->text != RT_NULL)
+	{
+		rtgui_font_get_string_rect(RTGUI_WIDGET_FONT(iconbox),
+		                           iconbox->text, &text_rect);
+		if(position == RTGUI_ICONBOX_TEXT_BELOW)
+		{
+			rect.y2 += RTGUI_MARGIN;
+			if(text_rect.x2 > rect.x2)
+			{
+				rect.x2 = text_rect.x2;
+			}
+			rect.y2 += text_rect.y2;
+		}
+		else if(position == RTGUI_ICONBOX_TEXT_RIGHT)
+		{
+			rect.x2 += RTGUI_MARGIN;
+			if(text_rect.y2 > rect.y2)
+			{
+				rect.y2 = text_rect.y2;
+			}
+			rect.x2 += text_rect.x2;
+		}
+	}
 }
+
+static rt_bool_t rtgui_iconbox_onfocus(pvoid wdt, rtgui_event_t* event)
+{
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_rect_t rect;
+	rtgui_dc_t *dc;
+
+	RT_ASSERT(widget != RT_NULL);
+
+	dc = rtgui_dc_begin_drawing(widget);
+	if(dc == RT_NULL)return RT_FALSE;
+
+	rtgui_widget_get_rect(widget,&rect);
+	rtgui_dc_draw_focus_rect(dc,&rect);
+
+	rtgui_dc_end_drawing(dc);
+
+	return RT_TRUE;
+}
+
+static rt_bool_t rtgui_iconbox_onunfocus(pvoid wdt, rtgui_event_t* event)
+{
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_rect_t rect;
+	rtgui_dc_t *dc;
+
+	RT_ASSERT(widget != RT_NULL);
+
+	dc = rtgui_dc_begin_drawing(widget);
+	if(dc == RT_NULL)return RT_FALSE;
+
+	rtgui_widget_get_rect(widget,&rect);
+	RTGUI_DC_FC(dc) = RTGUI_WIDGET_BC(widget->parent);
+	rtgui_dc_draw_focus_rect(dc,&rect);
+
+	rtgui_dc_end_drawing(dc);
+
+	return RT_TRUE;
+}
+

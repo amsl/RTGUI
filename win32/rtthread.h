@@ -46,6 +46,7 @@ typedef rt_int32_t	rt_off_t;		/* Type for offset, supports 4G at most */
 #define RT_WAITING_NO		0		/* Non-block. */
 
 #define RT_NAME_MAX			8
+#define RTGUI_NAME_MAX		16
 
 #ifdef _MSC_VER
 #define rt_inline __inline
@@ -407,7 +408,7 @@ struct rt_device_graphic_info
 struct rt_device_rect_info
 {
 	rt_uint16_t x, y;				/**< x, y coordinate 		*/
-	rt_uint16_t width, height;		/**< width and height       */
+	rt_uint16_t w, h;				/**< width and height       */
 };
 
 /**
@@ -464,5 +465,6 @@ rt_tick_t rt_tick_get(void);
 #define RTGUI_IMAGE_BMP
 #define RTGUI_IMAGE_XPM
 #define RTGUI_USING_FONT16
+#define RTGUI_USING_DFS_FILERW 
 
 #endif

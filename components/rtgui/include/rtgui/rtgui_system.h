@@ -17,62 +17,55 @@
 #include <rtthread.h>
 #include <rtgui/rtgui.h>
 
-struct rtgui_dc;
-struct rtgui_event;
-struct rtgui_widget;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct rtgui_timer;
-typedef void (*rtgui_timeout_func)(struct rtgui_timer *timer, void *parameter);
+typedef struct rtgui_timer rtgui_timer_t;
+typedef void (*rtgui_timeout_func)(rtgui_timer_t* timer, void* parameter);
+typedef void (*rtgui_idle_func_t)(pvoid wdt, rtgui_event_t *event);
 
 struct rtgui_timer
 {
-    /* context thread id */
-    rt_thread_t tid;
-    /* rt timer */
-    struct rt_timer timer;
+	/* context thread id */
+	rt_thread_t tid;
+	/* rt timer */
+	struct rt_timer timer;
+	rt_bool_t active;
 
-    /* timeout function and user data */
-    rtgui_timeout_func timeout;
-    void *user_data;
+	/* timeout function and user data */
+	rtgui_timeout_func timeout;
+	void* user_data;
 };
-typedef struct rtgui_timer rtgui_timer_t;
 
-rtgui_timer_t *rtgui_timer_create(rt_int32_t time, rt_base_t flag, rtgui_timeout_func timeout, void *parameter);
-void rtgui_timer_destory(rtgui_timer_t *timer);
 
-void rtgui_timer_start(rtgui_timer_t *timer);
-void rtgui_timer_stop(rtgui_timer_t *timer);
+rtgui_timer_t* rtgui_timer_create(const char *name, rt_int32_t time, rt_int32_t flag, rtgui_timeout_func timeout, void* parameter);
+void rtgui_timer_destory(rtgui_timer_t* timer);
 
-/* rtgui system initialization function */
-void rtgui_system_server_init(void);
-
-void *rtgui_malloc(rt_size_t size);
-void rtgui_free(void *ptr);
-void *rtgui_realloc(void *ptr, rt_size_t size);
-
-#ifdef _WIN32
-#define rtgui_enter_critical()
-#define rtgui_exit_critical()
-#else
-#define rtgui_enter_critical    rt_enter_critical
-#define rtgui_exit_critical     rt_exit_critical
-#endif
-
-rt_thread_t rtgui_get_server(void);
-void rtgui_set_mainwin_rect(struct rtgui_rect *rect);
-void rtgui_get_mainwin_rect(struct rtgui_rect *rect);
-void rtgui_get_screen_rect(struct rtgui_rect *rect);
+void rtgui_timer_start(rtgui_timer_t* timer);
+void rtgui_timer_stop(rtgui_timer_t* timer);
 
 void rtgui_screen_lock(rt_int32_t timeout);
 void rtgui_screen_unlock(void);
 
-struct rtgui_event;
-rt_err_t rtgui_send(rt_thread_t tid, struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_send_urgent(rt_thread_t tid, struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_send_sync(rt_thread_t tid, struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_ack(struct rtgui_event *event, rt_int32_t status);
-rt_err_t rtgui_recv(struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_recv_nosuspend(struct rtgui_event *event, rt_size_t event_size);
-rt_err_t rtgui_recv_filter(rt_uint32_t type, struct rtgui_event *event, rt_size_t event_size);
+rt_err_t rtgui_send(struct rt_thread* tid, rtgui_event_t* event, rt_size_t event_size);
+rt_err_t rtgui_send_urgent(struct rt_thread* tid, rtgui_event_t* event, rt_size_t event_size);
+rt_err_t rtgui_send_sync(struct rt_thread* tid, rtgui_event_t* event, rt_size_t event_size);
+rt_err_t rtgui_recv(void);
+rt_err_t rtgui_recv_nosuspend(void);
+rt_err_t rtgui_recv_filter(rt_uint32_t type);
+rt_err_t rtgui_ack(rtgui_event_t* event, rt_err_t errcode);
+
+/* rtgui system initialization function */
+void rtgui_system_server_init(void);
+
+void* rtgui_malloc(rt_size_t size);
+void rtgui_free(void* ptr);
+void* rtgui_realloc(void* ptr, rt_size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+

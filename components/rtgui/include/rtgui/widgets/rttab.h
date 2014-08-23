@@ -13,10 +13,8 @@
 #ifndef __RTGUI_RTTAB_H__
 #define __RTGUI_RTTAB_H__
 
-#include <rtgui/image.h>
+#include <rtgui/widgets/view.h>	
 #include <rtgui/widgets/spin.h>
-#include <rtgui/widgets/view.h>
-#include <rtgui/widgets/container.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +22,7 @@ extern "C" {
 
 DECLARE_CLASS_TYPE(rttab);
 /** Gets the type of a rttab */
-#define RTGUI_RTTAB_TYPE       (RTGUI_TYPE(rttab))
+#define RTGUI_RTTAB_TYPE       (RTGUI_TYPE(rttab))//(rtgui_rttab_type_get())
 /** Casts the object to an rtgui_rttab_t */
 #define RTGUI_RTTAB(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_RTTAB_TYPE, rtgui_rttab_t))
 /** Checks if the object is an rtgui_rttab_t */
@@ -51,7 +49,6 @@ struct rtgui_rttab
 {
 	/* inherit from container */
 	rtgui_container_t   parent;
-	char*               caption;
 	rt_uint8_t 	        orient;
 	rt_int16_t          tag_size;
 	rtgui_color_t		focus_color;
@@ -63,13 +60,13 @@ struct rtgui_rttab
 };
 typedef struct rtgui_rttab rtgui_rttab_t;
 
-rtgui_rttab_t* rtgui_rttab_create(rtgui_container_t *container, char* caption,int left, int top, int w, int h);
-rtgui_container_t* rtgui_rttab_add_tag(rtgui_rttab_t* tab, const char* name, rtgui_image_t* image);
+rtgui_rttab_t* rtgui_rttab_create(pvoid parent, int left, int top, int w, int h);
+void rtgui_rttab_add_tag(rtgui_rttab_t* tab, const char* name, rtgui_image_t* image);
 rtgui_container_t* rtgui_rttab_get_container_by_index(rtgui_rttab_t* tab, rt_int16_t index);
-rtgui_container_t* rtgui_rttab_get_container_by_title(rtgui_rttab_t* tab, const char* title);
+rtgui_container_t* rtgui_rttab_get_container_by_title(rtgui_rttab_t* tab, char* title);
 rt_bool_t rtgui_rttab_switchto_next(rtgui_rttab_t* tab);
 rt_bool_t rtgui_rttab_switchto_prev(rtgui_rttab_t* tab);
-rt_bool_t rtgui_rttab_event_handler(rtgui_object_t *object, rtgui_event_t* event);
+rt_bool_t rtgui_rttab_event_handler(pvoid wdt, rtgui_event_t* event);
 
 /** @} */
 

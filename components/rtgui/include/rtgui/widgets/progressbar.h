@@ -1,9 +1,14 @@
 #ifndef __RTGUI_PROGRESSBAR_H__
 #define __RTGUI_PROGRESSBAR_H__
 
-#include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/container.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct rtgui_progressbar rtgui_progressbar_t;
 
 DECLARE_CLASS_TYPE(progressbar);
 /** Gets the type of a progressbar */
@@ -18,25 +23,26 @@ DECLARE_CLASS_TYPE(progressbar);
 
 struct rtgui_progressbar
 {
-    struct rtgui_widget parent;
+	rtgui_widget_t parent;
 
-    int orient;
+	int orient;
 
     int range;
     int position;
 };
-typedef struct rtgui_progressbar rtgui_progressbar_t;
 
-struct rtgui_progressbar *rtgui_progressbar_create(rtgui_container_t *container, int orientation, int range,
-	int left, int top, int w, int h);
-void rtgui_progressbar_destroy(struct rtgui_progressbar *p_bar);
+rtgui_progressbar_t* rtgui_progressbar_create(pvoid parent, int orient, int range, int left, int top, int w, int h);
+void rtgui_progressbar_destroy(rtgui_progressbar_t* p_bar);
+void rtgui_progressbar_ondraw(rtgui_progressbar_t* bar);
+rt_bool_t rtgui_progressbar_event_handler(pvoid wdt, rtgui_event_t* event);
 
-rt_bool_t rtgui_progressbar_event_handler(struct rtgui_object *object,
-        struct rtgui_event *event);
+void rtgui_progressbar_set_value(rtgui_progressbar_t *p_bar, int value);
+int rtgui_progressbar_get_value(rtgui_progressbar_t *p_bar);
+void rtgui_progressbar_set_range(rtgui_progressbar_t *p_bar, int range);
+int rtgui_progressbar_get_range(rtgui_progressbar_t *p_bar);
 
-void rtgui_progressbar_set_value(struct rtgui_progressbar *p_bar, int value);
-int rtgui_progressbar_get_value(struct rtgui_progressbar *p_bar);
-void rtgui_progressbar_set_range(struct rtgui_progressbar *p_bar, int range);
-int rtgui_progressbar_get_range(struct rtgui_progressbar *p_bar);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,32 +1,29 @@
 /*
-* File      : scrollbar.c
-* This file is part of RT-Thread RTOS
-* COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
-*
-* The license and distribution terms for this file may be
-* found in the file LICENSE in this distribution or at
-* http://www.rt-thread.org/license/LICENSE
-*
-* Change Logs:
-* Date           Author       Notes
-*
-*/
+ * File      : scrollbar.c
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ *
+ */
 #include <stdlib.h>
-#include <rtgui/dc.h>
 #include <rtgui/widgets/scrollbar.h>
 
 static void _rtgui_scrollbar_constructor(rtgui_scrollbar_t *bar)
 {
 	/* set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(bar), rtgui_scrollbar_event_handler);
+	rtgui_widget_set_event_handler(bar, rtgui_scrollbar_event_handler);
 
 	bar->status = 0;
 	bar->value = 0;
-	bar->count = 1;
+
 	bar->thumb_w = 16;
 	bar->thumb_len = 16;
-	bar->line_step = 1;
-	bar->page_step = 1;
 
 	bar->widget_link = RT_NULL;
 	bar->on_scroll = RT_NULL;
@@ -38,7 +35,6 @@ static void _rtgui_scrollbar_constructor(rtgui_scrollbar_t *bar)
 
 static void _rtgui_scrollbar_destructor(rtgui_scrollbar_t *bar)
 {
-
 }
 
 rt_uint32_t _rtgui_scrollbar_get_length(rtgui_scrollbar_t *bar)
@@ -46,7 +42,7 @@ rt_uint32_t _rtgui_scrollbar_get_length(rtgui_scrollbar_t *bar)
 	rtgui_rect_t rect;
 	rt_uint32_t result;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
+	rtgui_widget_get_rect(bar, &rect);
 
 	if(bar->orient & RTGUI_VERTICAL)
 		result = RC_H(rect) - 2*RC_W(rect) - bar->thumb_len;
@@ -73,24 +69,26 @@ rt_uint32_t get_scrollbar_pos(rtgui_scrollbar_t* bar)
 }
 
 DEFINE_CLASS_TYPE(scrollbar, "scrollbar",
-				  RTGUI_WIDGET_TYPE,
-				  _rtgui_scrollbar_constructor,
-				  _rtgui_scrollbar_destructor,
-				  sizeof(struct rtgui_scrollbar));
+                  RTGUI_WIDGET_TYPE,
+                  _rtgui_scrollbar_constructor,
+                  _rtgui_scrollbar_destructor,
+                  sizeof(struct rtgui_scrollbar));
 
-rtgui_scrollbar_t* rtgui_scrollbar_create(rtgui_container_t *container,int left,int top,int w,int len,int orient)
+rtgui_scrollbar_t* rtgui_scrollbar_create(pvoid parent,int left,int top,int w,int len,int orient)
 {
+	rtgui_container_t *container;
 	rtgui_scrollbar_t* bar;
 
-	RT_ASSERT(container != RT_NULL);
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
 
-	bar = (rtgui_scrollbar_t *)rtgui_widget_create(RTGUI_SCROLLBAR_TYPE);
+	bar = rtgui_widget_create(RTGUI_SCROLLBAR_TYPE);
 	if(bar != RT_NULL)
 	{
 		rtgui_rect_t rect;
 
-		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(container),&rect);
+		rtgui_widget_get_rect(container, &rect);
+		rtgui_widget_rect_to_device(container,&rect);
 		rect.x1 += left;
 		rect.y1 += top;
 
@@ -106,11 +104,11 @@ rtgui_scrollbar_t* rtgui_scrollbar_create(rtgui_container_t *container,int left,
 			rect.y2 = rect.y1+w;
 		}
 
-		rtgui_widget_set_rect(RTGUI_WIDGET(bar), &rect);
+		rtgui_widget_set_rect(bar, &rect);
 
 		bar->orient = orient;
 
-		rtgui_container_add_child(container, RTGUI_WIDGET(bar));
+		rtgui_container_add_child(container, bar);
 	}
 
 	return bar;
@@ -118,7 +116,7 @@ rtgui_scrollbar_t* rtgui_scrollbar_create(rtgui_container_t *container,int left,
 
 void rtgui_scrollbar_destroy(rtgui_scrollbar_t* bar)
 {
-	rtgui_widget_destroy(RTGUI_WIDGET(bar));
+	rtgui_widget_destroy(bar);
 }
 
 const static rt_uint8_t _up_arrow[]    = {0x10, 0x38, 0x7C, 0xFE};
@@ -130,113 +128,98 @@ void rtgui_scrollbar_ondraw(rtgui_scrollbar_t* bar)
 {
 	/* draw scroll bar */
 	rtgui_rect_t rect, btn_rect, thum_rect, arrow_rect;
-	struct rtgui_dc* dc;
-	rtgui_color_t bc, fc;
-	enum RTGUI_BORDER_STYLE style;
+	rtgui_dc_t* dc;
 
 	RT_ASSERT(bar != RT_NULL);
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(bar));
+	dc = rtgui_dc_begin_drawing(bar);
 	if(dc == RT_NULL)return;
 
-	bc = RTGUI_DC_BC(dc);
 	/* begin drawing */
-	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
-	RTGUI_DC_BC(dc) = RTGUI_RGB(225, 228, 220);
+	rtgui_widget_get_rect(bar, &rect);
+	RTGUI_DC_BC(dc) = theme.background;
 	rtgui_dc_fill_rect(dc,&rect);
-	RTGUI_DC_BC(dc) = bc;
-	
-	style = RTGUI_WIDGET_IS_ENABLE(bar) ? RTGUI_BORDER_RAISE : RTGUI_BORDER_UP;
 
 	if(bar->orient == RTGUI_VERTICAL)
 	{
 		btn_rect = rect;
 		btn_rect.y2 = btn_rect.y1 + (rect.x2 - rect.x1);
-		rtgui_dc_fill_rect(dc,&btn_rect);
-		/* draw up button */
-		if(bar->status & SBS_UPARROW)
-			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_SUNKEN);
-		else
-			rtgui_dc_draw_border(dc, &btn_rect, style);
-		/* draw up arrow */
-		arrow_rect.x1 = 0; arrow_rect.y1 = 0;
-		arrow_rect.x2 = 7; arrow_rect.y2 = 4;
-		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		fc = RTGUI_DC_FC(dc);
-		RTGUI_DC_FC(dc) = RTGUI_WIDGET_IS_ENABLE(bar) ? fc : light_grey;
-		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _up_arrow);
-		RTGUI_DC_FC(dc) = fc;
 
-		/* draw thumb */
-		rtgui_scrollbar_get_thumb_rect(bar, &thum_rect);
-		rtgui_dc_fill_rect(dc,&thum_rect);
-		rtgui_dc_draw_border(dc, &thum_rect, style);
-		
-		/* draw down button */
-		btn_rect.y1 = rect.y2 - (rect.x2 - rect.x1);
-		btn_rect.y2 = rect.y2;
-		rtgui_dc_fill_rect(dc,&btn_rect);
-		if(bar->status & SBS_DOWNARROW)
-			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_SUNKEN);
+		/* draw up button */
+		if(bar->status & SBAR_UPARROW)
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &btn_rect, style);
-		/* draw down arrow */
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_WIDGET_BORDER_STYLE(bar));
+		/* draw up arrow */
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
 		arrow_rect.x2 = 7;
 		arrow_rect.y2 = 4;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		fc = RTGUI_DC_FC(dc);
-		RTGUI_DC_FC(dc) = RTGUI_WIDGET_IS_ENABLE(bar) ? fc : light_grey;
+		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _up_arrow);
+
+		/* draw thumb */
+		rtgui_scrollbar_get_thumb_rect(bar, &thum_rect);
+		rtgui_dc_fill_rect(dc,&thum_rect);
+		rtgui_dc_draw_border(dc, &thum_rect, RTGUI_BORDER_UP);
+
+		/* draw down button */
+		btn_rect.y1 = rect.y2 - (rect.x2 - rect.x1);
+		btn_rect.y2 = rect.y2;
+
+		if(bar->status & SBAR_DOWNARROW)
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_DOWN);
+		else
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_WIDGET_BORDER_STYLE(bar));
+		/* drow down arrow */
+		arrow_rect.x1 = 0;
+		arrow_rect.y1 = 0;
+		arrow_rect.x2 = 7;
+		arrow_rect.y2 = 4;
+		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _down_arrow);
-		RTGUI_DC_FC(dc) = fc;
 	}
 	else
 	{
 		btn_rect = rect;
 		btn_rect.x2 = btn_rect.x1 + (rect.y2 - rect.y1);
-		rtgui_dc_fill_rect(dc,&btn_rect);
+
 		/* draw left button */
-		if(bar->status & SBS_LEFTARROW)
-			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_SUNKEN);
+		if(bar->status & SBAR_LEFTARROW)
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &btn_rect, style);
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_WIDGET_BORDER_STYLE(bar));
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
 		arrow_rect.x2 = 4;
 		arrow_rect.y2 = 7;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		fc = RTGUI_DC_FC(dc);
-		RTGUI_DC_FC(dc) = RTGUI_WIDGET_IS_ENABLE(bar) ? fc : light_grey;
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _left_arrow);
-		RTGUI_DC_FC(dc) = fc;
 
 		/* draw thumb */
 		if(RTGUI_WIDGET_IS_ENABLE(bar))
 		{
 			rtgui_scrollbar_get_thumb_rect(bar, &thum_rect);
 			rtgui_dc_fill_rect(dc,&thum_rect);
-			rtgui_dc_draw_border(dc, &thum_rect, style);
+			rtgui_dc_draw_border(dc, &thum_rect, RTGUI_BORDER_RAISE);
 		}
 
 		btn_rect.x1 = rect.x2 - (rect.y2-rect.y1);
 		btn_rect.x2 = rect.x2;
-		rtgui_dc_fill_rect(dc,&btn_rect);
+
 		/* draw right button */
-		if(bar->status & SBS_RIGHTARROW)
-			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_SUNKEN);
+		if(bar->status & SBAR_RIGHTARROW)
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &btn_rect, style);
+			rtgui_dc_draw_border(dc, &btn_rect, RTGUI_WIDGET_BORDER_STYLE(bar));
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
 		arrow_rect.x2 = 4;
 		arrow_rect.y2 = 7;
 		rtgui_rect_moveto_align(&btn_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
-		fc = RTGUI_DC_FC(dc);
-		RTGUI_DC_FC(dc) = RTGUI_WIDGET_IS_ENABLE(bar) ? fc : light_grey;
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _right_arrow);
-		RTGUI_DC_FC(dc) = fc;
+
 	}
 
 	rtgui_dc_end_drawing(dc);
@@ -246,38 +229,20 @@ void rtgui_scrollbar_get_thumb_rect(rtgui_scrollbar_t *bar, rtgui_rect_t *erect)
 {
 	rtgui_rect_t rect;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
+	rtgui_widget_get_rect(bar, &rect);
 	if(bar->orient & RTGUI_VERTICAL)
 	{
 		/* vertical scroll bar */
 		erect->x1 = rect.x1;
 		erect->x2 = rect.x2;
-		if(bar->count <= 0)
-		{
-			erect->y1 = erect->y2 = rect.y1;
-		}
-		else
-		{
-			erect->y1 = rect.y1 + RC_W(rect) + get_scrollbar_pos(bar);
-			erect->y2 = erect->y1 + bar->thumb_len;
-			if (erect->y2 > rect.y2 - RC_W(rect))
-				erect->y2 = rect.y2 - RC_W(rect);
-		}
+		erect->y1 = rect.y1 + RC_W(rect) + get_scrollbar_pos(bar);
+		erect->y2 = erect->y1 + bar->thumb_len;
 	}
 	else
 	{
 		/* horizontal scroll bar */
-		if(bar->count <= 0)
-		{
-			erect->x1 = erect->x2 = rect.x1;
-		}
-		else
-		{
-			erect->x1 = rect.x1 + RC_H(rect) + get_scrollbar_pos(bar);
-			erect->x2 = erect->x1 + bar->thumb_len;
-			if (erect->x2 > rect.x2 - RC_H(rect))
-				erect->x2 = rect.x2 - RC_H(rect);
-		}
+		erect->x1 = rect.x1 + RC_H(rect) + get_scrollbar_pos(bar);
+		erect->x2 = erect->x1 + bar->thumb_len;
 		erect->y1 = rect.y1;
 		erect->y2 = rect.y2;
 	}
@@ -285,23 +250,20 @@ void rtgui_scrollbar_get_thumb_rect(rtgui_scrollbar_t *bar, rtgui_rect_t *erect)
 
 static rtgui_point_t sbar_mouse_move_size;
 
-static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t * event)
+static void _rtgui_scrollbar_on_mouseclick(pvoid wdt, rtgui_event_t * event)
 {
+	rtgui_scrollbar_t *bar = RTGUI_SCROLLBAR(wdt);
 	rtgui_rect_t btn_rect, bar_rect,rect;
 	rt_uint32_t pos;
 	struct rtgui_event_mouse *mouse = (struct rtgui_event_mouse*)event;
 
 	RT_ASSERT(bar != RT_NULL);
-	if(RTGUI_WIDGET_IS_HIDE(bar)) return;
-
-	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(bar),&rect);
-
-	if(rtgui_rect_contains_point(&rect, mouse->x, mouse->y) != RT_EOK)
-		return;
 
 	/* get value */
 	pos = get_scrollbar_pos(bar);
+
+	rtgui_widget_get_rect(bar, &rect);
+	rtgui_widget_rect_to_device(bar,&rect);
 
 	if(bar->orient == RTGUI_VERTICAL)
 	{
@@ -316,7 +278,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		{
 			if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
 			{
-				bar->status |= SBS_UPARROW;
+				bar->status |= SBAR_UPARROW;
 				if(bar->value==0)
 				{
 					rtgui_scrollbar_ondraw(bar);
@@ -334,14 +296,14 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		}
 		/* click on the thumb chunk, be going to dragging */
 		rtgui_scrollbar_get_thumb_rect(bar, &bar_rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(bar),&bar_rect);
+		rtgui_widget_rect_to_device(bar,&bar_rect);
 		if(rtgui_rect_contains_point(&bar_rect, mouse->x, mouse->y) == RT_EOK)
 		{
 			/* on thumb */
 			if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
 			{
 				/* changed status into drag */
-				bar->status |= SBS_VERTTHUMB;
+				bar->status |= SBAR_VERTTHUMB;
 				sbar_mouse_move_size.x = mouse->x;
 				sbar_mouse_move_size.y = mouse->y;
 			}
@@ -364,13 +326,13 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 					/* page step */
 					if(mouse->y < bar_rect.y1 + pos)
 					{
-						bar->status |= SBS_UPSPACE;
+						bar->status |= SBAR_UPSPACE;
 						bar->value -= bar->page_step;
 						if(bar->value < 0) bar->value = 0;
 					}
 					else if(mouse->y > pos + bar->thumb_len)
 					{
-						bar->status |= SBS_DOWNSPACE;
+						bar->status |= SBAR_DOWNSPACE;
 						bar->value += bar->page_step;
 						if(bar->value > bar->count) bar->value = bar->count;
 					}
@@ -388,7 +350,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		{
 			if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
 			{
-				bar->status |= SBS_DOWNARROW;
+				bar->status |= SBAR_DOWNARROW;
 				if(bar->value==bar->count)
 				{
 					rtgui_scrollbar_ondraw(bar);
@@ -414,7 +376,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		{
 			if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
 			{
-				bar->status |= SBS_LEFTARROW;
+				bar->status |= SBAR_LEFTARROW;
 				if(bar->value==0)
 				{
 					rtgui_scrollbar_ondraw(bar);
@@ -430,13 +392,13 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		}
 
 		rtgui_scrollbar_get_thumb_rect(bar, &bar_rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(bar),&bar_rect);
+		rtgui_widget_rect_to_device(bar,&bar_rect);
 		if(rtgui_rect_contains_point(&bar_rect, mouse->x, mouse->y) == RT_EOK)
 		{
 			/* on the thumb */
 			if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
 			{
-				bar->status |= SBS_HORZTHUMB;
+				bar->status |= SBAR_HORZTHUMB;
 				sbar_mouse_move_size.x = mouse->x;
 				sbar_mouse_move_size.y = mouse->y;
 			}
@@ -460,13 +422,13 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 					/* page step */
 					if(mouse->x <  bar_rect.x1 + pos)
 					{
-						bar->status |= SBS_LEFTSPACE;
+						bar->status |= SBAR_LEFTSPACE;
 						bar->value -= bar->page_step;
 						if(bar->value < 0) bar->value = 0;
 					}
 					else if(mouse->x > pos + bar->thumb_len)
 					{
-						bar->status |= SBS_RIGHTSPACE;
+						bar->status |= SBAR_RIGHTSPACE;
 						bar->value += bar->page_step;
 						if(bar->value > bar->count) bar->value = bar->count;
 					}
@@ -487,7 +449,7 @@ static void _rtgui_scrollbar_on_mouseclick(rtgui_scrollbar_t *bar, rtgui_event_t
 		{
 			if((mouse->button & RTGUI_MOUSE_BUTTON_LEFT) && (mouse->button & RTGUI_MOUSE_BUTTON_DOWN))
 			{
-				bar->status |= SBS_RIGHTARROW;
+				bar->status |= SBAR_RIGHTARROW;
 				if(bar->value==bar->count)
 				{
 					rtgui_scrollbar_ondraw(bar);
@@ -510,16 +472,17 @@ __exit:
 		if(bar->widget_link != RT_NULL && bar->on_scroll != RT_NULL)
 		{
 			rtgui_widget_focus(bar->widget_link);
-			bar->on_scroll(RTGUI_OBJECT(bar->widget_link), event);
+			bar->on_scroll(bar->widget_link, event);
 		}
 	}
 }
 
 /* thumb chunk activity */
-static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_t * event)
+static void _rtgui_scrollbar_on_mousemotion(pvoid wdt, rtgui_event_t * event)
 {
 	float tmppos;
 	rt_uint32_t pos;
+	rtgui_scrollbar_t *bar = RTGUI_SCROLLBAR(wdt);
 	struct rtgui_event_mouse *mouse = (struct rtgui_event_mouse*)event;
 
 	tmppos = _rtgui_scrollbar_get_length(bar);
@@ -528,30 +491,30 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 
 	if(bar->orient == RTGUI_VERTICAL)
 	{
-		if(bar->status & SBS_VERTTHUMB)
+		if(bar->status & SBAR_VERTTHUMB)
 		{
 			/* from then on mouseclick */
 			if((mouse->y-sbar_mouse_move_size.y) > 3)
 			{
-				bar->status |= SBS_DOWNTHUMB;
+				bar->status |= SBAR_DOWNTHUMB;
 			}
 			else if((mouse->y-sbar_mouse_move_size.y) < -3)
 			{
-				bar->status |= SBS_UPTHUMB;
+				bar->status |= SBAR_UPTHUMB;
 			}
-			else bar->status &= ~(SBS_UPTHUMB|SBS_DOWNTHUMB);
+			else bar->status &= ~(SBAR_UPTHUMB|SBAR_DOWNTHUMB);
 
 			if(abs(mouse->y-sbar_mouse_move_size.y) >= pos)
 			{
 				int step = abs(mouse->y-sbar_mouse_move_size.y)/pos;
 				sbar_mouse_move_size.y = mouse->y;
 
-				if(bar->status & SBS_UPTHUMB)
+				if(bar->status & SBAR_UPTHUMB)
 				{
 					bar->value -= step;
 					if(bar->value < 0) bar->value = 0;
 				}
-				else if(bar->status & SBS_DOWNTHUMB)
+				else if(bar->status & SBAR_DOWNTHUMB)
 				{
 					bar->value += step;
 					if(bar->value > bar->count) bar->value = bar->count;
@@ -559,7 +522,7 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 				goto __exit;
 			}
 		}
-		else if(bar->status & SBS_UPARROW)
+		else if(bar->status & SBAR_UPARROW)
 		{
 			/* on-going push down uparrow button */
 			if(bar->value==0)return;
@@ -567,7 +530,7 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 			if(bar->value < 0) bar->value = 0;
 			goto __exit;
 		}
-		else if(bar->status & SBS_DOWNARROW)
+		else if(bar->status & SBAR_DOWNARROW)
 		{
 			/* on-going push down downarrow button */
 			if(bar->value==bar->count)return;
@@ -575,42 +538,42 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 			if(bar->value > bar->count) bar->value = bar->count;
 			goto __exit;
 		}
-		/*else if(bar->status & SBS_UPSPACE)
+		/*else if(bar->status & SBAR_UPSPACE)
 		{
-		bar->value -= bar->page_step;
-		if(bar->value < 0) bar->value = 0;
-		goto __exit;
+			bar->value -= bar->page_step;
+			if(bar->value < 0) bar->value = 0;
+			goto __exit;
 		}
-		else if(bar->status & SBS_DOWNSPACE)
+		else if(bar->status & SBAR_DOWNSPACE)
 		{
-		bar->value += bar->page_step;
-		if(bar->value > bar->count) bar->value = bar->count;
-		goto __exit;
+			bar->value += bar->page_step;
+			if(bar->value > bar->count) bar->value = bar->count;
+			goto __exit;
 		}*/
 		return;
 	}
 	else
 	{
-		if(bar->status & SBS_HORZTHUMB)
+		if(bar->status & SBAR_HORZTHUMB)
 		{
 			if((mouse->x-sbar_mouse_move_size.x) > 5)
 			{
-				bar->status |= SBS_RIGHTTHUMB;
+				bar->status |= SBAR_RIGHTTHUMB;
 			}
 			else if((mouse->x-sbar_mouse_move_size.x) < -5)
 			{
-				bar->status |= SBS_LEFTTHUMB;
+				bar->status |= SBAR_LEFTTHUMB;
 			}
 			if(abs(mouse->x-sbar_mouse_move_size.x) > pos)
 			{
 				int step = abs(mouse->x-sbar_mouse_move_size.x)/pos;
 				sbar_mouse_move_size.x = mouse->x;
-				if(bar->status & SBS_LEFTTHUMB)
+				if(bar->status & SBAR_LEFTTHUMB)
 				{
 					bar->value -= step;
 					if(bar->value < 0) bar->value = 0;
 				}
-				else if(bar->status & SBS_RIGHTTHUMB)
+				else if(bar->status & SBAR_RIGHTTHUMB)
 				{
 					bar->value += step;
 					if(bar->value > bar->count) bar->value = bar->count;
@@ -618,31 +581,31 @@ static void _rtgui_scrollbar_on_mousemotion(rtgui_scrollbar_t *bar, rtgui_event_
 				goto __exit;
 			}
 		}
-		else if(bar->status & SBS_LEFTARROW)
+		else if(bar->status & SBAR_LEFTARROW)
 		{
 			if(bar->value==0)return;
 			bar->value -= bar->line_step;
 			if(bar->value < 0) bar->value = 0;
 			goto __exit;
 		}
-		else if(bar->status & SBS_RIGHTARROW)
+		else if(bar->status & SBAR_RIGHTARROW)
 		{
 			if(bar->value==bar->count)return;
 			bar->value += bar->line_step;
 			if(bar->value > bar->count) bar->value = bar->count;
 			goto __exit;
 		}
-		/*else if(bar->status & SBS_LEFTSPACE)
+		/*else if(bar->status & SBAR_LEFTSPACE)
 		{
-		bar->value -= bar->page_step;
-		if(bar->value < bar->min) bar->value = bar->min;
-		goto __exit;
+			bar->value -= bar->page_step;
+			if(bar->value < bar->min) bar->value = bar->min;
+			goto __exit;
 		}
-		else if(bar->status & SBS_RIGHTSPACE)
+		else if(bar->status & SBAR_RIGHTSPACE)
 		{
-		bar->value += bar->page_step;
-		if(bar->value > bar->count-1) bar->value = bar->count-1;
-		goto __exit;
+			bar->value += bar->page_step;
+			if(bar->value > bar->count-1) bar->value = bar->count-1;
+			goto __exit;
 		}*/
 		return;
 	}
@@ -652,52 +615,53 @@ __exit:
 	if(bar->widget_link != RT_NULL && bar->on_scroll != RT_NULL)
 	{
 		rtgui_widget_focus(bar->widget_link);
-		bar->on_scroll(RTGUI_OBJECT(bar->widget_link), event);
+		bar->on_scroll(bar->widget_link, event);
 	}
 }
 
 
-rt_bool_t rtgui_scrollbar_event_handler(rtgui_object_t *object, rtgui_event_t *event)
+rt_bool_t rtgui_scrollbar_event_handler(pvoid wdt, rtgui_event_t *event)
 {
-	rtgui_widget_t *widget = RTGUI_WIDGET(object);
-	rtgui_scrollbar_t* bar = RTGUI_SCROLLBAR(object);
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_scrollbar_t* bar = RTGUI_SCROLLBAR(wdt);
+
+	if(RTGUI_WIDGET_IS_HIDE(bar))return RT_FALSE;
 
 	switch(event->type)
 	{
-	case RTGUI_EVENT_PAINT:
-		if(widget->on_draw != RT_NULL)
-			widget->on_draw(object, event);
-		else
-		{
-			if(!RTGUI_WIDGET_IS_HIDE(bar))
-				rtgui_scrollbar_ondraw(bar);
-		}
-		break;
-
-	case RTGUI_EVENT_MOUSE_BUTTON:
-		if(RTGUI_WIDGET_IS_ENABLE(widget))
-		{
-			if(widget->on_mouseclick != RT_NULL)
-			{
-				widget->on_mouseclick(object, event);
-			}
+		case RTGUI_EVENT_PAINT:
+			if(widget->on_draw != RT_NULL)
+				widget->on_draw(widget, event);
 			else
 			{
-				_rtgui_scrollbar_on_mouseclick(bar, event);
+				if(!RTGUI_WIDGET_IS_HIDE(bar))
+					rtgui_scrollbar_ondraw(bar);
 			}
-		}
-		break;
-	case RTGUI_EVENT_MOUSE_MOTION:
-		if(RTGUI_WIDGET_IS_ENABLE(widget))
-		{
-			_rtgui_scrollbar_on_mousemotion(bar, event);
-		}
+			return RT_FALSE;
 
-	default:
-		return rtgui_widget_event_handler(object, event);
+		case RTGUI_EVENT_MOUSE_BUTTON:
+			if(RTGUI_WIDGET_IS_ENABLE(widget))
+			{
+				if(widget->on_mouseclick != RT_NULL)
+				{
+					widget->on_mouseclick(widget, event);
+				}
+				else
+				{
+					_rtgui_scrollbar_on_mouseclick(bar, event);
+				}
+			}
+			return RT_TRUE;
+			
+		case RTGUI_EVENT_MOUSE_MOTION:
+			if(RTGUI_WIDGET_IS_ENABLE(widget))
+			{
+				_rtgui_scrollbar_on_mousemotion(bar, event);
+			}
+			return RT_TRUE;
+		default:
+			return RT_FALSE;
 	}
-
-	return RT_FALSE;
 }
 
 void rtgui_scrollbar_set_orientation(rtgui_scrollbar_t* bar, int orient)
@@ -712,7 +676,7 @@ rt_uint32_t get_sbar_active_len(rtgui_scrollbar_t *bar)
 {
 	rtgui_rect_t rect;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(bar), &rect);
+	rtgui_widget_get_rect(bar, &rect);
 
 	if(bar->orient & RTGUI_VERTICAL)
 		return RC_H(rect) - 2*RC_W(rect);
@@ -741,25 +705,25 @@ void rtgui_scrollbar_set_thumbbar_len(rtgui_scrollbar_t* bar)
 }
 
 /*
-* please use them with below step:
-* 1.SetLineStep();2.SetPageStep();3.SetRange();
-*/
+ * please use them with below step:
+ * 1.SetLineStep();2.SetPageStep();3.SetRange();
+ */
 
-void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, rt_int16_t step)
+void rtgui_scrollbar_set_line_step(rtgui_scrollbar_t* bar, int step)
 {
 	RT_ASSERT(bar != RT_NULL);
 
 	bar->line_step = step;
 }
 
-void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, rt_int16_t step)
+void rtgui_scrollbar_set_page_step(rtgui_scrollbar_t* bar, int step)
 {
 	RT_ASSERT(bar != RT_NULL);
 
 	bar->page_step = step;
 }
 
-void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, rt_int16_t count)
+void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, int count)
 {
 	RT_ASSERT(bar != RT_NULL);
 
@@ -780,7 +744,7 @@ void rtgui_scrollbar_set_range(rtgui_scrollbar_t* bar, rt_int16_t count)
 	rtgui_scrollbar_set_thumbbar_len(bar);
 }
 
-/* use VALUE change be binding widget's frist item. */
+//value的值是被绑定控件的首行值frist_loc
 void rtgui_scrollbar_set_value(rtgui_scrollbar_t* bar, rt_int16_t value)
 {
 	RT_ASSERT(bar != RT_NULL);
@@ -789,7 +753,7 @@ void rtgui_scrollbar_set_value(rtgui_scrollbar_t* bar, rt_int16_t value)
 
 	if(bar->value < 0) bar->value = 0;
 
-	rtgui_widget_update(RTGUI_WIDGET(bar));
+	rtgui_widget_update(bar);
 }
 
 void rtgui_scrollbar_set_onscroll(rtgui_scrollbar_t* bar, rtgui_event_handler_ptr handler)
@@ -799,17 +763,26 @@ void rtgui_scrollbar_set_onscroll(rtgui_scrollbar_t* bar, rtgui_event_handler_pt
 	bar->on_scroll = handler;
 }
 
-rt_int16_t rtgui_scrollbar_get_value(rtgui_scrollbar_t *bar)
+void rtgui_scrollbar_hide(rtgui_scrollbar_t* bar)
 {
-	return bar->value;
-}
+	rtgui_rect_t rect;
+	rtgui_dc_t* dc;
 
-rt_int16_t rtgui_scrollbar_get_page_step(rtgui_scrollbar_t *bar)
-{
-	return bar->page_step;
-}
+	RT_ASSERT(bar != RT_NULL);
 
-rt_int16_t rtgui_scrollbar_get_range(rtgui_scrollbar_t *bar)
-{
-	return bar->count;
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(bar);
+	if(dc == RT_NULL)return;
+
+	RTGUI_WIDGET_HIDE(bar);
+
+	/* begin drawing */
+	rtgui_widget_get_rect(bar, &rect);
+	if(RTGUI_WIDGET_PARENT(bar) != RT_NULL)
+		RTGUI_DC_BC(dc) = RTGUI_WIDGET_BC(RTGUI_WIDGET_PARENT(bar));
+	else
+		RTGUI_DC_BC(dc) = RTGUI_RGB(225, 228, 220);
+	rtgui_dc_fill_rect(dc,&rect);
+
+	rtgui_dc_end_drawing(dc);
 }

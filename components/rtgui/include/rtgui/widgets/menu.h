@@ -1,78 +1,98 @@
+/*
+ * File      : view.h
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ */
 #ifndef __RTGUI_MENU_H__
 #define __RTGUI_MENU_H__
 
-#include <rtgui/image.h>
+#include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
 #include <rtgui/widgets/window.h>
-#include <rtgui/widgets/listctrl.h>
 
-/* rtgui menu item */
-enum rtgui_menu_item_type
-{
-    RTGUI_ITEM_NORMAL,
-    RTGUI_ITEM_CHECK,
-    RTGUI_ITEM_SUBMENU,
-    RTGUI_ITEM_SEPARATOR
-};
-typedef enum rtgui_menu_item_type rtgui_menu_item_type_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct rtgui_menu_item
-{
-    rtgui_menu_item_type_t type;
+#define RTGUI_MENU_MARGIN_W	8
+#define RTGUI_MENU_MARGIN_H	4
 
-    /* menu text label */
-    const char *label;
-    /* menu image */
-    rtgui_image_t *image;
+/* menu type,menu item flag */
+#define RTGUI_MENU_NORMAL	0x00000000L
+#define RTGUI_MENU_POPUP	0x00000040L
 
-    /* sub-menu item */
-    const struct rtgui_menu_item_t *submenu;
-    rt_uint16_t submenu_count;
-
-    /* menu action */
-    rt_bool_t (*on_menuaction)(struct rtgui_object *object, struct rtgui_event *event);
-};
-typedef struct rtgui_menu_item rtgui_menu_item_t;
+typedef struct rtgui_menu_item   rtgui_menu_item_t;
+typedef struct rtgui_menu        rtgui_menu_t;
 
 DECLARE_CLASS_TYPE(menu);
 /** Gets the type of a menu */
-#define RTGUI_MENU_TYPE       (RTGUI_TYPE(menu))
-/** Casts the object to an rtgui_menu */
+#define RTGUI_MENU_TYPE       (RTGUI_TYPE(menu))//(rtgui_menu_type_get())
+/** Casts the object to an rtgui_menu_t */
 #define RTGUI_MENU(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_MENU_TYPE, rtgui_menu_t))
-/** Checks if the object is an rtgui_menu */
+/** Checks if the object is an rtgui_menu_t */
 #define RTGUI_IS_MENU(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_MENU_TYPE))
 
-#define RTGUI_MENU_DEFAULT_WIDTH    100
 struct rtgui_menu
-{
-    /* inherited from window */
-    struct rtgui_win parent;
+{        
+	rtgui_widget_t			parent;
+	char*					name;
+	rt_uint16_t				type;       /* menu type */
+	rt_bool_t				unfold:1;	/* is it unfold? */
+	rt_uint32_t     		orient;	    /* orient */
+	rt_uint16_t 			item_count;	/* item count */
 
-    /* menu items */
-    const struct rtgui_menu_item *items;
-    rt_uint16_t items_count;
+	rtgui_menu_item_t*  	now_item;   /* current item */
+	rtgui_menu_item_t*	    old_item;   /* previous item */ 
 
-    /* parent menu */
-    struct rtgui_menu *parent_menu;
-    struct rtgui_menu *sub_menu;
+    rtgui_menu_item_t*  	head;       /* first item */
+	rtgui_menu_item_t*  	tail;       /* last item */
 
-    /* menu item list control */
-    struct rtgui_listctrl *items_list;
-
-    /* pop event handle */
-    rtgui_event_handler_ptr on_menupop;
-    rtgui_event_handler_ptr on_menuhide;
+	rtgui_menu_t*  			farther;
+	
+	rtgui_win_t*			entrust_win;/* popup menu will use. */
+	void (*updown)(rtgui_menu_t *menu);	/* running at once when execute up/down action */ 
 };
-typedef struct rtgui_menu rtgui_menu_t;
 
-struct rtgui_menu *rtgui_menu_create(const char *title, struct rtgui_menu *parent_menu,
-                                     const struct rtgui_menu_item *items, rt_uint16_t count);
-void rtgui_menu_destroy(struct rtgui_menu *menu);
+struct rtgui_menu_item
+{
+    char*     				caption;    /* menu name */
+	rt_uint32_t				item_id; 
+	rt_uint32_t 			flag;       /* menu flag */ 
+	rtgui_image_t*			image;      /* icon image */
+    rt_uint32_t				shortcut;	/* shortcut key */
+	rt_uint16_t				item_width;
+	rt_uint16_t				item_height;
+	rt_bool_t				bexit:1;    /* is or isn't exit */
+	
+	rtgui_menu_item_t* 		next;	 
+	rtgui_menu_item_t* 		prev;
+	rtgui_menu_t* 			submenu;    /* children menu */
 
-void rtgui_menu_set_onmenupop(struct rtgui_menu *menu, rtgui_event_handler_ptr handler);
-void rtgui_menu_set_onmenuhide(struct rtgui_menu *menu, rtgui_event_handler_ptr handler);
+	void (*func_enter)(rtgui_menu_t *menu);	  /* running when execute enter/on_item action */
+};
 
-void rtgui_menu_pop(struct rtgui_menu *menu, int x, int y);
-void rtgui_menu_hiden(struct rtgui_menu *menu);
+typedef void (*menu_callback_t)(rtgui_menu_t *menu);
 
+rtgui_menu_t* rtgui_menu_create(pvoid parent, const char* name, int left, int top, int flag);
+void rtgui_menu_destroy(rtgui_menu_t* menu);
+
+rt_bool_t rtgui_menu_append(rtgui_menu_t *menu,rt_uint32_t flags,rt_uint32_t ID,char * caption, 
+		menu_callback_t func_enter);
+void rtgui_menu_popup_delete(rtgui_menu_t* menu);
+rtgui_menu_t* rtgui_menu_item_delete(rtgui_menu_t* menu,rtgui_menu_item_t* pItem);
+void rtgui_menu_set_selected(rtgui_menu_t* menu, int selected);
+void rtgui_menu_ondraw(rtgui_menu_t* menu);
+void rtgui_menu_draw_item(rtgui_menu_t* menu, rtgui_menu_item_t *item);
+static rt_bool_t rtgui_menu_event_handler(pvoid wdt, rtgui_event_t* event);
+#ifdef __cplusplus
+}
 #endif
 
+#endif

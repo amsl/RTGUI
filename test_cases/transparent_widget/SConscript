@@ -1,8 +1,0 @@
-Import('RTT_ROOT')
-from building import *
-
-src = Glob('*.c')
-
-group = DefineGroup('swin', src, depend = [''])
-
-Return('group')

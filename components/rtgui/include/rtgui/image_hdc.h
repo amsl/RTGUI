@@ -16,22 +16,36 @@
 
 #include <rtgui/image.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rtgui_image_hdcmm
 {
-    struct rtgui_image parent;
+	rtgui_image_t parent;
 
-    /* hdc image information */
-    rt_uint16_t byte_per_pixel;
+	/* hdc image information */
+	rt_uint16_t byte_per_pixel;
     rt_uint16_t pitch;
 
-    rt_uint8_t *pixels;
+	rt_uint8_t *pixels;
 };
 
 void rtgui_image_hdc_init(void);
 extern const struct rtgui_image_engine rtgui_image_hdcmm_engine;
 
-#define HDC_HEADER_SIZE     (5 * 4)
-#define RTGUI_IMAGE_HDC_DEF(bpp, w, h, pixels)  \
-    {{w, h, &rtgui_image_hdcmm_engine, RT_NULL}, bpp, (bpp * w), ((rt_uint8_t*)pixels + HDC_HEADER_SIZE)}
+#define HDC_HEADER_SIZE		(5 * 4)
+#define RTGUI_IMAGE_HDC_DEF(bpp, w, h, pixels)	\
+	{{w, h, &rtgui_image_hdcmm_engine, RT_NULL}, bpp, (bpp * w), ((rt_uint8_t*)pixels + HDC_HEADER_SIZE)}
+
+#define RTGUI_IMAGE_HDC_HEADER(w, h) \
+'H', 'D', 'C', 0x00, \
+(w)&0xFF,(w>>8)&0xFF, (w>>16)&0xFF, (w>>24)&0xFF, \
+(h)&0xFF,(h>>8)&0xFF, (h>>16)&0xFF, (h>>24)&0xFF, \
+0, 0, 0, 0, 0, 0, 0, 0
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -12,34 +12,45 @@
  *
  */
 
-#include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/listbox.h>
+#include <topwin.h>
+#include <rtgui/widgets/panel.h>
 #include <rtgui/widgets/scrollbar.h>
+#include <rtgui/widgets/window.h>
 
-static rt_bool_t rtgui_listbox_sbar_handle(rtgui_object_t *object, rtgui_event_t* event);
+static rt_bool_t rtgui_listbox_sbar_handle(pvoid wdt, rtgui_event_t* event);
 
 static void _rtgui_listbox_constructor(rtgui_listbox_t *box)
 {
 	/* set default widget rect and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(box),rtgui_listbox_event_handler);
-	rtgui_widget_set_onfocus(RTGUI_WIDGET(box), RT_NULL);
-	rtgui_widget_set_onunfocus(RTGUI_WIDGET(box), rtgui_listbox_unfocus);
+	rtgui_widget_set_event_handler(box,rtgui_listbox_event_handler);
+	rtgui_widget_set_onfocus(box, RT_NULL);
+	rtgui_widget_set_onunfocus(box, rtgui_listbox_unfocus);
 	RTGUI_WIDGET_FLAG(box) |= RTGUI_WIDGET_FLAG_FOCUSABLE;
+	if(theme.style == RTGUI_BORDER_UP)
+		rtgui_widget_set_border_style(box,RTGUI_BORDER_DOWN);
+	else if(theme.style == RTGUI_BORDER_EXTRA)
+		rtgui_widget_set_border_style(box,RTGUI_BORDER_SUNKEN);
+	
 	box->first_item = 0;
 	box->now_item = 0;
 	box->old_item = 0;
 	box->item_count = 0;
-	box->item_size	= 20;
+	box->item_size	= RTGUI_SEL_H;
 	box->item_per_page = 0;
-	box->select_fc = white;
-	box->select_bc = dark_grey;
+	box->select_fc = theme.blankspace;
+	box->select_bc = DarkBlue;
+	box->ispopup = RT_FALSE;
 	box->widget_link = RT_NULL;
 
-	RTGUI_WIDGET_BACKGROUND(box) = white;
+	RTGUI_WIDGET_BC(box) = theme.blankspace;
 	RTGUI_WIDGET_TEXTALIGN(box) = RTGUI_ALIGN_LEFT|RTGUI_ALIGN_CENTER_VERTICAL;
 
 	box->items = RT_NULL;
-	box->scrollbar = RT_NULL;
+	box->scroll = RT_NULL;
+	box->multi_valid = 1;
+	box->multi_sel = 0;
+	box->vindex = 0;
 	box->on_item = RT_NULL;
 	box->updown = RT_NULL;
 }
@@ -54,42 +65,42 @@ DEFINE_CLASS_TYPE(listbox, "listbox",
                   _rtgui_listbox_destructor,
                   sizeof(struct rtgui_listbox));
 
-rtgui_listbox_t* rtgui_listbox_create(rtgui_container_t *container, int left,int top,int w,int h,rt_uint32_t style)
+rtgui_listbox_t* rtgui_listbox_create(pvoid parent, int left,int top,int w,int h)
 {
+	rtgui_container_t *container;
 	rtgui_listbox_t* box = RT_NULL;
 
-	RT_ASSERT(container != RT_NULL);
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
 
-	box = (rtgui_listbox_t *) rtgui_widget_create(RTGUI_LISTBOX_TYPE);
+	box = rtgui_widget_create(RTGUI_LISTBOX_TYPE);
 	if(box != RT_NULL)
 	{
 		rtgui_rect_t rect;
-		rtgui_widget_get_rect(RTGUI_WIDGET(container),&rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+		rtgui_widget_get_rect(container,&rect);
+		rtgui_widget_rect_to_device(container, &rect);
 		rect.x1 += left;
 		rect.y1 += top;
 		rect.x2 = rect.x1+w;
 		rect.y2 = rect.y1+h;
-		rtgui_widget_set_rect(RTGUI_WIDGET(box),&rect);
-		rtgui_container_add_child(container, RTGUI_WIDGET(box));
+		rtgui_widget_set_rect(box,&rect);
+		rtgui_container_add_child(container, box);
 
-		rtgui_widget_set_border(RTGUI_WIDGET(box),style);
-
-		if(box->scrollbar == RT_NULL)
+		if(box->scroll == RT_NULL)
 		{
 			/* create scrollbar */
 			rt_uint32_t sLeft,sTop,sWidth=RTGUI_DEFAULT_SB_WIDTH,sLen;
-			sLeft = RC_W(rect)-RTGUI_WIDGET_BORDER(box)-sWidth;
-			sTop = RTGUI_WIDGET_BORDER(box);
-			sLen = RC_H(rect)-RTGUI_WIDGET_BORDER(box)*2;
+			sLeft = RC_W(rect)-RTGUI_WIDGET_BORDER_SIZE(box)-sWidth;
+			sTop = RTGUI_WIDGET_BORDER_SIZE(box);
+			sLen = RC_H(rect)-RTGUI_WIDGET_BORDER_SIZE(box)*2;
 
-			box->scrollbar = rtgui_scrollbar_create(RTGUI_CONTAINER(box),sLeft,sTop,sWidth,sLen,RTGUI_VERTICAL);
+			box->scroll = rtgui_scrollbar_create(box,sLeft,sTop,sWidth,sLen,RTGUI_VERTICAL);
 
-			if(box->scrollbar != RT_NULL)
+			if(box->scroll != RT_NULL)
 			{
-				box->scrollbar->widget_link = (rtgui_widget_t*)box;
-				box->scrollbar->on_scroll = rtgui_listbox_sbar_handle;
-				RTGUI_WIDGET_HIDE(box->scrollbar);/* default hide scrollbar */
+				box->scroll->widget_link = (pvoid)box;
+				box->scroll->on_scroll = rtgui_listbox_sbar_handle;
+				RTGUI_WIDGET_HIDE(box->scroll);/* default hide scrollbar */
 			}
 		}
 	}
@@ -97,10 +108,10 @@ rtgui_listbox_t* rtgui_listbox_create(rtgui_container_t *container, int left,int
 	return box;
 }
 
-void rtgui_listbox_set_items(rtgui_listbox_t* box, const rtgui_listbox_item_t* items, rt_int16_t count)
+void rtgui_listbox_set_items(rtgui_listbox_t* box, rtgui_listbox_item_t* items, rt_int16_t count)
 {
 	rtgui_rect_t rect;
-	rt_uint32_t i;
+	rt_uint32_t i,h;;
 
 	RT_ASSERT(box != RT_NULL);
 
@@ -117,29 +128,52 @@ void rtgui_listbox_set_items(rtgui_listbox_t* box, const rtgui_listbox_item_t* i
 	{
 		box->items[i].name = rt_strdup(items[i].name);
 		box->items[i].image = items[i].image;
+		box->items[i].ext_flag = 0;
 	}
 
 	box->item_count = count;
 	box->now_item = 0;
 	box->old_item = 0;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
+	rtgui_widget_get_rect(box, &rect);
 
 	box->item_per_page = RC_H(rect) / (box->item_size+2);
 
-	if(box->scrollbar != RT_NULL)/* update scrollbar value */
+	if(box->ispopup)/* created by popup */
+	{
+		if(box->item_count < 5)
+			box->item_per_page = count;
+		else
+			box->item_per_page = 5;
+
+		h = 2+(box->item_size+2)*box->item_per_page;
+		rect.y2 = rect.y1+h;
+		rtgui_widget_rect_to_device(box,&rect);
+		rtgui_widget_set_rect(box,&rect);/* update listbox extent */
+
+		if(box->scroll != RT_NULL) /* update scrollbar extent */
+		{
+			rtgui_widget_get_rect(box->scroll,&rect);
+			rect.y2 = rect.y1+h-RTGUI_WIDGET_BORDER_SIZE(box)*2;
+			rtgui_widget_rect_to_device(box->scroll,&rect);
+			rtgui_widget_set_rect(box->scroll,&rect);
+		}
+	}
+
+	if(box->scroll != RT_NULL)/* update scrollbar value */
 	{
 		if(box->item_count > box->item_per_page)
 		{
-			rtgui_widget_onshow(RTGUI_OBJECT(box->scrollbar), RT_NULL);
-			rtgui_scrollbar_set_line_step(box->scrollbar, 1);
-			rtgui_scrollbar_set_page_step(box->scrollbar, box->item_per_page);
-			rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
+			RTGUI_WIDGET_SHOW(box->scroll);
+			rtgui_scrollbar_set_line_step(box->scroll, 1);
+			rtgui_scrollbar_set_page_step(box->scroll, box->item_per_page);
+			rtgui_scrollbar_set_range(box->scroll, box->item_count);
 		}
 		else
 		{
-			rtgui_widget_onhide(RTGUI_OBJECT(box->scrollbar), RT_NULL);
+			RTGUI_WIDGET_HIDE(box->scroll);
 		}
+		rtgui_widget_update_clip(box);
 	}
 
 }
@@ -147,11 +181,14 @@ void rtgui_listbox_set_items(rtgui_listbox_t* box, const rtgui_listbox_item_t* i
 void rtgui_listbox_destroy(rtgui_listbox_t* box)
 {
 	/* destroy box */
-	rtgui_widget_destroy(RTGUI_WIDGET(box));
+	rtgui_widget_destroy(box);
 }
 
 static const unsigned char lb_ext_flag[]=
-{0x00,0x10,0x00,0x30,0x00,0x70,0x80,0xE0,0xC1,0xC0,0xE3,0x80,0x77,0x00,0x3E,0x00,0x1C,0x00,0x08,0x00};
+{
+	0x00,0x10,0x00,0x30,0x00,0x70,0x80,0xE0,0xC1,0xC0,
+	0xE3,0x80,0x77,0x00,0x3E,0x00,0x1C,0x00,0x08,0x00,
+};
 
 /* draw listbox all item */
 void rtgui_listbox_ondraw(rtgui_listbox_t* box)
@@ -159,50 +196,53 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 	rtgui_rect_t rect, item_rect, image_rect;
 	rt_uint16_t first, i;
 	const rtgui_listbox_item_t* item;
-	struct rtgui_dc* dc;
+	rtgui_dc_t* dc;
 
 	RT_ASSERT(box != RT_NULL);
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(box));
+	dc = rtgui_dc_begin_drawing(box);
 	if(dc == RT_NULL)return;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
+	rtgui_widget_get_rect(box, &rect);
 
 	/* draw listbox border */
 	rtgui_dc_draw_border(dc, &rect,RTGUI_WIDGET_BORDER_STYLE(box));
-	rtgui_rect_inflate(&rect,-RTGUI_WIDGET_BORDER(box));
-	RTGUI_DC_BC(dc) = white;
+	rtgui_rect_inflate(&rect,-RTGUI_WIDGET_BORDER_SIZE(box));
+	RTGUI_DC_BC(dc) = theme.blankspace;
 	
 	if(box->items==RT_NULL)/* not exist items. */
 	{
 		rtgui_dc_fill_rect(dc, &rect);
 	}
-	rtgui_rect_inflate(&rect,RTGUI_WIDGET_BORDER(box));
+	rtgui_rect_inflate(&rect,RTGUI_WIDGET_BORDER_SIZE(box));
 
-	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+	if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box->scroll))
 	{
-		rect.x2 -= RC_W(box->scrollbar->parent.extent);
+		rect.x2 -= RC_W(box->scroll->parent.extent);
 	}
 
 	/* get item base rect */
 	item_rect = rect;
-	item_rect.x1 += RTGUI_WIDGET_BORDER(box);
-	item_rect.x2 -= RTGUI_WIDGET_BORDER(box);
-	item_rect.y1 += RTGUI_WIDGET_BORDER(box);
+	item_rect.x1 += RTGUI_WIDGET_BORDER_SIZE(box);
+	item_rect.x2 -= RTGUI_WIDGET_BORDER_SIZE(box);
+	item_rect.y1 += RTGUI_WIDGET_BORDER_SIZE(box);
 	item_rect.y2 = item_rect.y1 + (2+box->item_size);
 
 	/* get first loc */
 	first = box->first_item;
-	for(i = 0; i <= box->item_per_page; i ++)
+	for(i = 0; i < box->item_per_page; i ++)
 	{
 		char buf[32];
 		rtgui_color_t bc;
-		
-		bc = RTGUI_DC_BC(dc);
-		RTGUI_DC_BC(dc) = white;
-		rtgui_dc_fill_rect(dc, &item_rect);
-		RTGUI_DC_BC(dc) = bc;
+		//if(first + i >= box->item_count) break;
+		if(i==0)
+		{	//仅第一次清第一条区域,后面区域的由后面的语句清除
+			bc = RTGUI_DC_BC(dc);
+			RTGUI_DC_BC(dc) = theme.blankspace;
+			rtgui_dc_fill_rect(dc, &item_rect);
+			RTGUI_DC_BC(dc) = bc;
+		}
 		
 		if(first + i < box->item_count)
 		{
@@ -220,12 +260,12 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 				}
 				else
 				{
-					RTGUI_DC_BC(dc) = light_grey;
-					RTGUI_DC_FC(dc) = black;
+					RTGUI_DC_BC(dc) = Silver;
+					RTGUI_DC_FC(dc) = theme.foreground;
 					rtgui_dc_fill_rect(dc, &item_rect);
 				}
 			}
-			item_rect.x1 += RTGUI_WIDGET_DEFAULT_MARGIN;
+			item_rect.x1 += RTGUI_MARGIN;
 
 			if(item->image != RT_NULL)
 			{
@@ -235,11 +275,14 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 				image_rect.x2 = item->image->w;
 				image_rect.y2 = item->image->h;
 				rtgui_rect_moveto_align(&item_rect, &image_rect, RTGUI_ALIGN_CENTER_VERTICAL);
-				rtgui_image_blit(item->image, dc, &image_rect);
+				rtgui_image_paste(item->image, dc, &image_rect, theme.blankspace);
 				item_rect.x1 += item->image->w + 2;
 			}
 			
-			rt_sprintf(buf, "%s", item->name);
+			if(box->vindex)
+				rt_sprintf(buf, "%d.%s", first+i+1, item->name);
+			else
+				rt_sprintf(buf, "%s", item->name);
 			
 			/* draw text */
 			if(first + i == box->now_item && RTGUI_WIDGET_IS_FOCUSED(box))
@@ -249,24 +292,40 @@ void rtgui_listbox_ondraw(rtgui_listbox_t* box)
 			}
 			else
 			{
-				RTGUI_DC_FC(dc) = black;
+				RTGUI_DC_FC(dc) = theme.foreground;
 				rtgui_dc_draw_text(dc, buf, &item_rect);
 			}
-
+			
+			if(box->multi_sel && item->ext_flag)
+			{
+				rtgui_rect_t tmprect = rect;
+				tmprect.x2 -= RTGUI_MARGIN;
+				tmprect.x2 -= RTGUI_WIDGET_BORDER_SIZE(box);
+				tmprect.x1 = tmprect.x2 - 12;
+				tmprect.y1 = item_rect.y1;
+				tmprect.y2 = item_rect.y2;
+				rtgui_dc_draw_word(dc, tmprect.x1, tmprect.y1+6, 10, lb_ext_flag);
+			}
+		
 			if(item->image != RT_NULL)
 				item_rect.x1 -= (item->image->w + 2);
-			item_rect.x1 -= RTGUI_WIDGET_DEFAULT_MARGIN;
+			item_rect.x1 -= RTGUI_MARGIN;
 		}
 		/* move to next item position */
 		item_rect.y1 += (box->item_size + 2);
 		item_rect.y2 += (box->item_size + 2);
-		if (item_rect.y2 > rect.y2-RTGUI_WIDGET_BORDER(box))
-			item_rect.y2 = rect.y2-RTGUI_WIDGET_BORDER(box);
+		if (item_rect.y2 > rect.y2)
+			item_rect.y2 = rect.y2-RTGUI_WIDGET_BORDER_SIZE(box);
+		
+		bc = RTGUI_DC_BC(dc);
+		RTGUI_DC_BC(dc) = theme.blankspace;
+		rtgui_dc_fill_rect(dc, &item_rect);
+		RTGUI_DC_BC(dc) = bc;
 	}
 
-	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+	if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box->scroll))
 	{
-		rtgui_scrollbar_ondraw(box->scrollbar);
+		rtgui_scrollbar_ondraw(box->scroll);
 	}
 
 	rtgui_dc_end_drawing(dc);
@@ -277,7 +336,7 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 {
 	const rtgui_listbox_item_t* item;
 	rtgui_rect_t rect, item_rect, image_rect;
-	struct rtgui_dc* dc;
+	rtgui_dc_t* dc;
 	char buf[32];
 
 	RT_ASSERT(box != RT_NULL);
@@ -286,13 +345,13 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 	if(box->items==RT_NULL)return;
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(box));
+	dc = rtgui_dc_begin_drawing(box);
 	if(dc == RT_NULL)return;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
-	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+	rtgui_widget_get_rect(box, &rect);
+	if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box->scroll))
 	{
-		rect.x2 -= RC_W(box->scrollbar->parent.extent);
+		rect.x2 -= RC_W(box->scroll->parent.extent);
 	}
 
 	if((box->old_item >= box->first_item) && /* int front some page */
@@ -302,19 +361,19 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 		/* these condition dispell blinked when drawed */
 		item_rect = rect;
 		/* get old item's rect */
-		item_rect.x1 += RTGUI_WIDGET_BORDER(box);
-		item_rect.x2 -= RTGUI_WIDGET_BORDER(box);
-		item_rect.y1 += RTGUI_WIDGET_BORDER(box);
+		item_rect.x1 += RTGUI_WIDGET_BORDER_SIZE(box);
+		item_rect.x2 -= RTGUI_WIDGET_BORDER_SIZE(box);
+		item_rect.y1 += RTGUI_WIDGET_BORDER_SIZE(box);
 		item_rect.y1 += ((box->old_item-box->first_item) % box->item_per_page) * (2 + box->item_size);
 		item_rect.y2 = item_rect.y1 + (2+box->item_size);
 		if (item_rect.y2 > rect.y2) item_rect.y2 = rect.y2;
 
 		/* draw old item */
-		RTGUI_DC_BC(dc) = white;
-		RTGUI_DC_FC(dc) = black;
+		RTGUI_DC_BC(dc) = theme.blankspace;
+		RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_fill_rect(dc,&item_rect);
 
-		item_rect.x1 += RTGUI_WIDGET_DEFAULT_MARGIN;
+		item_rect.x1 += RTGUI_MARGIN;
 
 		item = &(box->items[box->old_item]);
 		if(item->image != RT_NULL)
@@ -324,24 +383,38 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 			image_rect.x2 = item->image->w;
 			image_rect.y2 = item->image->h;
 			rtgui_rect_moveto_align(&item_rect, &image_rect, RTGUI_ALIGN_CENTER_VERTICAL);
-			rtgui_image_blit(item->image, dc, &image_rect);
+			rtgui_image_paste(item->image, dc, &image_rect, theme.blankspace);
 			item_rect.x1 += item->image->w + 2;
 		}
 		
-		rt_sprintf(buf, "%s", item->name);
+		if(box->vindex)
+			rt_sprintf(buf, "%d.%s", box->old_item + 1, item->name);
+		else
+			rt_sprintf(buf, "%s", item->name);
 		
 		rtgui_dc_draw_text(dc, buf, &item_rect);
+		
+		if(box->multi_sel && item->ext_flag)
+		{
+			rtgui_rect_t tmprect = rect;
+			tmprect.x2 -= RTGUI_WIDGET_BORDER_SIZE(box);
+			tmprect.x2 -= RTGUI_MARGIN;
+			tmprect.x1 = tmprect.x2 - 12;
+			tmprect.y1 = item_rect.y1;
+			tmprect.y2 = item_rect.y2;
+			rtgui_dc_draw_word(dc, tmprect.x1, tmprect.y1+6, 10, lb_ext_flag);
+		}
 	}
 
 	/* draw now item */
 	item_rect = rect;
 	/* get now item's rect */
-	item_rect.x1 += RTGUI_WIDGET_BORDER(box);
-	item_rect.x2 -= RTGUI_WIDGET_BORDER(box);
-	item_rect.y1 += RTGUI_WIDGET_BORDER(box);
+	item_rect.x1 += RTGUI_WIDGET_BORDER_SIZE(box);
+	item_rect.x2 -= RTGUI_WIDGET_BORDER_SIZE(box);
+	item_rect.y1 += RTGUI_WIDGET_BORDER_SIZE(box);
 	item_rect.y1 += ((box->now_item-box->first_item) % box->item_per_page) * (2 + box->item_size);
 	item_rect.y2 = item_rect.y1 + (2 + box->item_size);
-	if (item_rect.y2 > rect.y2-RTGUI_WIDGET_BORDER(box)) item_rect.y2 = rect.y2-RTGUI_WIDGET_BORDER(box);
+	if (item_rect.y2 > rect.y2-RTGUI_WIDGET_BORDER_SIZE(box)) item_rect.y2 = rect.y2-RTGUI_WIDGET_BORDER_SIZE(box);
 
 	/* draw current item */
 	if(RTGUI_WIDGET_IS_FOCUSED(box))
@@ -353,12 +426,12 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 	}
 	else
 	{
-		RTGUI_DC_BC(dc) = light_grey;
-		RTGUI_DC_FC(dc) = black;
+		RTGUI_DC_BC(dc) = Silver;
+		RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_fill_rect(dc, &item_rect);
 	}
 
-	item_rect.x1 += RTGUI_WIDGET_DEFAULT_MARGIN;
+	item_rect.x1 += RTGUI_MARGIN;
 
 	item = &(box->items[box->now_item]);
 	if(item->image != RT_NULL)
@@ -368,11 +441,14 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 		image_rect.x2 = item->image->w;
 		image_rect.y2 = item->image->h;
 		rtgui_rect_moveto_align(&item_rect, &image_rect, RTGUI_ALIGN_CENTER_VERTICAL);
-		rtgui_image_blit(item->image, dc, &image_rect);
+		rtgui_image_paste(item->image, dc, &image_rect, theme.blankspace);
 		item_rect.x1 += (item->image->w + 2);
 	}
 	
-	rt_sprintf(buf, "%s", item->name);
+	if(box->vindex)
+		rt_sprintf(buf, "%d.%s", box->now_item + 1, item->name);
+	else
+		rt_sprintf(buf, "%s", item->name);
 		
 	if(RTGUI_WIDGET_IS_FOCUSED(box))
 	{
@@ -381,8 +457,19 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 	}
 	else
 	{
-		RTGUI_DC_FC(dc) = black;
+		RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_draw_text(dc, buf, &item_rect);
+	}
+	
+	if(box->multi_sel && item->ext_flag)
+	{
+		rtgui_rect_t tmprect = rect;
+		tmprect.x2 -= RTGUI_WIDGET_BORDER_SIZE(box);
+		tmprect.x2 -= RTGUI_MARGIN;
+		tmprect.x1 = tmprect.x2 - 12;
+		tmprect.y1 = item_rect.y1;
+		tmprect.y2 = item_rect.y2;
+		rtgui_dc_draw_word(dc, tmprect.x1, tmprect.y1+6, 10, lb_ext_flag);
 	}
 
 	rtgui_dc_end_drawing(dc);
@@ -390,28 +477,31 @@ void rtgui_listbox_update(rtgui_listbox_t* box)
 
 static void rtgui_listbox_onmouse(rtgui_listbox_t* box, struct rtgui_event_mouse* emouse)
 {
-	rtgui_rect_t rect;
+	rtgui_rect_t rect,scroll_rect;
 
 	RT_ASSERT(box != RT_NULL);
 
 	/* get physical extent information */
-	rtgui_widget_get_rect(RTGUI_WIDGET(box), &rect);
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(box), &rect);
-	rtgui_rect_inflate(&rect, -RTGUI_WIDGET_BORDER(box));
-	if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+	rtgui_widget_get_rect(box, &rect);
+	rtgui_widget_rect_to_device(box, &rect);
+	rtgui_rect_inflate(&rect, -RTGUI_WIDGET_BORDER_SIZE(box));
+	scroll_rect = rect;
+	if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box->scroll))
 	{
-		rect.x2 -= RC_W(box->scrollbar->parent.extent);
+		rect.x2 -= RC_W(box->scroll->parent.extent);
+		scroll_rect.x1 = scroll_rect.x2 - RC_W(box->scroll->parent.extent);
 	}
+	
 
-	if((rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK))
+	if(rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK)
 	{
 		rt_uint16_t i;
 		/* set focus */
-		rtgui_widget_focus(RTGUI_WIDGET(box));
+		rtgui_widget_focus(box);
 
 		if(box->item_count <=0)return;
 		i = (emouse->y - rect.y1) / (2 + box->item_size);
-
+_recheck:
 		if((i < box->item_count) && (i < box->item_per_page))
 		{
 			if(emouse->button & RTGUI_MOUSE_BUTTON_DOWN)
@@ -422,7 +512,7 @@ static void rtgui_listbox_onmouse(rtgui_listbox_t* box, struct rtgui_event_mouse
 
 				if(box->on_item != RT_NULL)
 				{
-					box->on_item(RTGUI_OBJECT(box), (rtgui_event_t*)emouse);
+					box->on_item(box, (rtgui_event_t*)emouse);
 				}
 
 				/* down event */
@@ -431,20 +521,55 @@ static void rtgui_listbox_onmouse(rtgui_listbox_t* box, struct rtgui_event_mouse
 			else if(emouse->button & RTGUI_MOUSE_BUTTON_UP)
 			{
 				rtgui_listbox_update(box);
+
+				if(box->ispopup && !RTGUI_WIDGET_IS_HIDE(box))
+				{
+					rtgui_win_t *win;
+					RTGUI_WIDGET_HIDE(box);
+					box->first_item=0;
+					box->now_item = 0;
+
+					win = rtgui_win_get_win_by_widget(box);
+					if(win != RT_NULL)
+					{
+						/* it was in a window box */
+						if(rtgui_rect_is_intersect(&(RTGUI_WIDGET_EXTENT(win)),
+						                           &(RTGUI_WIDGET_EXTENT(box))) == RT_EOK)
+						{
+							rtgui_topwin_move(win,RTGUI_WIDGET_EXTENT(win).x1,
+							                  RTGUI_WIDGET_EXTENT(win).y1);
+							rtgui_widget_focus(win);
+							rtgui_widget_update_clip(win);
+							rtgui_toplevel_redraw(&(RTGUI_WIDGET_EXTENT(box)));
+						}
+					}
+					else
+					{
+						rtgui_widget_update_clip(RTGUI_WIDGET_PARENT(box));
+						rtgui_widget_update(RTGUI_WIDGET_PARENT(box));
+					}
+
+					return;
+				}
 			}
-			if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box))
+			if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box))
 			{
-				if(!RTGUI_WIDGET_IS_HIDE(box->scrollbar))
-					rtgui_scrollbar_set_value(box->scrollbar,box->first_item);
+				if(!RTGUI_WIDGET_IS_HIDE(box->scroll))
+					rtgui_scrollbar_set_value(box->scroll,box->first_item);
 			}
+		}
+		else if(box->item_count > 0)
+		{
+			i = box->item_count-1;
+			goto _recheck;
 		}
 	}
 }
 
-rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* event)
+rt_bool_t rtgui_listbox_event_handler(pvoid wdt, rtgui_event_t* event)
 {
-	rtgui_widget_t *widget = RTGUI_WIDGET(object);
-	rtgui_listbox_t* box = RTGUI_LISTBOX(object);
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_listbox_t* box = RTGUI_LISTBOX(wdt);
 
 	RT_ASSERT(box != RT_NULL);
 
@@ -466,16 +591,13 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 		{
 			rtgui_listbox_onmouse(box, (struct rtgui_event_mouse*)event);
 		}
-		if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
-		{
-			rtgui_scrollbar_event_handler(RTGUI_OBJECT(box->scrollbar), event);
-		}
-		break;
+		//可能还有滚动条,分发...
+		rtgui_container_dispatch_mouse_event(box, (struct rtgui_event_mouse*)event);
+		return RT_TRUE;
 
 	case RTGUI_EVENT_KBD:
 	{
 		struct rtgui_event_kbd *ekbd = (struct rtgui_event_kbd*)event;
-
 		if((RTGUI_KBD_IS_DOWN(ekbd)) && (box->item_count > 0))
 		{
 			switch(ekbd->key)
@@ -495,15 +617,15 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 						rtgui_listbox_update(box);
 					}
 
-					if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box))
+					if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box))
 					{
-						if(!RTGUI_WIDGET_IS_HIDE(box->scrollbar))
-							rtgui_scrollbar_set_value(box->scrollbar,box->first_item);
+						if(!RTGUI_WIDGET_IS_HIDE(box->scroll))
+							rtgui_scrollbar_set_value(box->scroll,box->first_item);
 					}
 
 					if(box->updown != RT_NULL)
 					{
-						box->updown(RTGUI_OBJECT(box), event);
+						box->updown(box, event);
 					}
 				}
 				break;
@@ -522,15 +644,15 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 					{
 						rtgui_listbox_update(box);
 					}
-					if(box->scrollbar && !RTGUI_WIDGET_IS_HIDE(box))
+					if(box->scroll && !RTGUI_WIDGET_IS_HIDE(box))
 					{
-						if(!RTGUI_WIDGET_IS_HIDE(box->scrollbar))
-							rtgui_scrollbar_set_value(box->scrollbar,box->first_item);
+						if(!RTGUI_WIDGET_IS_HIDE(box->scroll))
+							rtgui_scrollbar_set_value(box->scroll,box->first_item);
 					}
 
 					if(box->updown != RT_NULL)
 					{
-						box->updown(RTGUI_OBJECT(box), event);
+						box->updown(box, event);
 					}
 				}
 				break;
@@ -538,10 +660,40 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 			case RTGUIK_RETURN:
 				if(box->on_item != RT_NULL)
 				{
-					box->on_item(RTGUI_OBJECT(box), event);
+					box->on_item(box, event);
+				}
+				
+				if(box->multi_sel && box->multi_valid)
+				{
+					rtgui_listbox_item_t *item;
+					item = &(box->items[box->now_item]);
+					if(!item->ext_flag)
+					{
+						item->ext_flag = 1;
+						rtgui_listbox_update_loc(box,box->now_item);
+					}
+				}
+				
+				if(box->ispopup && !RTGUI_WIDGET_IS_HIDE(box))
+				{
+					RTGUI_WIDGET_HIDE(box);
+					box->first_item=0;
+					box->now_item = 0;
+					rtgui_widget_update_clip(RTGUI_WIDGET_PARENT(box));
+					rtgui_widget_update(RTGUI_WIDGET_PARENT(box));
 				}
 				break;
 			case RTGUIK_BACKSPACE:
+				if(box->multi_sel)
+				{
+					rtgui_listbox_item_t *item;
+					item = &(box->items[box->now_item]);
+					if(item->ext_flag)
+					{
+						item->ext_flag = 0;
+						rtgui_listbox_update_loc(box,box->now_item);
+					}
+				}
 				break;
 
 			default:
@@ -550,18 +702,9 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 		}
 		return RT_TRUE;
 	}
-	case RTGUI_EVENT_SHOW:
-		rtgui_widget_onshow(object, event);
-		break;
-	case RTGUI_EVENT_HIDE:
-		rtgui_widget_onhide(object, event);
-		break;
 	default:
-		return rtgui_container_event_handler(RTGUI_OBJECT(box), event);
+		return rtgui_container_event_handler(box, event);
 	}
-
-	/* use box event handler */
-	return RT_FALSE;
 }
 
 void rtgui_listbox_set_onitem(rtgui_listbox_t* box, rtgui_event_handler_ptr func)
@@ -582,25 +725,43 @@ void rtgui_listbox_adjust_scrollbar(rtgui_listbox_t* box)
 {
 	RT_ASSERT(box != RT_NULL);
 
-	if(box->scrollbar != RT_NULL)
+	if(box->scroll != RT_NULL)
 	{
-		if(RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+		rtgui_panel_t *panel = rtgui_panel_get();
+		if(RTGUI_WIDGET_IS_HIDE(box->scroll))
 		{
 			if(box->item_count > box->item_per_page)
 			{
-				rtgui_widget_onshow(RTGUI_OBJECT(box->scrollbar), RT_NULL);
-				rtgui_scrollbar_set_line_step(box->scrollbar, 1);
-				rtgui_scrollbar_set_page_step(box->scrollbar, box->item_per_page);
-				rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
+				RTGUI_WIDGET_SHOW(box->scroll);
+				rtgui_scrollbar_set_line_step(box->scroll, 1);
+				rtgui_scrollbar_set_page_step(box->scroll, box->item_per_page);
+				rtgui_scrollbar_set_range(box->scroll, box->item_count);
 			}
 			else
 			{
-				rtgui_widget_onhide(RTGUI_OBJECT(box->scrollbar), RT_NULL);
+				RTGUI_WIDGET_HIDE(box->scroll);
 			}
+
+			rtgui_widget_update_clip(box);
+			/* if(external_clip_size > 0)
+			{
+				rt_int32_t i;
+				rtgui_rect_t *rect = external_clip_rect;
+				for(i=0;i<external_clip_size;i++)
+				{
+					if(rtgui_rect_is_intersect(rect, &RTGUI_WIDGET_EXTENT(box)) == RT_EOK)
+					{
+						rtgui_toplevel_update_clip(panel);
+						rtgui_toplevel_redraw(&RTGUI_WIDGET_EXTENT(box));
+						break;
+					}
+					rect++;
+				}
+			}*/
 		}
 		else
 		{
-			rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
+			rtgui_scrollbar_set_range(box->scroll, box->item_count);
 		}
 	}
 }
@@ -627,13 +788,14 @@ void rtgui_listbox_add_item(rtgui_listbox_t* box,rtgui_listbox_item_t* item, rt_
 		box->items = _items;
 		box->items[box->item_count].name = rt_strdup(item->name);
 		box->items[box->item_count].image= item->image;
+		box->items[box->item_count].ext_flag = 0;
 		box->item_count += 1;
 		/* adjust scrollbar value */
 
 		rtgui_listbox_adjust_scrollbar(box);
 		if(!RTGUI_WIDGET_IS_HIDE(box) && update)
 		{
-			rtgui_listbox_update_item(box, box->item_count-1);
+			rtgui_listbox_ondraw(box);
 		}
 	}
 }
@@ -673,25 +835,25 @@ void rtgui_listbox_insert_item(rtgui_listbox_t* box, rtgui_listbox_item_t* item,
 		{
 			box->items[i].name = box->items[i-1].name;
 			box->items[i].image = box->items[i-1].image;
+			box->items[i].ext_flag = box->items[i-1].ext_flag;
 		}
 		/* insert location */
 		box->items[item_num+1].name = rt_strdup(item->name);
 		box->items[item_num+1].image= item->image;
+		box->items[item_num+1].ext_flag = 0;
 		rtgui_listbox_adjust_scrollbar(box);
 		if(!RTGUI_WIDGET_IS_HIDE(box))
-		{	/* First positioning to the current item */
-			if(box->now_item < box->first_item || box->now_item > box->first_item+box->item_per_page)
-				rtgui_listbox_update_item(box, box->now_item);
-			/* After that positioning to inserted item */
-			rtgui_listbox_update_item(box, item_num+1);
+		{
+			rtgui_listbox_ondraw(box);
 		}
 	}
 }
 
 void rtgui_listbox_del_item(rtgui_listbox_t* box, rt_int16_t item_num)
 {
+	rtgui_panel_t *panel = rtgui_panel_get();
 	rtgui_listbox_item_t* _items;
-	int i;
+	rt_base_t i;
 
 	if(box == RT_NULL) return;
 	if(box->item_count==0) return;
@@ -710,6 +872,7 @@ void rtgui_listbox_del_item(rtgui_listbox_t* box, rt_int16_t item_num)
 		{
 			box->items[i].name = box->items[i+1].name;
 			box->items[i].image = box->items[i+1].image;
+			box->items[i].ext_flag = box->items[i+1].ext_flag;
 		}
 		box->item_count -= 1;
 		if(box->now_item >= box->item_count)
@@ -744,18 +907,35 @@ void rtgui_listbox_del_item(rtgui_listbox_t* box, rt_int16_t item_num)
 		box->items = RT_NULL;
 	}
 
-	if(box->scrollbar != RT_NULL && !RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+	if(box->scroll != RT_NULL && !RTGUI_WIDGET_IS_HIDE(box->scroll))
 	{
+		rtgui_panel_t *panel = rtgui_panel_get();
 		if(box->item_count > box->item_per_page)
 		{
-			rtgui_widget_onshow(RTGUI_OBJECT(box->scrollbar), RT_NULL);
-			rtgui_scrollbar_set_range(box->scrollbar, box->item_count);
+			RTGUI_WIDGET_SHOW(box->scroll);
+			rtgui_scrollbar_set_range(box->scroll, box->item_count);
 			/* set new location at scrollbar */
-			rtgui_scrollbar_set_value(box->scrollbar, box->first_item);
+			rtgui_scrollbar_set_value(box->scroll, box->first_item);
 		}
 		else
 		{
-			rtgui_widget_onhide(RTGUI_OBJECT(box->scrollbar), RT_NULL);
+			RTGUI_WIDGET_HIDE(box->scroll);
+		}
+		rtgui_widget_update_clip(box);
+		if(external_clip_size > 0)
+		{
+			rt_int32_t i;
+			rtgui_rect_t *rect = external_clip_rect;
+			for(i=0; i<external_clip_size; i++)
+			{
+				if(rtgui_rect_is_intersect(rect, &RTGUI_WIDGET_EXTENT(box)) == RT_EOK)
+				{
+					rtgui_toplevel_update_clip(panel);
+					rtgui_toplevel_redraw(&RTGUI_WIDGET_EXTENT(box));
+					break;
+				}
+				rect++;
+			}
 		}
 	}
 
@@ -797,7 +977,7 @@ void rtgui_listbox_clear_items(rtgui_listbox_t* box)
 }
 
 /* update listbox with assign row */
-void rtgui_listbox_update_item(rtgui_listbox_t* box, rt_int16_t loc)
+void rtgui_listbox_update_loc(rtgui_listbox_t* box, rt_int16_t loc)
 {
 	RT_ASSERT(box != RT_NULL);
 
@@ -826,53 +1006,60 @@ void rtgui_listbox_update_item(rtgui_listbox_t* box, rt_int16_t loc)
 
 		rtgui_listbox_ondraw(box);
 
-		if(!RTGUI_WIDGET_IS_HIDE(box->scrollbar))
+		if(!RTGUI_WIDGET_IS_HIDE(box->scroll))
 		{
-			rtgui_scrollbar_set_value(box->scrollbar, box->first_item);
+			rtgui_scrollbar_set_value(box->scroll, box->first_item);
 		}
 	}
 }
 
-void rtgui_listbox_set_current_item(rtgui_listbox_t *box, int index)
+rt_bool_t rtgui_listbox_unfocus(pvoid wdt, rtgui_event_t* event)
 {
-	RT_ASSERT(box != RT_NULL);
-
-	if (index != box->now_item)
-	{
-		int old_item;
-
-		old_item = box->now_item;
-		box->now_item = index;
-
-		rtgui_listbox_update_item(box, old_item);
-	}
-}
-RTM_EXPORT(rtgui_listbox_set_current_item);
-
-rt_bool_t rtgui_listbox_unfocus(rtgui_object_t *object, rtgui_event_t* event)
-{
-	rtgui_listbox_t *box = RTGUI_LISTBOX(object);
-	RT_ASSERT(box != RT_NULL);
+	rtgui_listbox_t *box = RTGUI_LISTBOX(wdt);
+	if(box == RT_NULL)return RT_FALSE;
 
 	if(!RTGUI_WIDGET_IS_FOCUSED(box))
-	{	/* Ignore when now_item is not in the current page */
-		if(box->now_item < box->first_item || box->now_item > box->first_item+box->item_per_page)
-			return RT_FALSE;
+	{
 		/* clear focus rectangle */
 		rtgui_listbox_update(box);
+	}
+
+	if(box->ispopup)
+	{
+		/* this is a popup listbox ,so it hang on the parent widget */
+		rtgui_win_t *win;
+
+		RTGUI_WIDGET_HIDE(box);
+		box->first_item=0;
+		box->now_item = 0;
+
+		win = rtgui_win_get_win_by_widget(box);
+		if(win != RT_NULL)
+		{
+			/* it in a window box */
+			if(rtgui_rect_is_intersect(&(RTGUI_WIDGET_EXTENT(win)),
+			                           &(RTGUI_WIDGET_EXTENT(box))) == RT_EOK)
+			{
+				rtgui_topwin_move(win,RTGUI_WIDGET_EXTENT(win).x1,
+				                  RTGUI_WIDGET_EXTENT(win).y1);
+			}
+			rtgui_widget_focus(win);
+			rtgui_widget_update_clip(win);
+		}
+		rtgui_toplevel_redraw(&(RTGUI_WIDGET_EXTENT(box)));
 	}
 
 	return RT_TRUE;
 }
 
-static rt_bool_t rtgui_listbox_sbar_handle(rtgui_object_t* object, rtgui_event_t* event)
+static rt_bool_t rtgui_listbox_sbar_handle(pvoid wdt, rtgui_event_t* event)
 {
-	rtgui_listbox_t *box = RTGUI_LISTBOX(object);
-	
-	/* adjust first display row when dragging */
-	if(box->first_item == box->scrollbar->value) return RT_FALSE;
+	rtgui_listbox_t *box = RTGUI_LISTBOX(wdt);
 
-	box->first_item = box->scrollbar->value;
+	/* adjust first display row when dragging */
+	if(box->first_item == box->scroll->value) return RT_FALSE;
+	
+	box->first_item = box->scroll->value;
 	rtgui_listbox_ondraw(box);
 
 	return RT_TRUE;

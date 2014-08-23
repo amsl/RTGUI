@@ -42,10 +42,10 @@ struct rtgui_view
 };
 typedef struct rtgui_view rtgui_view_t;
 
-rtgui_view_t *rtgui_view_create(rtgui_container_t *container,const char* title,int left,int top,int w,int h);
+rtgui_view_t *rtgui_view_create(pvoid wdt,const char* title,int left,int top,int w,int h);
 void rtgui_view_destroy(rtgui_view_t* view);
 
-rt_bool_t rtgui_view_event_handler(rtgui_object_t *object, rtgui_event_t* event);
+rt_bool_t rtgui_view_event_handler(pvoid wdt, rtgui_event_t* event);
 
 rt_bool_t rtgui_view_show(rtgui_view_t* view);
 void rtgui_view_hide(rtgui_view_t* view);

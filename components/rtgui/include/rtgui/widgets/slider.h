@@ -1,22 +1,14 @@
-/*
- * File      : slider.h
- * This file is part of RT-Thread RTOS
- * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
- *
- * The license and distribution terms for this file may be
- * found in the file LICENSE in this distribution or at
- * http://www.rt-thread.org/license/LICENSE
- *
- * Change Logs:
- * Date           Author       Notes
- * 2009-10-16     Bernard      first version
- */
 #ifndef __RTGUI_SLIDER_H__
 #define __RTGUI_SLIDER_H__
 
-#include <rtgui/rtgui.h>
 #include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/container.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct rtgui_slider rtgui_slider_t;
 
 DECLARE_CLASS_TYPE(slider);
 /** Gets the type of a slider */
@@ -28,28 +20,28 @@ DECLARE_CLASS_TYPE(slider);
 
 struct rtgui_slider
 {
-    struct rtgui_widget parent;
+	rtgui_widget_t parent;
 
-    /* widget private data */
-    rt_size_t min, max, value, ticks;
-    rt_size_t thumb_width;
-
-    int orient;
-
-    void (*on_changed)(struct rtgui_widget *widget, struct rtgui_event *event);
+	/* widget private data */
+	int min, max, value, ticks;
+	int thumb_width;
+	int orient;
+	void (*on_change)(pvoid wdt, rtgui_event_t *event);
 };
-typedef struct rtgui_slider rtgui_slider_t;
 
-struct rtgui_slider *rtgui_slider_create(rtgui_container_t *container, rt_size_t min, rt_size_t max, 
-	int left, int top, int w, int h, int orient);
-void rtgui_slider_destroy(struct rtgui_slider *slider);
+rtgui_slider_t* rtgui_slider_create(pvoid parent, int left, int top, int w, int h, int orient, int min, int max);
+void rtgui_slider_destroy(rtgui_slider_t* slider);
+void rtgui_slider_ondraw(rtgui_slider_t* slider);
+rt_bool_t rtgui_slider_event_handler(pvoid wdt, rtgui_event_t* event);
 
-rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_event *event);
+void rtgui_slider_set_range(rtgui_slider_t* slider, rt_size_t min, rt_size_t max);
+void rtgui_slider_set_value(rtgui_slider_t* slider, rt_size_t value);
+void rtgui_slider_set_orient(rtgui_slider_t* slider, int orient);
 
-void rtgui_slider_set_range(struct rtgui_slider *slider, rt_size_t min, rt_size_t max);
-void rtgui_slider_set_value(struct rtgui_slider *slider, rt_size_t value);
-void rtgui_slider_set_orientation(struct rtgui_slider *slider, int orientation);
+rt_size_t rtgui_slider_get_value(rtgui_slider_t* slider);
 
-rt_size_t rtgui_slider_get_value(struct rtgui_slider *slider);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

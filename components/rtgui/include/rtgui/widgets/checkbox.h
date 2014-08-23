@@ -1,44 +1,41 @@
 #ifndef __RTGUI_CHECKBOX_H__
 #define __RTGUI_CHECKBOX_H__
 
-#include <rtgui/rtgui.h>
-#include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/label.h>
-#include <rtgui/widgets/container.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define CHECK_BOX_W		13
+#define CHECK_BOX_H		13
 
 DECLARE_CLASS_TYPE(checkbox);
-
-/** Gets the type of a checkbox */
-#define RTGUI_CHECKBOX_TYPE       (RTGUI_TYPE(checkbox))
-/** Casts the object to an rtgui_button */
-#define RTGUI_CHECKBOX(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_CHECKBOX_TYPE, struct rtgui_checkbox))
-/** Checks if the object is an rtgui_button */
-#define RTGUI_IS_CHECKBOX(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_CHECKBOX_TYPE))
-
-#define RTGUI_CHECKBOX_STATUS_CHECKED       0
-#define RTGUI_CHECKBOX_STATUS_UNCHECKED     1
+#define RTGUI_CHECKBOX_TYPE     (RTGUI_TYPE(checkbox))
+#define RTGUI_CHECKBOX(obj)     (RTGUI_OBJECT_CAST((obj), RTGUI_CHECKBOX_TYPE, rtgui_checkbox_t))
+#define RTGUI_IS_CHECKBOX(obj)	(RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_CHECKBOX_TYPE))
 
 struct rtgui_checkbox
 {
-    /* inherit from label */
-    struct rtgui_label parent;
+	/* inherit from label */
+	rtgui_label_t parent;
 
-    /* check box status */
-    rt_uint8_t status_down;
-
-    /* click button event handler */
-    rtgui_onbutton_func_t on_button;
+	/* check box status */
+	int value;
 };
 typedef struct rtgui_checkbox rtgui_checkbox_t;
 
-rtgui_checkbox_t *rtgui_checkbox_create(rtgui_container_t *container, const char *text, rt_bool_t checked, int left, int top);
-void rtgui_checkbox_destroy(rtgui_checkbox_t *checkbox);
+rtgui_checkbox_t* rtgui_checkbox_create(pvoid wdt,const char* text, rt_bool_t checked,int left,int top);
+void rtgui_checkbox_destroy(rtgui_checkbox_t* checkbox);
 
-void rtgui_checkbox_set_checked(rtgui_checkbox_t *checkbox, rt_bool_t checked);
-rt_bool_t rtgui_checkbox_get_checked(rtgui_checkbox_t *checkbox);
+void rtgui_checkbox_set_checked(rtgui_checkbox_t* checkbox, rt_bool_t checked);
+rt_bool_t rtgui_checkbox_get_checked(rtgui_checkbox_t* checkbox);
+void rtgui_checkbox_ondraw(rtgui_checkbox_t* checkbox);
+rt_bool_t rtgui_checkbox_event_handler(pvoid wdt, rtgui_event_t* event);
+void rtgui_checkbox_set_text(rtgui_checkbox_t *box, const char* text);
 
-void rtgui_checkbox_set_onbutton(rtgui_checkbox_t *checkbox, rtgui_onbutton_func_t func);
-
-rt_bool_t rtgui_checkbox_event_handler(struct rtgui_object *object, struct rtgui_event *event);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

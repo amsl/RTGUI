@@ -1,104 +1,125 @@
-#include <rtgui/dc.h>
-#include <rtgui/rtgui_theme.h>
+/*
+ * File      : staticline.c
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ *
+ */
 #include <rtgui/widgets/staticline.h>
 
-static void _rtgui_staticline_constructor(rtgui_staticline_t *staticline)
+static void _rtgui_static_constructor(rtgui_staticline_t *sline)
 {
-    /* init widget and set event handler */
-    rtgui_rect_t rect = {0, 0, 100, 2};
+	/* init widget and set event handler */
+	rtgui_rect_t rect = {0, 0, 100, 2};
 
-    rtgui_widget_set_rect(RTGUI_WIDGET(staticline), &rect);
-    staticline->orient = RTGUI_HORIZONTAL;
+	rtgui_widget_set_rect(sline, &rect);
+	sline->orient= RTGUI_HORIZONTAL;
 
-    rtgui_object_set_event_handler(RTGUI_OBJECT(staticline), rtgui_staticline_event_handler);
+	rtgui_widget_set_event_handler(sline, rtgui_staticline_event_handler);
 }
 
+static void _rtgui_static_destructor(rtgui_staticline_t *sline)
+{
+
+}
 
 DEFINE_CLASS_TYPE(staticline, "staticline",
                   RTGUI_WIDGET_TYPE,
-                  _rtgui_staticline_constructor,
-                  RT_NULL,
+                  _rtgui_static_constructor,
+                  _rtgui_static_destructor,
                   sizeof(struct rtgui_staticline));
 
-rt_bool_t rtgui_staticline_event_handler(struct rtgui_object *object, struct rtgui_event *event)
+void rtgui_staticline_ondraw(rtgui_staticline_t* sline)
 {
-    struct rtgui_staticline *staticline;
-    RTGUI_WIDGET_EVENT_HANDLER_PREPARE
+	rtgui_rect_t rect;
+	rtgui_dc_t* dc;
 
-    staticline = RTGUI_STATICLINE(object);
-    switch (event->type)
-    {
-    case RTGUI_EVENT_PAINT:
-        if (widget->on_draw != RT_NULL)
-            widget->on_draw(RTGUI_OBJECT(widget), event);
-        else
-            rtgui_theme_draw_staticline(staticline);
-        break;
-    default:
-        return rtgui_widget_event_handler(object, event);
-    }
+	RT_ASSERT(sline != RT_NULL);
 
-    return RT_FALSE;
+	/* begin drawing */
+	dc = rtgui_dc_begin_drawing(sline);
+	if(dc == RT_NULL)return;
+
+	rtgui_widget_get_rect(sline, &rect);
+	rtgui_dc_fill_rect(dc,&rect);
+
+	if(sline->orient == RTGUI_HORIZONTAL)
+	{
+		rtgui_dc_draw_horizontal_line(dc, rect.x1, rect.x2, rect.y1);
+	}
+	else
+	{
+		rtgui_dc_draw_vertical_line(dc, rect.x1, rect.y1, rect.y2);
+	}
+
+	rtgui_dc_end_drawing(dc);
 }
-RTM_EXPORT(rtgui_staticline_event_handler);
 
-rtgui_staticline_t *rtgui_staticline_create(rtgui_container_t *container, int left, int top, int w, int len, int orientation)
+rt_bool_t rtgui_staticline_event_handler(pvoid wdt, rtgui_event_t* event)
 {
-    rtgui_staticline_t *staticline;
+	rtgui_widget_t *widget = RTGUI_WIDGET(wdt);
+	rtgui_staticline_t* sline = RTGUI_STATICLINE(wdt);
+	RT_ASSERT(wdt != RT_NULL);
 
-	RT_ASSERT(container != RT_NULL);
+	switch(event->type)
+	{
+		case RTGUI_EVENT_PAINT:
+			if(widget->on_draw != RT_NULL) widget->on_draw(widget, event);
+			else
+				rtgui_staticline_ondraw(sline);
+			return RT_FALSE;
+		default:
+			return RT_FALSE;
+	}
+}
 
-    staticline = (struct rtgui_staticline *) rtgui_widget_create(RTGUI_STATICLINE_TYPE);
-    if (staticline != RT_NULL)
-    {
-        rtgui_rect_t rect;
+rtgui_staticline_t * rtgui_staticline_create(pvoid parent,int left,int top,int w,int len,int orient)
+{
+	rtgui_container_t *container;
+	rtgui_staticline_t* sline;
 
-		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
+
+	sline = rtgui_widget_create(RTGUI_STATICLINE_TYPE);
+	if(sline!= RT_NULL)
+	{
+		rtgui_rect_t rect;
+
+		rtgui_widget_get_rect(container, &rect);
+		rtgui_widget_rect_to_device(container,&rect);
 		rect.x1 += left;
 		rect.y1 += top;
-		rtgui_staticline_set_orientation(staticline, orientation);
-		if(orientation == RTGUI_HORIZONTAL)
+
+		sline->orient = orient;
+
+		if(orient == RTGUI_HORIZONTAL)
 		{
-			rect.x2 = rect.x1 + len;
-			rect.y2 = rect.y1 + w;
+			rect.x2 = rect.x1+len;
+			rect.y2 = rect.y1+w;
 		}
 		else
 		{
-			rect.x2 = rect.x1 + w;
-			rect.y2 = rect.y1 + len;
+			rect.x2 = rect.x1+w;
+			rect.y2 = rect.y1+len;
 		}
-		rtgui_widget_set_rect(RTGUI_WIDGET(staticline), &rect);
-		rtgui_container_add_child(container, RTGUI_WIDGET(staticline));
-    }
 
-    return staticline;
+		rtgui_widget_set_rect(sline,&rect);
+
+		rtgui_container_add_child(container, sline);
+	}
+
+	return sline;
 }
-RTM_EXPORT(rtgui_staticline_create);
 
-void rtgui_staticline_destroy(rtgui_staticline_t *staticline)
+void rtgui_staticline_destroy(rtgui_staticline_t* sline)
 {
-    rtgui_widget_destroy(RTGUI_WIDGET(staticline));
+	rtgui_widget_destroy(sline);
 }
-RTM_EXPORT(rtgui_staticline_destroy);
-
-void rtgui_staticline_set_orientation(rtgui_staticline_t *staticline, int orientation)
-{
-    RT_ASSERT(staticline != RT_NULL);
-
-    staticline->orient = orientation;
-    if (orientation == RTGUI_HORIZONTAL)
-    {
-        /* HORIZONTAL */
-        rtgui_widget_set_miniheight(RTGUI_WIDGET(staticline), 2);
-        rtgui_widget_set_miniwidth(RTGUI_WIDGET(staticline), 100);
-    }
-    else
-    {
-        /* VERTICAL */
-        rtgui_widget_set_miniwidth(RTGUI_WIDGET(staticline), 2);
-        rtgui_widget_set_miniheight(RTGUI_WIDGET(staticline), 100);
-    }
-}
-RTM_EXPORT(rtgui_staticline_set_orientation);
 

@@ -10,12 +10,12 @@ extern "C" {
 
 DECLARE_CLASS_TYPE(spin);
 
-/** Gets the type of a button */
-#define RTGUI_PROPEL_TYPE       (RTGUI_TYPE(spin))
-/** Casts the object to an rtgui_label_t */
-#define RTGUI_PROPEL(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_PROPEL_TYPE, rtgui_spin_t))
+/** Gets the type of a spin */
+#define RTGUI_SPIN_TYPE       (RTGUI_TYPE(spin))
+/** Casts the object to an rtgui_spin_t */
+#define RTGUI_SPIN(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_SPIN_TYPE, rtgui_spin_t))
 /** Checks if the object is an rtgui_label_t */
-#define RTGUI_IS_PROPEL(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_PROPEL_TYPE))
+#define RTGUI_IS_SPIN(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_SPIN_TYPE))
 
 #define PROPEL_FLAG_MASK		0x000F
 #define PROPEL_FLAG_NONE    	0x0000
@@ -41,16 +41,16 @@ struct rtgui_spin
 	rt_int16_t		range_min;
 	rt_int16_t		range_max;
 	rt_uint32_t*	bind;
-	rtgui_widget_t 	*widget_link;
-	rt_bool_t (*on_click) (rtgui_object_t *object, rtgui_event_t* event);
+	pvoid 			widget_link;
+	rt_bool_t (*on_click) (pvoid wdt, rtgui_event_t* event);
 };
 typedef struct rtgui_spin rtgui_spin_t;
 
-rtgui_spin_t* rtgui_spin_create(rtgui_container_t *container, int left, int top, int w, int h, int orient);
-void rtgui_spin_destroy(rtgui_spin_t* ppl);
-rt_bool_t rtgui_spin_event_handler(rtgui_object_t *object, rtgui_event_t* event);
-void rtgui_spin_bind(rtgui_spin_t *ppl, rt_uint32_t *var);
-void rtgui_spin_unbind(rtgui_spin_t *ppl);
+rtgui_spin_t* rtgui_spin_create(pvoid parent, int left, int top, int w, int h, int orient);
+void rtgui_spin_destroy(rtgui_spin_t* spin);
+rt_bool_t rtgui_spin_event_handler(pvoid wdt, rtgui_event_t* event);
+void rtgui_spin_bind(rtgui_spin_t *spin, rt_uint32_t *var);
+void rtgui_spin_unbind(rtgui_spin_t *spin);
 
 #ifdef __cplusplus
 }

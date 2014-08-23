@@ -3,13 +3,8 @@
 #include <SDL/sdl.h>
 #include <rtgui/driver.h>
 
-#if 1
-#define SDL_SCREEN_WIDTH	800
+#define SDL_SCREEN_WIDTH	640
 #define SDL_SCREEN_HEIGHT	480
-#else
-#define SDL_SCREEN_WIDTH	240
-#define SDL_SCREEN_HEIGHT	320
-#endif
 
 struct sdlfb_device
 {
@@ -60,9 +55,9 @@ static rt_err_t  sdlfb_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 		{
 		struct rt_device_rect_info *rect;
 		rect = (struct rt_device_rect_info*)args;
-
-		/* SDL_UpdateRect(_device.screen, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h); */
-		SDL_UpdateRect(_device.screen, 0, 0, device->width, device->height);
+		rt_kprintf("rect x:%d, y:%d, w:%d, h:%d\n",rect->x,rect->y,rect->w,rect->h);
+		SDL_UpdateRect(_device.screen, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
+		//SDL_UpdateRect(_device.screen, 0, 0, device->width, device->height);
 		}
 		break;
 	case RTGRAPHIC_CTRL_SET_MODE:
@@ -70,10 +65,10 @@ static rt_err_t  sdlfb_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 		struct rt_device_rect_info* rect;
 
 		rect = (struct rt_device_rect_info*)args;
-		if ((_device.width == rect->width) && (_device.height == rect->height)) return -RT_ERROR;
+		if ((_device.width == rect->w) && (_device.height == rect->h)) return -RT_ERROR;
 		
-		_device.width = rect->width;
-		_device.height = rect->height;
+		_device.width = rect->w;
+		_device.height = rect->h;
 		
 		if (_device.screen != RT_NULL)
 		{

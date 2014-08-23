@@ -7,22 +7,20 @@
  * found in the file LICENSE in this distribution or at
  * http://www.rt-thread.org/license/LICENSE
  *
- * spin(abbr.spin): a Change/UpDown subsidiary widget.
+ * spin(abbr.spin): a change/UpDown subsidiary widget.
  * Change Logs:
  * Date           Author       Notes
  *
  */
-#include <rtgui/dc.h>
-#include <rtgui/widgets/widget.h>
 #include <rtgui/widgets/spin.h>
 
 static void _rtgui_spin_constructor(rtgui_spin_t *spin)
 {
 	/* init widget and set event handler */
-	rtgui_object_set_event_handler(RTGUI_OBJECT(spin), rtgui_spin_event_handler);
+	rtgui_widget_set_event_handler(spin, rtgui_spin_event_handler);
 
-	RTGUI_WIDGET_FOREGROUND(spin) = black;
-	RTGUI_WIDGET_BACKGROUND(spin) = default_background;
+	RTGUI_WIDGET_FC(spin) = theme.foreground;
+	RTGUI_WIDGET_BC(spin) = theme.background;
 	RTGUI_WIDGET_TEXTALIGN(spin) = RTGUI_ALIGN_CENTER_VERTICAL;
 	/* set field */
 	spin->orient = RTGUI_HORIZONTAL;
@@ -35,6 +33,7 @@ static void _rtgui_spin_constructor(rtgui_spin_t *spin)
 
 static void _rtgui_spin_destructor(rtgui_spin_t *spin)
 {
+
 }
 
 DEFINE_CLASS_TYPE(spin, "spin",
@@ -42,6 +41,37 @@ DEFINE_CLASS_TYPE(spin, "spin",
                   _rtgui_spin_constructor,
                   _rtgui_spin_destructor,
                   sizeof(struct rtgui_spin));
+
+//parent必须是一个容器类控件
+rtgui_spin_t* rtgui_spin_create(pvoid parent, int left, int top, int w, int h, int orient)
+{
+	rtgui_container_t *container;
+	rtgui_spin_t* spin;
+
+	RT_ASSERT(parent != RT_NULL);
+	container = RTGUI_CONTAINER(parent);
+
+	spin = rtgui_widget_create(RTGUI_SPIN_TYPE);
+	if(spin != RT_NULL)
+	{
+		rtgui_rect_t rect;
+		rtgui_widget_get_rect(container, &rect);
+		rtgui_widget_rect_to_device(container,&rect);
+		rect.x1 += left;
+		rect.y1 += top;
+		rect.x2 = rect.x1+w;
+		rect.y2 = rect.y1+h;
+		rtgui_widget_set_rect(spin, &rect);
+		rtgui_container_add_child(container, spin);
+		spin->orient = orient;
+	}
+	return spin;
+}
+
+void rtgui_ppl_destroy(rtgui_spin_t* spin)
+{
+	rtgui_widget_destroy(spin);
+}
 
 const static rt_uint8_t _up_arrow[]    = {0x10, 0x38, 0x7C, 0xFE};
 const static rt_uint8_t _down_arrow[]  = {0xFE,0x7C, 0x38, 0x10};
@@ -51,27 +81,27 @@ const static rt_uint8_t _right_arrow[] = {0x80, 0xC0, 0xE0, 0xF0, 0xE0, 0xC0, 0x
 void rtgui_spin_ondraw(rtgui_spin_t* spin)
 {
 	rtgui_rect_t rect, tmp_rect, arrow_rect;
-	struct rtgui_dc* dc;
+	rtgui_dc_t* dc;
 
 	RT_ASSERT(spin != RT_NULL);
 
 	/* begin drawing */
-	dc = rtgui_dc_begin_drawing(RTGUI_WIDGET(spin));
+	dc = rtgui_dc_begin_drawing(spin);
 	if(dc == RT_NULL)return;
 
-	rtgui_widget_get_rect(RTGUI_WIDGET(spin), &rect);
+	rtgui_widget_get_rect(spin, &rect);
 
 	tmp_rect = rect;
 	if(spin->orient == RTGUI_HORIZONTAL)
 	{
 		tmp_rect.x2 = tmp_rect.x2/2;
-		rtgui_rect_inflate(&tmp_rect, -2);
+		rtgui_rect_inflate(&tmp_rect, -RTGUI_WIDGET_BORDER_SIZE(spin));
 		rtgui_dc_fill_rect(dc, &tmp_rect);
-		rtgui_rect_inflate(&tmp_rect, 2);
+		rtgui_rect_inflate(&tmp_rect, RTGUI_WIDGET_BORDER_SIZE(spin));
 		if(spin->flag & PROPEL_FLAG_LEFT)
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_SUNKEN);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_RAISE);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_WIDGET_BORDER_STYLE(spin));
 
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
@@ -79,20 +109,20 @@ void rtgui_spin_ondraw(rtgui_spin_t* spin)
 		arrow_rect.y2 = 7;
 		rtgui_rect_moveto_align(&tmp_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
 		if(spin->flag & PROPEL_UNVISIBLE_LEFT)
-			RTGUI_DC_FC(dc) = dark_grey;
+			RTGUI_DC_FC(dc) = Gray;
 		else
-			RTGUI_DC_FC(dc) = black;
+			RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _left_arrow);
 
 		tmp_rect.x1 = tmp_rect.x2;
 		tmp_rect.x2 = rect.x2;
-		rtgui_rect_inflate(&tmp_rect, -2);
+		rtgui_rect_inflate(&tmp_rect, -RTGUI_WIDGET_BORDER_SIZE(spin));
 		rtgui_dc_fill_rect(dc, &tmp_rect);
-		rtgui_rect_inflate(&tmp_rect, 2);
+		rtgui_rect_inflate(&tmp_rect, RTGUI_WIDGET_BORDER_SIZE(spin));
 		if(spin->flag & PROPEL_FLAG_RIGHT)
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_SUNKEN);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_RAISE);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_WIDGET_BORDER_STYLE(spin));
 
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
@@ -100,21 +130,21 @@ void rtgui_spin_ondraw(rtgui_spin_t* spin)
 		arrow_rect.y2 = 7;
 		rtgui_rect_moveto_align(&tmp_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
 		if(spin->flag & PROPEL_UNVISIBLE_RIGHT)
-			RTGUI_DC_FC(dc) = dark_grey;
+			RTGUI_DC_FC(dc) = Gray;
 		else
-			RTGUI_DC_FC(dc) = black;
+			RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _right_arrow);
 	}
 	else if(spin->orient == RTGUI_VERTICAL)
 	{
 		tmp_rect.y2 = tmp_rect.y2/2;
-		rtgui_rect_inflate(&tmp_rect, -2);
+		rtgui_rect_inflate(&tmp_rect, -RTGUI_WIDGET_BORDER_SIZE(spin));
 		rtgui_dc_fill_rect(dc, &tmp_rect);
-		rtgui_rect_inflate(&tmp_rect, 2);
+		rtgui_rect_inflate(&tmp_rect, RTGUI_WIDGET_BORDER_SIZE(spin));
 		if(spin->flag & PROPEL_FLAG_UP)
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_SUNKEN);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_RAISE);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_WIDGET_BORDER_STYLE(spin));
 
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
@@ -122,20 +152,20 @@ void rtgui_spin_ondraw(rtgui_spin_t* spin)
 		arrow_rect.y2 = 4;
 		rtgui_rect_moveto_align(&tmp_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
 		if(spin->flag & PROPEL_UNVISIBLE_UP)
-			RTGUI_DC_FC(dc) = dark_grey;
+			RTGUI_DC_FC(dc) = Gray;
 		else
-			RTGUI_DC_FC(dc) = black;
+			RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _up_arrow);
 
 		tmp_rect.y1 = tmp_rect.y2;
 		tmp_rect.y2 = rect.y2;
-		rtgui_rect_inflate(&tmp_rect, -2);
+		rtgui_rect_inflate(&tmp_rect, -RTGUI_WIDGET_BORDER_SIZE(spin));
 		rtgui_dc_fill_rect(dc, &tmp_rect);
-		rtgui_rect_inflate(&tmp_rect, 2);
+		rtgui_rect_inflate(&tmp_rect, RTGUI_WIDGET_BORDER_SIZE(spin));
 		if(spin->flag & PROPEL_FLAG_DOWN)
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_SUNKEN);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_DOWN);
 		else
-			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_BORDER_RAISE);
+			rtgui_dc_draw_border(dc, &tmp_rect, RTGUI_WIDGET_BORDER_STYLE(spin));
 
 		arrow_rect.x1 = 0;
 		arrow_rect.y1 = 0;
@@ -143,9 +173,9 @@ void rtgui_spin_ondraw(rtgui_spin_t* spin)
 		arrow_rect.y2 = 4;
 		rtgui_rect_moveto_align(&tmp_rect, &arrow_rect, RTGUI_ALIGN_CENTER);
 		if(spin->flag & PROPEL_UNVISIBLE_DOWN)
-			RTGUI_DC_FC(dc) = dark_grey;
+			RTGUI_DC_FC(dc) = Gray;
 		else
-			RTGUI_DC_FC(dc) = black;
+			RTGUI_DC_FC(dc) = theme.foreground;
 		rtgui_dc_draw_byte(dc, arrow_rect.x1, arrow_rect.y1, RC_H(arrow_rect), _down_arrow);
 	}
 
@@ -158,7 +188,7 @@ static void rtgui_prople_onclick(rtgui_spin_t* spin, rtgui_event_t *event)
 
 	if(spin->widget_link != RT_NULL && spin->on_click != RT_NULL)
 	{
-		spin->on_click(RTGUI_OBJECT(spin->widget_link), event);
+		spin->on_click(spin->widget_link, event);
 	}
 }
 
@@ -167,8 +197,8 @@ static void rtgui_spin_onmouse(rtgui_spin_t* spin, struct rtgui_event_mouse* emo
 	rtgui_rect_t rect, tmp_rect;
 
 	/* get physical extent information */
-	rtgui_widget_get_rect(RTGUI_WIDGET(spin), &rect);
-	rtgui_widget_rect_to_device(RTGUI_WIDGET(spin), &rect);
+	rtgui_widget_get_rect(spin, &rect);
+	rtgui_widget_rect_to_device(spin, &rect);
 
 	if(rtgui_rect_contains_point(&rect, emouse->x, emouse->y) == RT_EOK)
 	{
@@ -288,18 +318,18 @@ static void rtgui_spin_onmouse(rtgui_spin_t* spin, struct rtgui_event_mouse* emo
 	}
 }
 
-rt_bool_t rtgui_spin_event_handler(rtgui_object_t *object, rtgui_event_t* event)
+rt_bool_t rtgui_spin_event_handler(pvoid wdt, rtgui_event_t* event)
 {
-	rtgui_widget_t* widget = RTGUI_WIDGET(object);
-	rtgui_spin_t* spin = RTGUI_PROPEL(object);
+	rtgui_widget_t* widget = RTGUI_WIDGET(wdt);
+	rtgui_spin_t* spin = RTGUI_SPIN(wdt);
 
-	RT_ASSERT(object != RT_NULL);
+	RT_ASSERT(wdt != RT_NULL);
 
 	switch(event->type)
 	{
 	case RTGUI_EVENT_PAINT:
 		rtgui_spin_ondraw(spin);
-		break;
+		return RT_FALSE;
 
 	case RTGUI_EVENT_MOUSE_BUTTON:
 		if(widget->on_mouseclick != RT_NULL)
@@ -310,42 +340,11 @@ rt_bool_t rtgui_spin_event_handler(rtgui_object_t *object, rtgui_event_t* event)
 		{
 			rtgui_spin_onmouse(spin, (struct rtgui_event_mouse*)event);
 		}
-		break;
+		return RT_TRUE;
 
 	default:
-		break;
+		return RT_FALSE;
 	}
-
-	return RT_FALSE;
-}
-
-//parent必须是一个容器类控件
-rtgui_spin_t* rtgui_spin_create(rtgui_container_t *container, int left, int top, int w, int h, int orient)
-{
-	rtgui_spin_t* spin;
-
-	RT_ASSERT(container != RT_NULL);
-
-	spin = (rtgui_spin_t *) rtgui_widget_create(RTGUI_PROPEL_TYPE);
-	if(spin != RT_NULL)
-	{
-		rtgui_rect_t rect;
-		rtgui_widget_get_rect(RTGUI_WIDGET(container), &rect);
-		rtgui_widget_rect_to_device(RTGUI_WIDGET(container),&rect);
-		rect.x1 += left;
-		rect.y1 += top;
-		rect.x2 = rect.x1+w;
-		rect.y2 = rect.y1+h;
-		rtgui_widget_set_rect(RTGUI_WIDGET(spin), &rect);
-		rtgui_container_add_child(container, RTGUI_WIDGET(spin));
-		spin->orient = orient;
-	}
-	return spin;
-}
-
-void rtgui_spin_destroy(rtgui_spin_t* spin)
-{
-	rtgui_widget_destroy(RTGUI_WIDGET(spin));
 }
 
 /* bind a external variable */
