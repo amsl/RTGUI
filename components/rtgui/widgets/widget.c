@@ -51,13 +51,11 @@ static void _rtgui_widget_constructor(rtgui_widget_t *widget)
     widget->on_focus_in   = RT_NULL;
     widget->on_focus_out  = RT_NULL;
 
-#ifndef RTGUI_USING_SMALL_SIZE
     widget->on_draw       = RT_NULL;
     widget->on_mouseclick = RT_NULL;
     widget->on_key        = RT_NULL;
     widget->on_size       = RT_NULL;
     widget->on_command    = RT_NULL;
-#endif
 
     /* set default event handler */
     rtgui_object_set_event_handler(RTGUI_OBJECT(widget), rtgui_widget_event_handler);
@@ -281,7 +279,6 @@ void rtgui_widget_set_onunfocus(rtgui_widget_t *widget, rtgui_event_handler_ptr 
 }
 RTM_EXPORT(rtgui_widget_set_onunfocus);
 
-#ifndef RTGUI_USING_SMALL_SIZE
 void rtgui_widget_set_ondraw(rtgui_widget_t *widget, rtgui_event_handler_ptr handler)
 {
     RT_ASSERT(widget != RT_NULL);
@@ -321,7 +318,6 @@ void rtgui_widget_set_oncommand(rtgui_widget_t *widget, rtgui_event_handler_ptr 
     widget->on_command = handler;
 }
 RTM_EXPORT(rtgui_widget_set_oncommand);
-#endif
 
 /**
  * @brief Focuses the widget. The focused widget is the widget which can receive the keyboard events
@@ -493,7 +489,6 @@ rt_bool_t rtgui_widget_event_handler(struct rtgui_object *object, rtgui_event_t 
         return rtgui_widget_onhide(object, event);
     case RTGUI_EVENT_UPDATE_TOPLVL:
         return rtgui_widget_onupdate_toplvl(object, event);
-#ifndef RTGUI_USING_SMALL_SIZE
     case RTGUI_EVENT_PAINT:
         if (widget->on_draw != RT_NULL)
             return widget->on_draw(RTGUI_OBJECT(widget), event);
@@ -518,7 +513,6 @@ rt_bool_t rtgui_widget_event_handler(struct rtgui_object *object, rtgui_event_t 
         if (widget->on_size != RT_NULL)
             return widget->on_size(RTGUI_OBJECT(widget), event);
         break;
-#endif
     default:
         return rtgui_object_event_handler(object, event);
     }

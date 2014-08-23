@@ -1,6 +1,6 @@
 #include <rtthread.h>
 
-int rt_application_init()
+int rt_application_init(void)
 {
 	application_init();
 

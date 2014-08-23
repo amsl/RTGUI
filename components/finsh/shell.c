@@ -68,7 +68,7 @@ int atoi(const char* s)
 }
 #endif
 
-int isprint(unsigned char ch)
+int is_print(unsigned char ch)
 {
     return (unsigned int)(ch - ' ') < 127u - ' ';
 }

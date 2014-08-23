@@ -140,12 +140,10 @@ struct rtgui_event_win_create
 {
     _RTGUI_EVENT_WIN_ELEMENTS
     struct rtgui_win *parent_window;
-#ifndef RTGUI_USING_SMALL_SIZE
     /* the window title */
     rt_uint8_t title[RTGUI_NAME_MAX];
     /* the window extent */
     struct rtgui_rect extent;
-#endif
 };
 
 struct rtgui_event_win_move

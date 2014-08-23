@@ -35,9 +35,7 @@ static void _rtgui_textbox_constructor(rtgui_textbox_t *box)
     rtgui_object_set_event_handler(RTGUI_OBJECT(box), rtgui_textbox_event_handler);
     rtgui_widget_set_onfocus(RTGUI_WIDGET(box), rtgui_textbox_onfocus);
     rtgui_widget_set_onunfocus(RTGUI_WIDGET(box), rtgui_textbox_onunfocus);
-#ifndef RTGUI_USING_SMALL_SIZE
     rtgui_widget_set_onkey(RTGUI_WIDGET(box), rtgui_textbox_onkey);
-#endif
 
     RTGUI_WIDGET_FOREGROUND(box) = black;
     RTGUI_WIDGET_BACKGROUND(box) = white;
@@ -374,7 +372,7 @@ static rt_bool_t rtgui_textbox_onkey(struct rtgui_object *widget, rtgui_event_t 
     }
     else
     {
-        if (isprint(ekbd->key))
+        if (is_print(ekbd->key))
         {
             /* it's may print character */
             /* no buffer on this line */
@@ -661,29 +659,23 @@ rt_bool_t rtgui_textbox_event_handler(struct rtgui_object *object, rtgui_event_t
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_draw != RT_NULL)
             widget->on_draw(RTGUI_OBJECT(widget), event);
         else
-#endif
             rtgui_textbox_ondraw(box);
         break;
 
     case RTGUI_EVENT_MOUSE_BUTTON:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_mouseclick != RT_NULL)
             widget->on_mouseclick(RTGUI_OBJECT(widget), event);
         else
-#endif
             rtgui_textbox_onmouse(box, (struct rtgui_event_mouse *)event);
         return RT_TRUE;
 
     case RTGUI_EVENT_KBD:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_key != RT_NULL)
             widget->on_key(RTGUI_OBJECT(widget), event);
         else
-#endif
             rtgui_textbox_onkey(RTGUI_OBJECT(box), (struct rtgui_event *)event);
         return RT_TRUE;
 

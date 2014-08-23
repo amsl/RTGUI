@@ -665,11 +665,9 @@ rt_bool_t rtgui_scrollbar_event_handler(rtgui_object_t *object, rtgui_event_t *e
 	switch(event->type)
 	{
 	case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
 		if(widget->on_draw != RT_NULL)
 			widget->on_draw(object, event);
 		else
-#endif
 		{
 			if(!RTGUI_WIDGET_IS_HIDE(bar))
 				rtgui_scrollbar_ondraw(bar);
@@ -679,13 +677,11 @@ rt_bool_t rtgui_scrollbar_event_handler(rtgui_object_t *object, rtgui_event_t *e
 	case RTGUI_EVENT_MOUSE_BUTTON:
 		if(RTGUI_WIDGET_IS_ENABLE(widget))
 		{
-#ifndef RTGUI_USING_SMALL_SIZE
 			if(widget->on_mouseclick != RT_NULL)
 			{
 				widget->on_mouseclick(object, event);
 			}
 			else
-#endif
 			{
 				_rtgui_scrollbar_on_mouseclick(bar, event);
 			}

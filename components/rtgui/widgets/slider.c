@@ -154,11 +154,9 @@ rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_e
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_draw != RT_NULL)
             widget->on_draw(RTGUI_OBJECT(widget), event);
         else
-#endif
         {
             rtgui_theme_draw_slider(slider);
         }
@@ -168,21 +166,17 @@ rt_bool_t rtgui_slider_event_handler(struct rtgui_object *object, struct rtgui_e
     case RTGUI_EVENT_KBD:
         if (!RTGUI_WIDGET_IS_ENABLE(widget) || RTGUI_WIDGET_IS_HIDE(widget)) return RT_FALSE;
 
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_key != RT_NULL)
             return widget->on_key(RTGUI_OBJECT(widget), event);
         else
-#endif
             return rtgui_slider_onkey(slider, (struct rtgui_event_kbd *)event);
 
     case RTGUI_EVENT_MOUSE_BUTTON:
         if (!RTGUI_WIDGET_IS_ENABLE(widget) || RTGUI_WIDGET_IS_HIDE(widget)) return RT_FALSE;
 
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_mouseclick != RT_NULL)
             widget->on_mouseclick(RTGUI_OBJECT(widget), event);
         else
-#endif
         {
             rtgui_slider_onmouse(slider, (struct rtgui_event_mouse *)event);
         }
@@ -262,7 +256,6 @@ void rtgui_slider_set_orientation(struct rtgui_slider *slider, int orientation)
 
     /* set orientation */
     slider->orient = orientation;
-#ifndef RTGUI_USING_SMALL_SIZE
     if (slider->orient == RTGUI_HORIZONTAL)
     {
         /* HORIZONTAL */
@@ -275,7 +268,6 @@ void rtgui_slider_set_orientation(struct rtgui_slider *slider, int orientation)
         rtgui_widget_set_miniwidth(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_HEIGHT);
         rtgui_widget_set_miniheight(RTGUI_WIDGET(slider), RTGUI_SLIDER_DEFAULT_WIDTH);
     }
-#endif
 }
 RTM_EXPORT(rtgui_slider_set_orientation);
 

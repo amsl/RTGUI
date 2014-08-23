@@ -17,7 +17,7 @@
 #include <rtgui/rtgui_system.h>
 #include <rtgui/filerw.h>
 
-extern int isprint(unsigned char ch); /* Quote from shell.c */
+extern int is_print(unsigned char ch); /* Quote from shell.c */
 static void rtgui_edit_draw_caret(struct rtgui_edit *edit);
 static void rtgui_edit_timeout(struct rtgui_timer *timer, void *parameter);
 static rt_bool_t rtgui_edit_onfocus(struct rtgui_object *object, rtgui_event_t *event);
@@ -202,11 +202,7 @@ RTM_EXPORT(rtgui_edit_destroy);
 rt_inline rt_int16_t rtgui_edit_alloc_len(rt_int16_t n, rt_int16_t m)
 {
     if (n > m) return n;
-#ifndef RTGUI_USING_SMALL_SIZE
     return rtgui_edit_alloc_len(n * 2, m);
-#else
-    return rtgui_edit_alloc_len(n + 16, m);
-#endif
 }
 
 /**
@@ -1332,7 +1328,7 @@ static rt_bool_t rtgui_edit_onkey(struct rtgui_object *object, rtgui_event_t *ev
     }
     else
     {
-        if (isprint((unsigned char)ekbd->key))
+        if (is_print((unsigned char)ekbd->key))
         {
             /* it's may print character */
             update_type = EDIT_UPDATE;
@@ -1822,21 +1818,17 @@ rt_bool_t rtgui_edit_event_handler(struct rtgui_object *object, rtgui_event_t *e
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_draw != RT_NULL)
             widget->on_draw(object, event);
         else
-#endif
             rtgui_edit_ondraw(edit);
 		rtgui_container_dispatch_event(RTGUI_CONTAINER(object), event);
         break;
 
     case RTGUI_EVENT_MOUSE_BUTTON:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_mouseclick != RT_NULL)
             widget->on_mouseclick(object, event);
         else
-#endif
 		{
             rtgui_edit_onmouse(edit, (struct rtgui_event_mouse *)event);
 		}
@@ -1849,11 +1841,9 @@ rt_bool_t rtgui_edit_event_handler(struct rtgui_object *object, rtgui_event_t *e
         return RT_TRUE;
 
     case RTGUI_EVENT_KBD:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_key != RT_NULL)
             widget->on_key(object, event);
         else
-#endif
             rtgui_edit_onkey(object, event);
         return RT_TRUE;
 

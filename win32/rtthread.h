@@ -459,5 +459,10 @@ void rt_system_tick_init(void);
 rt_tick_t rt_tick_get(void);
 
 #define RT_USING_FINSH
+#define RTGUI_IMAGE_PNG
+#define RTGUI_IMAGE_JPEG
+#define RTGUI_IMAGE_BMP
+#define RTGUI_IMAGE_XPM
+#define RTGUI_USING_FONT16
 
 #endif

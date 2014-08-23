@@ -44,7 +44,7 @@ void rtgui_system_theme_init()
 #elif RTGUI_DEFAULT_FONT_SIZE == 12
     rtgui_font_set_defaut(&rtgui_font_asc12);
 #else
-    rtgui_font_set_defaut(&rtgui_font_asc12);
+    rtgui_font_set_defaut(&rtgui_font_asc16);
 #endif
 }
 

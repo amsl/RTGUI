@@ -96,10 +96,8 @@ static rt_bool_t _rtgui_win_create_in_server(struct rtgui_win *win)
         ecreate.parent_window = win->parent_window;
         ecreate.wid           = win;
         ecreate.parent.user   = win->style;
-#ifndef RTGUI_USING_SMALL_SIZE
         ecreate.extent        = RTGUI_WIDGET(win)->extent;
         rt_strncpy((char *)ecreate.title, (char *)win->title, RTGUI_NAME_MAX);
-#endif
 
         if (rtgui_server_post_event_sync(RTGUI_EVENT(&ecreate),
                                          sizeof(struct rtgui_event_win_create)
@@ -529,11 +527,9 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object *object, struct rtgui_even
         break;
 
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (RTGUI_WIDGET(object)->on_draw != RT_NULL)
             RTGUI_WIDGET(object)->on_draw(object, event);
         else
-#endif
             rtgui_win_ondraw(win);
         break;
 
@@ -551,12 +547,10 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object *object, struct rtgui_even
         else if (rtgui_container_dispatch_mouse_event(RTGUI_CONTAINER(win),
                  (struct rtgui_event_mouse *)event) == RT_FALSE)
         {
-#ifndef RTGUI_USING_SMALL_SIZE
             if (RTGUI_WIDGET(object)->on_mouseclick != RT_NULL)
             {
                 return RTGUI_WIDGET(object)->on_mouseclick(object, event);
             }
-#endif
         }
         break;
 
@@ -565,13 +559,11 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object *object, struct rtgui_even
         if (rtgui_widget_dispatch_mouse_event(widget,
                                               (struct rtgui_event_mouse *)event) == RT_FALSE)
         {
-#ifndef RTGUI_USING_SMALL_SIZE
             /* handle event in current widget */
             if (widget->on_mousemotion != RT_NULL)
             {
                 return widget->on_mousemotion(widget, event);
             }
-#endif
         }
         else return RT_TRUE;
 #endif
@@ -612,12 +604,10 @@ rt_bool_t rtgui_win_event_handler(struct rtgui_object *object, struct rtgui_even
     case RTGUI_EVENT_COMMAND:
         if (rtgui_container_dispatch_event(RTGUI_CONTAINER(object), event) != RT_TRUE)
         {
-#ifndef RTGUI_USING_SMALL_SIZE
             if (RTGUI_WIDGET(object)->on_command != RT_NULL)
             {
                 RTGUI_WIDGET(object)->on_command(object, event);
             }
-#endif
         }
         else
             return RT_TRUE;

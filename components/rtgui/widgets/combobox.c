@@ -206,11 +206,9 @@ rt_bool_t rtgui_combobox_event_handler(struct rtgui_object *object, struct rtgui
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_draw != RT_NULL)
             widget->on_draw(RTGUI_OBJECT(widget), event);
         else
-#endif
             rtgui_combobox_ondraw(box);
 
         break;

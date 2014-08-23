@@ -302,13 +302,11 @@ rt_bool_t rtgui_spin_event_handler(rtgui_object_t *object, rtgui_event_t* event)
 		break;
 
 	case RTGUI_EVENT_MOUSE_BUTTON:
-#ifndef RTGUI_USING_SMALL_SIZE
 		if(widget->on_mouseclick != RT_NULL)
 		{
 			widget->on_mouseclick(widget, event);
 		}
 		else
-#endif
 		{
 			rtgui_spin_onmouse(spin, (struct rtgui_event_mouse*)event);
 		}

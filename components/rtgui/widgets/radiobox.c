@@ -85,11 +85,9 @@ rt_bool_t rtgui_radiobox_event_handler(struct rtgui_object *object, struct rtgui
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_draw != RT_NULL)
             widget->on_draw(RTGUI_OBJECT(widget), event);
         else
-#endif
         {
             rtgui_theme_draw_radiobox(radiobox);
         }
@@ -99,11 +97,9 @@ rt_bool_t rtgui_radiobox_event_handler(struct rtgui_object *object, struct rtgui
     case RTGUI_EVENT_KBD:
         if (RTGUI_WIDGET_IS_HIDE(radiobox)) return RT_FALSE;
 
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_key != RT_NULL)
             return widget->on_key(RTGUI_OBJECT(widget), event);
         else
-#endif
         {
             struct rtgui_event_kbd *e = (struct rtgui_event_kbd *)event;
 
@@ -153,11 +149,9 @@ rt_bool_t rtgui_radiobox_event_handler(struct rtgui_object *object, struct rtgui
         break;
 
     case RTGUI_EVENT_MOUSE_BUTTON:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_mouseclick != RT_NULL)
             widget->on_mouseclick(RTGUI_OBJECT(widget), event);
         else
-#endif
         {
             rtgui_radiobox_onmouse(radiobox, (struct rtgui_event_mouse *)event);
         }
@@ -224,7 +218,6 @@ void rtgui_radiobox_set_orientation(struct rtgui_radiobox *radiobox, int orienta
 
     /* set orientation */
     radiobox->orient = orientation;
-#ifndef RTGUI_USING_SMALL_SIZE
     if (radiobox->orient == RTGUI_HORIZONTAL)
     {
         /* HORIZONTAL */
@@ -237,7 +230,6 @@ void rtgui_radiobox_set_orientation(struct rtgui_radiobox *radiobox, int orienta
         rtgui_widget_set_miniwidth(RTGUI_WIDGET(radiobox), RTGUI_RADIOBOX_DEFAULT_HEIGHT);
         rtgui_widget_set_miniheight(RTGUI_WIDGET(radiobox), RTGUI_RADIOBOX_DEFAULT_WIDTH);
     }
-#endif
 }
 
 void rtgui_radiobox_set_selection(struct rtgui_radiobox *radiobox, int selection)

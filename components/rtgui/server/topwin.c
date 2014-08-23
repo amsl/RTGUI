@@ -97,11 +97,7 @@ rt_err_t rtgui_topwin_add(struct rtgui_event_win_create *event)
         return -RT_ERROR;
 
     topwin->wid    = event->wid;
-#ifdef RTGUI_USING_SMALL_SIZE
-    topwin->extent = RTGUI_WIDGET(event->wid)->extent;
-#else
     topwin->extent = event->extent;
-#endif
     topwin->tid    = event->parent.sender;
 
     if (event->parent_window == RT_NULL)
@@ -145,11 +141,7 @@ rt_err_t rtgui_topwin_add(struct rtgui_event_win_create *event)
         /* add title rect */
         if (!(topwin->flag & WINTITLE_NO)) rect.y1 -= WINTITLE_HEIGHT;
 
-#ifdef RTGUI_USING_SMALL_SIZE
-        topwin->title = rtgui_wintitle_create(topwin->wid, event->wid->title);
-#else
         topwin->title = rtgui_wintitle_create(topwin->wid, (const char *)event->title);
-#endif
         rtgui_widget_set_rect(RTGUI_WIDGET(topwin->title), &rect);
 
         /* update clip info */

@@ -451,22 +451,18 @@ rt_bool_t rtgui_listbox_event_handler(rtgui_object_t *object, rtgui_event_t* eve
 	switch(event->type)
 	{
 	case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
 		if(widget->on_draw)
 			widget->on_draw(widget, event);
 		else
-#endif
 			rtgui_listbox_ondraw(box);
 		return RT_FALSE;
 
 	case RTGUI_EVENT_MOUSE_BUTTON:
-#ifndef RTGUI_USING_SMALL_SIZE
 		if(widget->on_mouseclick != RT_NULL)
 		{
 			widget->on_mouseclick(widget, event);
 		}
 		else
-#endif
 		{
 			rtgui_listbox_onmouse(box, (struct rtgui_event_mouse*)event);
 		}

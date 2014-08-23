@@ -1,12 +1,14 @@
 *~
 *.swp
 *.bak
-
+*.obj
 *.pyc
+*.exe
+*.manifest
 
 .sconsign.dblite
 build/
 executables/
 *.pdb
 *.idb
-vcproj
+Debuf/

@@ -527,11 +527,9 @@ rt_bool_t rtgui_rttab_event_handler(rtgui_object_t *object, rtgui_event_t* event
 	switch(event->type)
 	{
 	case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
 		if(widget->on_draw != RT_NULL)
 			widget->on_draw(widget, event);
 		else
-#endif
 		{
 			rtgui_rttab_ondraw(tab);
 			/* paint on each child */
@@ -540,13 +538,11 @@ rt_bool_t rtgui_rttab_event_handler(rtgui_object_t *object, rtgui_event_t* event
 		break;
 
 	case RTGUI_EVENT_MOUSE_BUTTON:
-#ifndef RTGUI_USING_SMALL_SIZE
 		if(widget->on_mouseclick != RT_NULL)
 		{
 			widget->on_mouseclick(widget, event);
 		}
 		else
-#endif
 		{
 			rtgui_rttab_onmouse(tab, (struct rtgui_event_mouse*)event);
 		}

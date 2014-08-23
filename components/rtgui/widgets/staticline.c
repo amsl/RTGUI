@@ -29,11 +29,9 @@ rt_bool_t rtgui_staticline_event_handler(struct rtgui_object *object, struct rtg
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
-#ifndef RTGUI_USING_SMALL_SIZE
         if (widget->on_draw != RT_NULL)
             widget->on_draw(RTGUI_OBJECT(widget), event);
         else
-#endif
             rtgui_theme_draw_staticline(staticline);
         break;
     default:
@@ -89,7 +87,6 @@ void rtgui_staticline_set_orientation(rtgui_staticline_t *staticline, int orient
     RT_ASSERT(staticline != RT_NULL);
 
     staticline->orient = orientation;
-#ifndef RTGUI_USING_SMALL_SIZE
     if (orientation == RTGUI_HORIZONTAL)
     {
         /* HORIZONTAL */
@@ -102,7 +99,6 @@ void rtgui_staticline_set_orientation(rtgui_staticline_t *staticline, int orient
         rtgui_widget_set_miniwidth(RTGUI_WIDGET(staticline), 2);
         rtgui_widget_set_miniheight(RTGUI_WIDGET(staticline), 100);
     }
-#endif
 }
 RTM_EXPORT(rtgui_staticline_set_orientation);
 

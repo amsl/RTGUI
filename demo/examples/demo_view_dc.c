@@ -52,11 +52,7 @@ rt_bool_t dc_event_handler(struct rtgui_object *object, rtgui_event_t *event)
 
         RTGUI_DC_TEXTALIGN(dc) = RTGUI_ALIGN_BOTTOM | RTGUI_ALIGN_CENTER_HORIZONTAL;
         /* 显示GUI的版本信息 */
-#ifdef RTGUI_USING_SMALL_SIZE
-        rtgui_dc_draw_text(dc, "RT-Thread/GUI小型版本", &rect);
-#else
         rtgui_dc_draw_text(dc, "RT-Thread/GUI标准版本", &rect);
-#endif
 
         {
             rtgui_rect_t rect = {0, 0, 0x1c, 0x16};
