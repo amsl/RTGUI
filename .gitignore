@@ -5,6 +5,7 @@
 *.pyc
 *.exe
 *.manifest
+*.ncb
 
 .sconsign.dblite
 build/
