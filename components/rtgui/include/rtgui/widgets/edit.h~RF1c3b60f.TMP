@@ -1,0 +1,100 @@
+/*
+ * File      : edit.h
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006 - 2009, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2012-06-04     amsl         first version
+ */
+#ifndef __RTGUI_EDIT_H__
+#define __RTGUI_EDIT_H__
+
+#include <rtgui/widgets/widget.h>
+#include <rtgui/widgets/container.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+DECLARE_CLASS_TYPE(edit);
+
+/** Gets the type of a edit */
+#define RTGUI_EDIT_TYPE       (RTGUI_TYPE(edit))
+/** Casts the object to a rtgui_edit_t */
+#define RTGUI_EDIT(obj)       (RTGUI_OBJECT_CAST((obj), RTGUI_EDIT_TYPE, rtgui_edit_t))
+/** Checks if the object is a rtgui_edit_t */
+#define RTGUI_IS_EDIT(obj)    (RTGUI_OBJECT_CHECK_TYPE((obj), RTGUI_EDIT_TYPE))
+
+#define RTGUI_EDIT_DEFAULT_WIDTH		80
+#define RTGUI_EDIT_DEFAULT_HEIGHT		20
+
+#define RTGUI_EDIT_NONE				0x00
+#define RTGUI_EDIT_CARET			0x10
+
+struct edit_line
+{
+	rt_size_t   zsize; /* zone size */
+	rt_uint16_t len;
+	struct edit_line *prev;
+	struct edit_line *next;
+	char *text;
+};
+
+struct rtgui_edit
+{
+	/* inherit from container */
+	rtgui_container_t parent;
+
+	/* text box flag */
+	rt_uint32_t flag;
+
+	rt_uint8_t  tabsize;
+	rt_uint16_t rows, cols;
+	rt_uint16_t first_row,first_col;
+	rt_uint16_t row_per_page;
+	rt_uint16_t col_per_page;
+	rtgui_point_t position;
+	rt_uint16_t item_height,font_width;
+	rt_uint16_t split_num;
+	rt_size_t   bzsize; /* base zone size */
+
+	rtgui_timer_t *caret_timer;
+	rtgui_color_t *caret;
+	rtgui_rect_t  caret_rect;
+
+	struct edit_line  	*head;
+	struct edit_line	*tail;
+	struct edit_line	*first_line;
+
+	rtgui_scrollbar_t *hscroll;
+	rtgui_scrollbar_t *vscroll;
+
+	/* edit private data */
+	rt_bool_t (*on_enter) (pvoid wdt, rtgui_event_t* event);
+};
+typedef struct rtgui_edit rtgui_edit_t;
+
+rt_bool_t rtgui_edit_append_line(rtgui_edit_t* edit, const char *text);
+rt_bool_t rtgui_edit_insert_line(rtgui_edit_t* edit, char* text, struct edit_line *p);
+rt_bool_t rtgui_edit_delete_line(rtgui_edit_t* edit, struct edit_line *line);
+
+void _rtgui_edit_constructor(rtgui_edit_t *box);
+void _rtgui_edit_deconstructor(rtgui_edit_t *textbox);
+
+rtgui_edit_t* rtgui_edit_create(pvoid wdt, int left, int top, int w, int h);
+void rtgui_edit_destroy(rtgui_edit_t* box);
+void rtgui_edit_ondraw(rtgui_edit_t* box);
+rt_bool_t rtgui_edit_event_handler(pvoid wdt, rtgui_event_t* event);
+void rtgui_edit_set_text(rtgui_edit_t* box, const char* text);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
