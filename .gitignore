@@ -12,4 +12,4 @@ build/
 executables/
 *.pdb
 *.idb
-Debuf/
+Debug/
